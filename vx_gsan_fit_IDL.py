@@ -39,61 +39,37 @@ plt.rcParams["mathtext.fontset"] = 'dejavuserif'
 from matplotlib import rc
 rc('font',**{'family':'serif','serif':['Palatino']})
 cata='/Users/amartinez/Desktop/PhD/Libralato_data/CATALOGS/'
-
+pruebas='/Users/amartinez/Desktop/PhD/Libralato_data/pruebas/'
 
 #R.A. Dec. X Y μαcosδ σμαcosδ μδ σμδ  time n1 n2 ID
 
 # name='ACSWFC'
 name='WFC3IR'
 ra,dec,x_c ,y_c,mua,dmua,mud,dmud, time, n1, n2, idt = np.loadtxt(cata+'GALCEN_%s_PM.cat'%(name),unpack=True)
-# VEGAmag, rmsmag, QFIT, o, RADXS, nf, nu, Localsky, Local-skyrms
-mag, rms, qfit, o, RADXS, nf, nu, Localsky, Local_skyrms= np.loadtxt(cata+'GALCEN_%s_GO12915.cat'%(name),unpack=True )
-
-#%%
-# Here where are transforming the coordinates fron equatorial to galactic
-# I am following the paper  https://arxiv.org/pdf/1306.2945.pdf
-#  alpha_G = 192.85948,  delta_G = 27.12825, lNGP = 122.93192, according to Perryman & ESA 1997
-alpha_g=192.85948
-delta_g = 27.12825
-tr=np.deg2rad
-
-C1=np.sin(tr(delta_g))*np.cos(tr(dec))-np.cos(tr(delta_g))*np.sin(tr(dec))*np.cos(tr(ra)-tr(alpha_g))
-C2=np.cos(tr(delta_g))*np.sin(tr(ra)-tr(alpha_g))
-cosb=np.sqrt(C1**2+C2**2)
-
-mul,mub =zip(*[(1/cosb[i])*np.matmul([[C1[i],C2[i]],[-C2[i],C1[i]]],[mua[i],mud[i]]) for i in range(len(ra))])#zip with the* unzips things
-mul=np.array(mul)
-mub=np.array(mub)
-# -----------------------------
-#Im not sure about if I have to transfr¡orm the uncertainties also in the same way....
-dmul,dmub =zip(*[(1/cosb[i])*np.matmul([[C1[i],C2[i]],[-C2[i],C1[i]]],[dmua[i],dmud[i]]) for i in range(len(ra))])#zip with the* unzips things
-dmul=np.array(dmul)
-dmub=np.array(dmub)
-# for now Ill just leave the like they are
-# =============================================================================
-# dmul=dmua
-# dmub=dmud
-# =============================================================================
+gl,gb,mul,mub,dmul,dmub=np.loadtxt(pruebas + '%s_ecu_to_gl_IDL.txt'%(name), unpack=True)
 
 #%%
 good=np.where((dmua<90)&(dmua<5))
 ra=ra[good]
 dec=dec[good]
-
 mua=mua[good]
 dmua=dmua[good]
 mud=mud[good]
 dmud=dmud[good]
-mul=mul[good]
-mub=mub[good]
-dmul=dmul[good]
-dmub=dmub[good]
-
 time=time[good]
 n1=n1[good]
 n2=n2[good]
 idt=idt[good]
 
+#%%
+#%%
+# Transform of coordinates has been already transform with ecu_to_gal.pro, also have been trasformed the uncertainties in the same way.
+#
+# for now Ill just leave the like they are
+# =============================================================================
+# dmul=dmua
+# dmub=dmud
+# =============================================================================
 #%%
 v_lim=70
 # good=np.where((mul<v_lim) & (mul>-v_lim))
@@ -259,9 +235,9 @@ h=plt.hist(mul, bins= auto, color='royalblue', alpha = 0.6, density =True, histt
 xplot = np.linspace(min(x), max(x), 1000)
 
 # plt.plot(xplot, gaussian(xplot, mean[0], mean[1], mean[2]) , color="darkorange", linewidth=3, alpha=0.6)
-
-plt.plot(xplot, gaussian(xplot, mean[0], mean[1], mean[2]) + gaussian(xplot, mean[3], mean[4], mean[5])
-         + gaussian(xplot, mean[6], mean[7], mean[8]), color="darkorange", linewidth=3, alpha=1)
+v=1
+plt.plot(xplot, gaussian(xplot*v, mean[0], mean[1], mean[2]) + gaussian(xplot*v, mean[3], mean[4], mean[5])
+         + gaussian(xplot*v, mean[6], mean[7], mean[8]), color="darkorange", linewidth=3, alpha=1)
 plt.plot(xplot, gaussian(xplot, mean[0], mean[1], mean[2])  , color="yellow", linestyle='dashed', linewidth=3, alpha=0.6)
 plt.plot(xplot, gaussian(xplot, mean[3], mean[4], mean[5])  , color="red", linestyle='dashed', linewidth=3, alpha=0.6)
 plt.plot(xplot, gaussian(xplot, mean[6], mean[7], mean[8]) , color='black', linestyle='dashed', linewidth=3, alpha=0.6)

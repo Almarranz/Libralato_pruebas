@@ -59,7 +59,7 @@ mul,mub =(1/cosb)*np.matmul([[C1,C2],[-C2,C1]],[mua,mud])
 
 print(mul,mub)
 # %%
-
+# ra,dec,x_c ,y_c,mua,dmua,mud,dmud, time, n1, n2, idt
 cata='/Users/amartinez/Desktop/PhD/Libralato_data/CATALOGS/'
 #R.A. Dec. X Y μαcosδ σμαcosδ μδ σμδ  time n1 n2 ID
 # name='ACSWFC'
@@ -67,29 +67,43 @@ name='WFC3IR'
 # ra,dec,x_c ,y_c,mua,dmua,mud,dmud, time, n1, n2, idt = np.loadtxt(cata+'GALCEN_%s_PM.cat'%(name),unpack=True)
 catal=np.loadtxt(cata+'GALCEN_%s_PM.cat'%(name))
 
-# %%
-print(mua)
-mua=np.array(mua)
-mub=np.array(mub)
 
-mua=mua.astype(float)
-mub=mub.astype(float)
-
-# %%
-mat=np.array([[mua],[mub]])
-cov_ad=np.cov(mat.astype(float))
-
-
-# %%
-x = np.array([[0.2, 2], [1, 1], [2, 0]]).T
-
-xcov=np.cov(x)
-print(xcov)
 # %%
 mat=np.array([catal[:,4],catal[:,6]])
 cov_ad=np.cov(mat)
 # %%
-print(catal[:,3])
+print(catal[:,3]) 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
