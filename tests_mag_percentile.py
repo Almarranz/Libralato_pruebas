@@ -41,7 +41,7 @@ mag_b=np.digitize(ep1_test[:,0], np.arange(np.round(min(mag)),np.round(max(mag)+
 # %%
 all_sum=[]
 qfit_valid=[]
-for i in range(len(np.arange(np.round(min(mag)),np.round(max(mag)+1),1))):
+for i in range(len(np.arange(np.round(min(ep1_test[:,0])),np.round(max(ep1_test[:,0])+1),1))):
     mag_binned=np.where(mag_b==i)
     qfit_i=qfit[mag_binned]
     print('%.5f'%(np.percentile(qfit_i,85)),i,len(qfit_i),len(mag_binned[0]))
@@ -53,12 +53,10 @@ for i in range(len(np.arange(np.round(min(mag)),np.round(max(mag)+1),1))):
                 
     all_sum.append(len(qfit_i))
 print(sum(all_sum))
+# %%
+ep1_test=ep1_test[qfit_valid]
 # %% 
-c=0
-for i in range(len(mag_binned[0])):
-    c =+ i
-    print(mag_binned[0][i],c)
-
+print(max(ep1_test[:,2]))
 
 
 
