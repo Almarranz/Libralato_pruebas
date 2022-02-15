@@ -36,7 +36,7 @@ all_ep2=np.loadtxt(cata+'GALCEN_%s_GO13771.cat'%(name),unpack=False )
 epoch=2
 if epoch == 1:
     ep1_test = all_ep1
-    ep1_test=np.c_[ep1_test,catal[:,-1]]
+    ep1_test=np.c_[ep1_test,catal[:,-1]]# Added the ID from the PM catalog. Stars are in the same order in both lists
 elif epoch == 2:
     ep1_test = all_ep2
     ep1_test=np.c_[ep1_test,catal[:,-1]]
