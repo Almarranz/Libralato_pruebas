@@ -51,7 +51,7 @@ ra,dec,x_c ,y_c,mua,dmua,mud,dmud, time, n1, n2, idt = np.loadtxt(cata+'GALCEN_%
 gl,gb,mul,mub,dmul,dmub=np.loadtxt(pruebas + '%s_ecu_to_gl_IDL.txt'%(name), unpack=True)
 
 #%%
-good=np.where((dmua<90))
+good=np.where((dmua<90)&(dmua<5))
 ra=ra[good]
 dec=dec[good]
 
@@ -74,10 +74,8 @@ idt=idt[good]
 # Transform of coordinates has been already transform with ecu_to_gal.pro, also have been trasformed the uncertainties in the same way.
 #
 # for now Ill just leave the like they are
-# =============================================================================
-# dmul=dmua
-# dmub=dmud
-# =============================================================================
+dmul=dmua
+dmub=dmud
 
 #%%
 good=np.where((mul<70) & (mul>-70))
@@ -92,7 +90,7 @@ n1=n1[good]
 n2=n2[good]
 idt=idt[good]
 #%%
-perc_dmul= np.percentile(dmul,50)
+perc_dmul= np.percentile(dmul,85)
 print(perc_dmul,'yomama')
 # lim_dmul=perc_dmul
 lim_dmul=1
@@ -172,7 +170,7 @@ def prior_transform(utheta):
     umu1, usigma1, uamp1,  umu2, usigma2, uamp2= utheta
 
 #     mu1 = -1. * umu1-8   # scale and shift to [-10., 10.)
-    mu1 = 1* umu1-0.5  # scale and shift to [-10., 10.)
+    mu1 = 2* umu1-1  # scale and shift to [-10., 10.)
     sigma1 = 5* (usigma1)   
     amp1 = 1 * uamp1 
 

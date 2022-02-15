@@ -49,13 +49,20 @@ ra,dec,x_c ,y_c,mua,dmua,mud,dmud, time, n1, n2, idt = np.loadtxt(cata+'GALCEN_%
 gl,gb,mul,mub,dmul,dmub=np.loadtxt(pruebas + '%s_ecu_to_gl_IDL.txt'%(name), unpack=True)
 
 #%%
-good=np.where((dmua<90)&(dmua<5))
-ra=ra[good]
+v_lim=15
+good=np.where((dmua<90)&(dmua<5)&(dmub<5)&(mul<v_lim) & (mul>-v_lim))
+a=ra[good]
 dec=dec[good]
+
 mua=mua[good]
 dmua=dmua[good]
 mud=mud[good]
 dmud=dmud[good]
+mul=mul[good]
+mub=mub[good]
+dmul=dmul[good]
+dmub=dmub[good]
+
 time=time[good]
 n1=n1[good]
 n2=n2[good]
@@ -66,32 +73,14 @@ idt=idt[good]
 # Transform of coordinates has been already transform with ecu_to_gal.pro, also have been trasformed the uncertainties in the same way.
 #
 # for now Ill just leave the like they are
-# =============================================================================
-# dmul=dmua
-# dmub=dmud
-# =============================================================================
+dmul=dmua
+dmub=dmud
 #%%
-v_lim=70
-# good=np.where((mul<v_lim) & (mul>-v_lim))
-good=np.where((mua<v_lim) & (mua>-v_lim))
-ra=ra[good]
-dec=dec[good]
-mua=mua[good]
-mud=mud[good]
-dmua=dmua[good]
-dmud=dmud[good]
-mul=mul[good]
-dmul=dmul[good]
-mub=mub[good]
-dmub=dmub[good]
-time=time[good]
-n1=n1[good]
-n2=n2[good]
-idt=idt[good]
+
 #%%
 perc_dmul= np.percentile(dmua,85)#this is the way they do it in the paper(i thing), but the uncertainty is too high
 print(perc_dmul,'yomama')
-lim_dmul=perc_dmul
+lim_dmul=1
 # lim_dmul=0.7
 # accu=np.where((abs(dmul)<lim_dmul) & (abs(dmub)<lim_dmul))#Are they in the paper selecting by the error of the galactic or equatorial coordintes???
 accu=np.where((abs(dmua)<lim_dmul) & (abs(dmud)<lim_dmul))
@@ -104,7 +93,7 @@ time=time[accu]
 #%%
 print(min(mul),max(mul))
 binwidth=0.25
-auto='no'
+auto='auto'
 if auto !='auto':
     auto=np.arange(min(mul),max(mul)+ binwidth, binwidth)#also works if running each bing width one by one, for some reason...
     # print(auto)
@@ -228,12 +217,12 @@ plt.show()
 
 results = sampler.results
 print(results['logz'][-1])
-
+# %%
 # h=plt.hist(v_x*-1, bins= nbins, color='darkblue', alpha = 0.6, density =True, histtype = 'stepfilled')
 h=plt.hist(mul, bins= auto, color='royalblue', alpha = 0.6, density =True, histtype = 'stepfilled')
 
-xplot = np.linspace(min(x), max(x), 1000)
-
+xplot = np.linspace(min(mul), max(mul), 1000)
+print(min(mul), max(mul))
 # plt.plot(xplot, gaussian(xplot, mean[0], mean[1], mean[2]) , color="darkorange", linewidth=3, alpha=0.6)
 v=1
 plt.plot(xplot, gaussian(xplot*v, mean[0], mean[1], mean[2]) + gaussian(xplot*v, mean[3], mean[4], mean[5])
