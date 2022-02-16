@@ -138,7 +138,7 @@ ax.set_ylim(0,10)
 #%%
 print(m[1000])
 
-# plt.scatter(m,d,s=0.01)
+plt.scatter(m,d,s=0.01,zorder=3)
 plt.scatter(mag,catal[:,5],s=0.01)
 
 plt.ylim(0,10)
@@ -153,12 +153,16 @@ for  i in range(len(res_s)):
         print(res_s[i])
 # %%
 print(res_s[0][0])
+# %%
+a1=[8,3,6,7,10,9.233333]
+a2=[1,19,6,9.233,8,11]
+a1=np.array(a1)
 
+aa,a12,a21=np.intersect1d(a1, a2,return_indices=True)
 
-
-
-
-
+# %%
+a12=a12.astype(int)
+print(a1[a12])
 
 
 

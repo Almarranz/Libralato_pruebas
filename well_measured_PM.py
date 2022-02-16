@@ -49,71 +49,78 @@ name='WFC3IR'
 catal=np.loadtxt(cata+'GALCEN_%s_PM.cat'%(name))
 pruebas='/Users/amartinez/Desktop/PhD/Libralato_data/pruebas/'
 # mag, rms, qfit, o, RADXS, nf, nu, Localsky, Local_skyrms
-ep1=np.loadtxt(pruebas+'foto_well_mesaured_ep%s_%s.txt'%(name,1))
-ep2=np.loadtxt(pruebas+'foto_well_mesaured_ep%s_%s.txt'%(name,2))
+# mag, rms, qfit, o, RADXS, nf, nu, Localsky, Local_skyrms = np.loadtxt(cata+'GALCEN_%s_GO12915.cat'%(name),unpack=True)
+ep1_fix=np.loadtxt(pruebas+'foto_well_mesaured_ep%s_%s.txt'%(name,1))
+ep2_fix=np.loadtxt(pruebas+'foto_well_mesaured_ep%s_%s.txt'%(name,2))
 mag, rms, qfit, o, RADXS, nf, nu, Localsky, Local_skyrms= np.loadtxt(cata+'GALCEN_%s_GO12915.cat'%(name),unpack=True )
-# ep12,ep1_ind,ep2_ind=np.intersect1d(ep1[:,-1],ep2[:,-1], return_indices=True)
+
+
+
 # %%
-# ep12pm,ep1_indpm,ep2_indpm=np.intersect1d(ep1_ind,catal[:,-1], return_indices=True)
+ep12,ep12_ind,ep21_ind=np.intersect1d(ep1_fix[:,-1],ep2_fix[:,-1], return_indices=True)
+# I can not make this work. something look bad when I use  the index for ep12 for selecting stars 
 # %%
 # ra,dec,x_c ,y_c,mua,dmua,mud,dmud, time, n1, n2, idt
-index=ep1[:,-1].astype(int)
-
-pm_wmp=catal[index]#pm_wmp stands for proper motion well mesaured photometry
+ep1=ep1_fix
+ep2=ep2_fix
+index1=ep1[:,-1].astype(int)
+pm_wmp=catal[index1]#pm_wmp stands for proper motion well mesaured photometry
+# ep1=ep1[ep12_ind]
 # ep1=ep1[ep1_indpm]
-v_valid=np.where(pm_wmp[:,4] < 90)
+v_valid=np.where((pm_wmp[:,5]<90) & (pm_wmp[:,4]<70) )
 pm_wmp=pm_wmp[v_valid]
 ep1=ep1[v_valid]
-# %%
-import random
-ra_valu=[]
-for r in range(len(ep1[:,0])):
-    ep1[r,0]= ep1[r,0] + random.uniform(0.000009,0.00004)
-    pm_wmp[r,5]=pm_wmp[r,5]+ random.uniform(0.000009,0.00004)
-    ra_valu.append(random.uniform(0.0005,0.0001))
-np.savetxt(pruebas+'mag_dmu_test.txt',np.array([ep1[:,0],pm_wmp[:,5]]).T,fmt='%.8f')    
-arr=ep1[:,0]
+
 fig, ax = plt.subplots(1,1, figsize=(10,10))
 
-ax.scatter(arr,pm_wmp[:,5],s=1,color='k',alpha=0.05)
+
+
+ax.scatter(ep1[:,0],pm_wmp[:,5],s=1,color='red',alpha=1)
+# ax.scatter(mag,catal[:,5],s=1,color='k',alpha=1)
 ax.set_ylim(0,10)
+ax.set_xlim(12,24)
+# %%
+index2=ep2[:,-1].astype(int)
+pm_wmp=catal[index2]#pm_wmp stands for proper motion well mesaured photometry
+# ep1=ep1[ep12_ind]
+# ep1=ep1[ep1_indpm]
+v_valid=np.where((pm_wmp[:,5]<90) & (pm_wmp[:,4]<70) )
+pm_wmp=pm_wmp[v_valid]
+ep2=ep2[v_valid]
 
+fig, ax = plt.subplots(1,1, figsize=(10,10))
+
+
+
+ax.scatter(ep2[:,0],pm_wmp[:,5],s=1,color='red',alpha=1)
+# ax.scatter(mag,catal[:,5],s=1,color='k',alpha=1)
+ax.set_ylim(0,10)
+ax.set_xlim(12,24)
 
 # %%
-both=list(zip(ep1[:,0],pm_wmp[:,5]))
 
-res = sorted(both, key = lambda x: x[0])
+ind=ep21_ind.astype(int)
+
+ep2=ep2_fix[ind]
+pm_wmp=catal[ind]
+
+
+fig, ax = plt.subplots(1,1, figsize=(10,10))
+
+
+
+ax.scatter(ep2[:,0],pm_wmp[:,5],s=1,color='red',alpha=1)
+# ax.scatter(mag,catal[:,5],s=1,color='k',alpha=1)
+ax.set_ylim(0,10)
+ax.set_xlim(12,24)
 
 # %%
-
-both_all=list(zip(mag,catal[:,5]))
-
-res_all = sorted(both, key = lambda x: x[0])
-
-# =============================================================================
-# count=0
-# for i in range(len(id_sir)+1):
-#     # print(i)
-#     try:
-#          if id_sir[i+1]==id_sir[i]:
-#             count+=1
-#     except:
-#         print('nada')
-# print(count)
-# 
-# =============================================================================
+ep12_s=sorted(ep12_ind)
 
 
-
-
-
-
-
-
-
-
-
-
+both = set(ep1_fix[:,-1]).intersection(ep2_fix[:,-1])
+# %%
+indices_A = [list(ep1_fix[:,-1]).index(x) for x in both]
 
 
 
