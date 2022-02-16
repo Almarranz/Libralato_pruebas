@@ -57,71 +57,27 @@ mag, rms, qfit, o, RADXS, nf, nu, Localsky, Local_skyrms= np.loadtxt(cata+'GALCE
 
 
 # %%
-ep12,ep12_ind,ep21_ind=np.intersect1d(ep1_fix[:,-1],ep2_fix[:,-1], return_indices=True)
-# I can not make this work. something look bad when I use  the index for ep12 for selecting stars 
+ep12,ep12_ind,ep21_ind=np.intersect1d(ep1_fix[:,9],ep2_fix[:,9], return_indices=True,assume_unique=True)
+# You have to use these index with the whole catalog of 812377 stars, not witg tge well mesuared ones
 # %%
 # ra,dec,x_c ,y_c,mua,dmua,mud,dmud, time, n1, n2, idt
-ep1=ep1_fix
-ep2=ep2_fix
-index1=ep1[:,-1].astype(int)
-pm_wmp=catal[index1]#pm_wmp stands for proper motion well mesaured photometry
-# ep1=ep1[ep12_ind]
-# ep1=ep1[ep1_indpm]
-v_valid=np.where((pm_wmp[:,5]<90) & (pm_wmp[:,4]<70) )
+pm_wmp=catal[ep12.astype(int)]#pm_wmp stands for proper motion well mesaured photometry
+mag_ep12=mag[ep12.astype(int)]
+
+velocity=np.sqrt(pm_wmp[:,4]**2+pm_wmp[:,6]**2)
+v_valid=np.where((pm_wmp[:,5]<90) & (velocity<70) )
 pm_wmp=pm_wmp[v_valid]
-ep1=ep1[v_valid]
-
+mag_ep12=mag_ep12[v_valid]
 fig, ax = plt.subplots(1,1, figsize=(10,10))
 
 
 
-ax.scatter(ep1[:,0],pm_wmp[:,5],s=1,color='red',alpha=1)
-# ax.scatter(mag,catal[:,5],s=1,color='k',alpha=1)
+
+ax.scatter(mag,catal[:,5],s=0.1,color='k',alpha=1)
+ax.scatter(mag_ep12,pm_wmp[:,5],s=0.1,color='red',alpha=1)
 ax.set_ylim(0,10)
 ax.set_xlim(12,24)
 # %%
-index2=ep2[:,-1].astype(int)
-pm_wmp=catal[index2]#pm_wmp stands for proper motion well mesaured photometry
-# ep1=ep1[ep12_ind]
-# ep1=ep1[ep1_indpm]
-v_valid=np.where((pm_wmp[:,5]<90) & (pm_wmp[:,4]<70) )
-pm_wmp=pm_wmp[v_valid]
-ep2=ep2[v_valid]
-
-fig, ax = plt.subplots(1,1, figsize=(10,10))
-
-
-
-ax.scatter(ep2[:,0],pm_wmp[:,5],s=1,color='red',alpha=1)
-# ax.scatter(mag,catal[:,5],s=1,color='k',alpha=1)
-ax.set_ylim(0,10)
-ax.set_xlim(12,24)
-
-# %%
-
-ind=ep21_ind.astype(int)
-
-ep2=ep2_fix[ind]
-pm_wmp=catal[ind]
-
-
-fig, ax = plt.subplots(1,1, figsize=(10,10))
-
-
-
-ax.scatter(ep2[:,0],pm_wmp[:,5],s=1,color='red',alpha=1)
-# ax.scatter(mag,catal[:,5],s=1,color='k',alpha=1)
-ax.set_ylim(0,10)
-ax.set_xlim(12,24)
-
-# %%
-ep12_s=sorted(ep12_ind)
-
-
-both = set(ep1_fix[:,-1]).intersection(ep2_fix[:,-1])
-# %%
-indices_A = [list(ep1_fix[:,-1]).index(x) for x in both]
-
 
 
 
