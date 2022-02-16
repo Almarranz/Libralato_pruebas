@@ -124,7 +124,7 @@ ep1_test=ep1_test[radxs_valid]
 print(len(ep1_test),'Condition e')
 
 # %%
-np.savetxt(pruebas+'foto_well_mesaured_ep%s_%s.txt'%(name,epoch),ep1_test,delimiter=' ',fmt='%.4f %.4f %.4f %.4f %.4f %.0f %.0f %.2f %.2f %.0f',header='index for the stars that fullfil the well_mesaured critreia from Libralato et al. 2021')
+np.savetxt(pruebas+'foto_well_mesaured_ep%s_%s.txt'%(name,epoch),ep1_test,delimiter=' ',fmt='%-.4f %-.4f %-.4f %-.4f %-.4f %-.0f %.0f %-.2f %-.2f %-.0f',header='index for the stars that fullfil the well_mesaured critreia from Libralato et al. 2021')
 
 
 
