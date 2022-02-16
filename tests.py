@@ -116,37 +116,43 @@ mag, rms, qfit, o, RADXS, nf, nu, Localsky, Local_skyrms= np.loadtxt(cata+'GALCE
 all_ep1=np.loadtxt(cata+'GALCEN_%s_GO12915.cat'%(name),unpack=False)
 mag2, rms2, qfit2, o2, RADXS2, nf2, nu2, Localsky2, Local_skyrms2= np.loadtxt(cata+'GALCEN_%s_GO13771.cat'%(name),unpack=True )
 all_ep2=np.loadtxt(cata+'GALCEN_%s_GO13771.cat'%(name),unpack=False )
+
 # %% We are follow here the criteria for well measured stars from libralato et all 2021 (section 2)
-qfit_g=np.percentile(qfit,85)#(a)
-rms_g=np.percentile(rms,85)#(b)
-ratio=nu/nf#(c)
-# o<1(d)
-rds_abs=np.absolute(RADXS)#(e)
-# (f) their flux within the PSF fitting radius is at least 3σ above the local sky. For
-# dont know how to implement f
-
-good1=np.where((qfit > 0.975) & (rms<0.4244) & (ratio>0.5) & 
-               (ratio > 0.5) & (o<1) & (rds_abs<0.1))
 
 
+fig, ax = plt.subplots(1,1, figsize=(10,10))
 
-idt=catal[:,-1]
+ax.scatter(mag,catal[:,5],s=0.1,color='k',alpha=0.1)
+plt.xlim(21.75,22.25)
+ax.set_ylim(0,10)
 
+# %%
 
+# %%
+m,d=np.loadtxt(pruebas+'mag_dmu_test.txt',unpack=True)
+fig, ax = plt.subplots(1,1, figsize=(10,10))
 
+ax.scatter(m,d,s=1,color='k',alpha=0.05)
+ax.set_ylim(0,10)
 
+#%%
+print(m[1000])
 
+# plt.scatter(m,d,s=0.01)
+plt.scatter(mag,catal[:,5],s=0.01)
 
+plt.ylim(0,10)
+plt.xlim(21.75,22.25)
 
-
-
-
-
-
-
-
-
-
+# %%
+res=list(zip(m,d))
+res_s=sorted(res, key = lambda x: x[0])
+# %%
+for  i in range(len(res_s)):
+    if res_s[i][0]>22 and res_s[i][0]<22.1:
+        print(res_s[i])
+# %%
+print(res_s[0][0])
 
 
 

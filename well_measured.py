@@ -48,7 +48,7 @@ mag_b=np.digitize(ep1_test[:,0], np.arange(np.round(min(ep1_test[:,0])),np.round
 # Condition (a): qfit > percentile85 in bins of 1mag width (the width of 1mag i guessed)
 all_sum=[]
 qfit_valid=[]
-for i in range(len(np.arange(np.round(min(ep1_test[:,0])),np.round(max(ep1_test[:,0])+1),1))):
+for i in range(min(mag_b),(max(mag_b)+1)):
     mag_binned=np.where(mag_b==i)
     qfit_i=ep1_test[:,2][mag_binned]
     print('%.5f'%(np.percentile(qfit_i,85)),i,len(qfit_i),len(mag_binned[0]))
