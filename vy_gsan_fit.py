@@ -49,25 +49,16 @@ pruebas='/Users/amartinez/Desktop/PhD/Libralato_data/pruebas/'
 name='WFC3IR'
 
 df = pd.read_csv(pruebas+'match_GNS_and_%s_refined.txt'%(name),sep=',',names=['RA_gns','DE_gns','Jmag','Hmag','Ksmag','ra','dec','x_c','y_c','mua','dmua','mud','dmud','time','n1','n2','idt','m139','Separation'])
-#%%
-Ksmag=df['Ksmag'].to_numpy()
-mua=df['mua'].to_numpy()
-m139=df['m139'].to_numpy()
-mud=df['mud'].to_numpy()
-dmua=df['dmua'].to_numpy()
-dmud=df['dmud'].to_numpy()
-dmua=df['dmua'].to_numpy()
-ra=df['ra'].to_numpy()
-dec=df['dec'].to_numpy()
 # %%
+
 df_np=df.to_numpy()
-#%%
+
 valid=np.where(np.isnan(df_np[:,4])==False)
 df_np=df_np[valid]
-#%%
+
 center=np.where(df_np[:,17]-df_np[:,4]>3)
 df_np=df_np[center]
-# %%
+
 ra=df_np[:,5]
 dec=df_np[:,6]
 mua=df_np[:,9]
