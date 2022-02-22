@@ -55,17 +55,23 @@ tipo=np.loadtxt(cata+'GALCEN_TABLE_D.cat',unpack=True, usecols=(3),dtype='str')
 # ra,dec,x_c ,y_c,mua,dmua,mud,dmud, time, n1, n2, idt = np.loadtxt(cata+'GALCEN_%s_PM.cat'%(name),unpack=True)
 # catal=np.loadtxt(cata+'GALCEN_%s_PM.cat'%(name))
 # catal=np.loadtxt(results+'refined_%s_PM.txt'%(name))
-
 catal_df=pd.read_csv(results+'%s_refined_with GNS_partner_mag_K_H.txt'%(name),sep=',',names=['ra','dec','x_c','y_c','mua','dmua','mud','dmud','time','n1','n2','idt','m139','Separation','Ks','H'])
+
+# mul_mc,mub_mc,dmul_mc,dmub_mc
 gal_coor=np.loadtxt(results+'match_GNS_and_WFC3IR_refined_galactic.txt')
+
 catal=catal_df.to_numpy()
 valid=np.where(np.isnan(catal[:,14])==False)
 catal=catal[valid]
-no_fg=np.where(catal[:,12]-catal[:,14]>2.5)
-catal=catal[no_fg]
-
+gal_coor=gal_coor[valid]
+# =============================================================================
+# no_fg=np.where(catal[:,12]-catal[:,14]>2.5)
+# catal=catal[no_fg]
+# gal_coor=gal_coor[no_fg]
+# 
+# =============================================================================
 # %%
-distance=0.003
+distance=0.009
 found=0
 missing=0
 for i in range(len(yso_ra)):
@@ -78,10 +84,13 @@ for i in range(len(yso_ra)):
         group=np.where(np.sqrt((catal[:,0]-catal[index[0],0])**2 + (catal[:,1]-catal[index[0],1])**2)< distance)
         print(len(group[0]))
         fig, ax = plt.subplots(1,1,figsize=(10,10))
-        ax.scatter(catal[index[0],0],catal[index[0],1],color='red',s=100,zorder=3)
+        ax.scatter(catal[index[0],0],catal[index[0],1],color='red',s=100)
         ax.scatter(catal[group[0],0],catal[group[0],1])
-        ax.quiver(catal[index[0],0],catal[index[0],1],[catal[index[0],4]],[catal[index[0],6]],color='red')
-        ax.quiver([catal[group[0],0]],[catal[group[0],1]],[catal[group[0],4]],[catal[group[0],6]])
+        # ax.quiver(catal[index[0],0],catal[index[0],1],[catal[index[0],4]],[catal[index[0],6]],alpha=0.2)#this is for the vector on the Ms object in ecuatorial
+        # ax.quiver(catal[index[0],0],catal[index[0],1],[gal_coor[index[0],0]],[gal_coor[index[0],1]])#this is for the vector on the Ms object in galactic
+        ax.quiver([catal[group[0],0]],[catal[group[0],1]],np.array([catal[group[0],4]])+3.16,np.array([catal[group[0],6]])+5.6,alpha=0.2)
+        ax.quiver([catal[group[0],0]],[catal[group[0],1]],np.array([gal_coor[group[0],0]])+6.4,np.array([gal_coor[group[0],1]])+0.22)
+
         ax.yaxis.set_major_formatter(FormatStrFormatter('%.3f'))
         ax.xaxis.set_major_formatter(FormatStrFormatter('%.3f'))
         ax.legend(['yso #%s, %s'%(i,tipo[i])],markerscale=1,loc=1,handlelength=1)
@@ -89,10 +98,12 @@ for i in range(len(yso_ra)):
         ax.set_ylabel(r'$\mathrm{dec}$') 
         np.savetxt(pruebas+'group_%s_%s.txt'%(i,name),catal[group],fmt='%.7f')
         found +=1
-        fig, ax = plt.subplots(1,1,figsize=(10,10))
-        ax.hist(catal[group[0],4],bins='auto') 
-        ax.hist(catal[group[0],6],alpha=0.5,bins='auto') 
-        ax.legend(['mua (yso #%s)'%(i),'mub'],markerscale=1,loc=1,handlelength=1)
+# =============================================================================
+#         fig, ax = plt.subplots(1,1,figsize=(10,10))
+#         ax.hist(catal[group[0],4],bins='auto') 
+#         ax.hist(catal[group[0],6],alpha=0.5,bins='auto') 
+#         ax.legend(['mua (yso #%s)'%(i),'mub'],markerscale=1,loc=1,handlelength=1)
+# =============================================================================
         
     else:
         print('No mach in %s catalog'%(name))
@@ -102,7 +113,4 @@ for i in range(len(yso_ra)):
     
 print('Found %s , missing %s'%(found, missing))
 # %%
-
-
-
 
