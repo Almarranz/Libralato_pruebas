@@ -64,39 +64,59 @@ catal=catal_df.to_numpy()
 valid=np.where(np.isnan(catal[:,14])==False)
 catal=catal[valid]
 gal_coor=gal_coor[valid]
-# =============================================================================
 # no_fg=np.where(catal[:,12]-catal[:,14]>2.5)
+# =============================================================================
+# no_fg=np.where(catal[:,-1]-catal[:,-2]>1.3)
 # catal=catal[no_fg]
 # gal_coor=gal_coor[no_fg]
-# 
 # =============================================================================
+
 # %%
-distance=0.009
+radio=0.003
 found=0
 missing=0
+pms=[-3.156,-5.585,-6.411,-0.219]#this are the ecu(mua,mud) and galactic(mul,mub) pm of SrgA* (Reid & Brunthaler (2020))
+# pms=[0,0,0,0]
 for i in range(len(yso_ra)):
-# for i in range(1,2):    
+# for i in range(1,4):    
     print(yso_ra[i])
     index=np.where((catal[:,0]==yso_ra[i]) & (catal[:,1]==yso_dec[i]) )
     if len(index[0]>0):
         print(index[0])
         print(catal[index[0],0],catal[index[0],1])
-        group=np.where(np.sqrt((catal[:,0]-catal[index[0],0])**2 + (catal[:,1]-catal[index[0],1])**2)< distance)
+        group=np.where(np.sqrt((catal[:,0]-catal[index[0],0])**2 + (catal[:,1]-catal[index[0],1])**2)< radio)
         print(len(group[0]))
-        fig, ax = plt.subplots(1,1,figsize=(10,10))
-        ax.scatter(catal[index[0],0],catal[index[0],1],color='red',s=100)
-        ax.scatter(catal[group[0],0],catal[group[0],1])
+        fig, ax = plt.subplots(1,2,figsize=(20,10))
+        ax[0].scatter(catal[index[0],0],catal[index[0],1],color='red',s=100)
+        ax[0].scatter(catal[group[0],0],catal[group[0],1])
         # ax.quiver(catal[index[0],0],catal[index[0],1],[catal[index[0],4]],[catal[index[0],6]],alpha=0.2)#this is for the vector on the Ms object in ecuatorial
         # ax.quiver(catal[index[0],0],catal[index[0],1],[gal_coor[index[0],0]],[gal_coor[index[0],1]])#this is for the vector on the Ms object in galactic
-        ax.quiver([catal[group[0],0]],[catal[group[0],1]],np.array([catal[group[0],4]])+3.16,np.array([catal[group[0],6]])+5.6,alpha=0.2)
-        ax.quiver([catal[group[0],0]],[catal[group[0],1]],np.array([gal_coor[group[0],0]])+6.4,np.array([gal_coor[group[0],1]])+0.22)
+        ax[0].quiver([catal[group[0],0]],[catal[group[0],1]],np.array([catal[group[0],4]])-pms[0],np.array([catal[group[0],6]])-pms[1],alpha=0.2)
+        ax[0].quiver([catal[group[0],0]],[catal[group[0],1]],np.array([gal_coor[group[0],0]])-pms[2],np.array([gal_coor[group[0],1]])-pms[3])
 
-        ax.yaxis.set_major_formatter(FormatStrFormatter('%.3f'))
-        ax.xaxis.set_major_formatter(FormatStrFormatter('%.3f'))
-        ax.legend(['yso #%s, %s'%(i,tipo[i])],markerscale=1,loc=1,handlelength=1)
-        ax.set_xlabel(r'$\mathrm{ra}$') 
-        ax.set_ylabel(r'$\mathrm{dec}$') 
-        np.savetxt(pruebas+'group_%s_%s.txt'%(i,name),catal[group],fmt='%.7f')
+        ax[0].yaxis.set_major_formatter(FormatStrFormatter('%.3f'))
+        ax[0].xaxis.set_major_formatter(FormatStrFormatter('%.3f'))
+        ax[0].legend(['yso #%s, %s'%(i,tipo[i])],markerscale=1,loc=1,handlelength=1)
+        ax[0].set_xlabel(r'$\mathrm{ra}$') 
+        ax[0].set_ylabel(r'$\mathrm{dec}$') 
+        # np.savetxt(pruebas+'group_%s_%s.txt'%(i,name),catal[group],fmt='%.7f')
+        
+        ax[1].scatter([gal_coor[index[0],0]],[gal_coor[index[0],1]],color='red',s=100)
+        ax[1].scatter([gal_coor[group[0],0]],[gal_coor[group[0],1]], alpha =0.2)
+        
+       
+        
+        
+        ax[1].yaxis.set_major_formatter(FormatStrFormatter('%.0f'))
+        ax[1].xaxis.set_major_formatter(FormatStrFormatter('%.0f'))
+        ax[1].legend(['yso #%s, %s'%(i,tipo[i])],markerscale=1,loc=1,handlelength=1)
+        ax[1].set_xlabel(r'$\mathrm{\mu_{l} (mas\ yr^{-1})}$') 
+        ax[1].set_ylabel(r'$\mathrm{\mu_{b} (mas\ yr^{-1})}$') 
+        ax[1].invert_xaxis()
+        
+        # ax[1].axvline(pms[2], color='orange',linestyle='dashed', linewidth=1)
+        # ax[1].axhline(pms[3], color='orange',linestyle='dashed', linewidth=1)
+        ax[1].scatter(pms[2],pms[3],s=150, marker='*')
         found +=1
 # =============================================================================
 #         fig, ax = plt.subplots(1,1,figsize=(10,10))
@@ -113,4 +133,6 @@ for i in range(len(yso_ra)):
     
 print('Found %s , missing %s'%(found, missing))
 # %%
+
+
 
