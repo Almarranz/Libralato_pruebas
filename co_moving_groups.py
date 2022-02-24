@@ -64,7 +64,7 @@ catal=catal_df.to_numpy()
 valid=np.where(np.isnan(catal[:,14])==False)
 catal=catal[valid]
 gal_coor=gal_coor[valid]
-# no_fg=np.where(catal[:,12]-catal[:,14]>2.5)
+no_fg=np.where(catal[:,12]-catal[:,14]>2.5)
 # =============================================================================
 # no_fg=np.where(catal[:,-1]-catal[:,-2]>1.3)
 # catal=catal[no_fg]
@@ -72,18 +72,25 @@ gal_coor=gal_coor[valid]
 # =============================================================================
 
 # %%
-radio=0.003
+radio=0.01
 found=0
 missing=0
 pms=[-3.156,-5.585,-6.411,-0.219]#this are the ecu(mua,mud) and galactic(mul,mub) pm of SrgA* (Reid & Brunthaler (2020))
 # pms=[0,0,0,0]
+with open(pruebas+ 'MS_%s_.reg'%(name), 'w') as f:
+        f.write('# Region file format: DS9 version 4.1'+"\n"+'global color=green dashlist=8 3 width=1 font="helvetica 10 normal roman" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1'+"\n"+'fk5'+'\n')
+        f.close
 for i in range(len(yso_ra)):
 # for i in range(1,4):    
     print(yso_ra[i])
     index=np.where((catal[:,0]==yso_ra[i]) & (catal[:,1]==yso_dec[i]) )
     if len(index[0]>0):
         print(index[0])
-        print(catal[index[0],0],catal[index[0],1])
+        print(float(catal[index[0],0]),catal[index[0],1])
+        with open(pruebas+ 'MS_%s_.reg'%(name), 'a') as f:
+            f.write("\n"+'point(%s,%s) # point=x'%(float(catal[index[0],0]),float(catal[index[0],1]))+"\n"+
+                    "\n"+ 'circle(%s,%s,%s)'%(float(catal[index[0],0]),float(catal[index[0],1]),radio)+' #text={%s,%s}'%(i,tipo[i]))
+            f.close
         group=np.where(np.sqrt((catal[:,0]-catal[index[0],0])**2 + (catal[:,1]-catal[index[0],1])**2)< radio)
         print(len(group[0]))
         fig, ax = plt.subplots(1,2,figsize=(20,10))
@@ -99,7 +106,7 @@ for i in range(len(yso_ra)):
         ax[0].legend(['yso #%s, %s'%(i,tipo[i])],markerscale=1,loc=1,handlelength=1)
         ax[0].set_xlabel(r'$\mathrm{ra}$') 
         ax[0].set_ylabel(r'$\mathrm{dec}$') 
-        # np.savetxt(pruebas+'group_%s_%s.txt'%(i,name),catal[group],fmt='%.7f')
+        np.savetxt(pruebas+'group_%s_%s.txt'%(i,name),catal[group],fmt='%.7f',header=('ra,dec,x_c,y_c,mua,dmua,mud,dmud,time,n1,n2,idt,m139,Separation,Ks,H'))
         
         ax[1].scatter([gal_coor[index[0],0]],[gal_coor[index[0],1]],color='red',s=100)
         ax[1].scatter([gal_coor[group[0],0]],[gal_coor[group[0],1]], alpha =0.2)
@@ -133,6 +140,5 @@ for i in range(len(yso_ra)):
     
 print('Found %s , missing %s'%(found, missing))
 # %%
-
-
+print(list(catal[index[0],0]))
 
