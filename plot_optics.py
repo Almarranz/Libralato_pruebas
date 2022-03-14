@@ -20,13 +20,17 @@ thresholds in DBSCAN.
 #          Adrin Jalali <adrin.jalali@gmail.com>
 # License: BSD 3 clause
 
+# =============================================================================
+# Original one from https://scikit-learn.org/stable/auto_examples/cluster/plot_optics.html#sphx-glr-auto-examples-cluster-plot-optics-py
+# =============================================================================
+
 from sklearn.cluster import OPTICS, cluster_optics_dbscan
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
 
 # Generate sample data
-
+#Data from the own tutorial
 np.random.seed(0)
 n_points_per_cluster = 250
 
@@ -38,10 +42,33 @@ C5 = [3, -2] + 1.6 * np.random.randn(n_points_per_cluster, 2)
 C6 = [5, 6] + 2 * np.random.randn(n_points_per_cluster, 2)
 X = np.vstack((C1, C2, C3, C4, C5, C6))
 
-clust = OPTICS(min_samples=50, xi=0.05, min_cluster_size=0.05)
+#Data from the quintuplet
+# =============================================================================
+# catal='/Users/amartinez/Desktop/PhD/Libralato_data/CATALOGS/'
+# a, b, c, d, e, f =  np.loadtxt(catal + 'pm-mas_quitaplet_Ban.txt', unpack =True)
+# 
+# #removing the scale on X for plotting it
+# ind = np.where( (c > -10) & (c < 10) & (d < 10) & (d > -10))
+# 
+# c = c[ind]
+# d = d[ind]
+# a = a[ind]
+# b = b[ind]
+# 
+# 
+# import math
+# 
+# mu_delta = math.cos(math.radians(148.6)) * (c) + math.sin(math.radians(148.6)) * (d)
+# mu_alpha = -1 * math.sin(math.radians(148.6)) * (c) + math.cos(math.radians(148.6)) * (d)
+# 
+# X=np.array([mu_alpha,mu_delta]).T
+# 
+# 
+# =============================================================================
+clust = OPTICS(min_samples=50, xi=0.05, metric='euclidean').fit(X)
 
 # Run the fit
-clust.fit(X)
+# clust.fit(X)
 
 labels_050 = cluster_optics_dbscan(
     reachability=clust.reachability_,
@@ -59,7 +86,7 @@ labels_200 = cluster_optics_dbscan(
 space = np.arange(len(X))
 reachability = clust.reachability_[clust.ordering_]
 labels = clust.labels_[clust.ordering_]
-
+# %%
 plt.figure(figsize=(10, 7))
 G = gridspec.GridSpec(2, 3)
 ax1 = plt.subplot(G[0, :])
@@ -73,7 +100,7 @@ for klass, color in zip(range(0, 5), colors):
     Xk = space[labels == klass]
     Rk = reachability[labels == klass]
     ax1.plot(Xk, Rk, color, alpha=0.3)
-ax1.plot(space[labels == -1], reachability[labels == -1], "k.", alpha=0.3)
+ax1.plot(space[labels == -1], reachability[labels == -1], "k.", alpha=0.03)
 ax1.plot(space, np.full_like(space, 2.0, dtype=float), "k-", alpha=0.5)
 ax1.plot(space, np.full_like(space, 0.5, dtype=float), "k-.", alpha=0.5)
 ax1.set_ylabel("Reachability (epsilon distance)")
@@ -105,3 +132,23 @@ ax4.set_title("Clustering at 2.0 epsilon cut\nDBSCAN")
 
 plt.tight_layout()
 plt.show()
+
+# %%
+rea= clust.reachability_
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

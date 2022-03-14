@@ -52,7 +52,7 @@ mu_alpha = -1 * math.sin(math.radians(148.6)) * (c) + math.cos(math.radians(148.
 mu = np.vstack((mu_alpha,mu_delta)).T
 
 # %%
-samples = 30
+samples = 27
 min_cor = 7
 X=np.array([mu_alpha,mu_delta]).T
 # %%This are the valuses for the tutorial
@@ -70,12 +70,12 @@ X=np.array([mu_alpha,mu_delta]).T
 # =============================================================================
 # %%
 
-clust = OPTICS(min_samples=50, xi=0.05, metric='euclidean').fit(X)
+# clust = OPTICS(min_samples=50, xi=0.05, metric='euclidean').fit(X)
 X_stad = StandardScaler().fit_transform(X)
 # X_stad = X
 
 # clusterer = hdbscan.HDBSCAN(min_cluster_size=samples, min_samples=min_cor,).fit(X_stad)
-clusterer = OPTICS(min_samples=samples, xi=0.05, metric='euclidean').fit(X_stad)
+clusterer = OPTICS(min_samples=samples, xi=0.00005, metric='euclidean').fit(X_stad)
 
 
 l=clusterer.labels_
