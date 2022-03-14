@@ -69,8 +69,8 @@ X = np.vstack((C1, C2, C3, C4, C5, C6))
 # %%
 
 clust = OPTICS(min_samples=50, xi=0.05, metric='euclidean').fit(X)
-X_stad = StandardScaler().fit_transform(X)
-# X_stad = X
+# X_stad = StandardScaler().fit_transform(X)
+X_stad = X
 
 # clusterer = hdbscan.HDBSCAN(min_cluster_size=samples, min_samples=min_cor,).fit(X_stad)
 clusterer = OPTICS(min_samples=samples, xi=0.05, metric='euclidean').fit(X_stad)
@@ -128,23 +128,23 @@ ax.invert_xaxis()
 # ax.scatter(np.arange(len(X)),reachability)
 # %%
 
-clu_reac_n=np.empty((len(X),4))
+clu_reac_n=np.empty((len(X),5))
 clu_reac_n = clu_reac_n.astype(np.object)#I hace to transfor this into a numpy bject to stire the 4D color vector in a single dimesion of the matrix
 # %%
 dic_clus={}
 for i in range(0,n_clusters+1):
-    dic_clus['cluster_%s'%(i)]=[clusterer.reachability_[colores_index[i][0]],colores_index[i][0],np.full((len(colores_index[i][0]),4),colors[i])]#Reachabily,index , color
+    dic_clus['cluster_%s'%(i)]=[clusterer.reachability_[colores_index[i][0]],colores_index[i][0],np.full((len(colores_index[i][0]),4),colors[i]),l[colores_index[i][0]]]#Reachabily,index , color
     # fig, ax = plt.subplots(1,1,figsize=(8,8))
     # ax.scatter(np.arange(0,len(colores_index[i][0])),clusterer.reachability_[colores_index[i][0]], color=colors[i])
 
 # %%
 n=0
 for c in range(len(dic_clus)):
-    for l in range(len(dic_clus['cluster_%s'%(c)][0])):
-        clu_reac_n[n]=[n,dic_clus['cluster_%s'%(c)][1][l],dic_clus['cluster_%s'%(c)][0][l],dic_clus['cluster_%s'%(c)][2][l]]#number, index,reachabilty and color
+    for j in range(len(dic_clus['cluster_%s'%(c)][0])):
+        clu_reac_n[n]=[n,dic_clus['cluster_%s'%(c)][1][j],dic_clus['cluster_%s'%(c)][0][j],dic_clus['cluster_%s'%(c)][2][j],dic_clus['cluster_%s'%(c)][3][j]]#number, index,reachabilty and color
         n+=1
         
-        print(n)
+        # print(n)
 # %%
 fig, ax=plt.subplots(1,1,figsize=(8,8))
 ax.scatter(clu_reac_n[:,0],clu_reac_n[:,2],color=clu_reac_n[:,3])
@@ -156,8 +156,15 @@ ax.scatter(clu_reac_n[:,0],clu_reac_n[:,2],color=clu_reac_n[:,3])
 orden=clu_reac_n[clu_reac_n[:,2].argsort()]
 
 fig, ax=plt.subplots(1,1,figsize=(8,8))
-ax.scatter(np.arange(len(X)),orden[:,2],color=orden[:,3])
 
+
+ax.scatter(np.arange(len(X)),orden[:,2],color=orden[:,3])
+# %%
+fig, ax=plt.subplots(1,1,figsize=(20,10))
+for o in range(n_clusters):
+    print(o)
+    group=np.where(orden[:,4]==o)
+    ax.scatter(orden[:,0][group],orden[:,2][group],color=orden[:,3][group])
 
 
 
