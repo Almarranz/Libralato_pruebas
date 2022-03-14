@@ -52,25 +52,27 @@ mu_alpha = -1 * math.sin(math.radians(148.6)) * (c) + math.cos(math.radians(148.
 mu = np.vstack((mu_alpha,mu_delta)).T
 
 # %%
-samples = 50
+samples = 30
 min_cor = 7
-# X=np.array([mu_alpha,mu_delta]).T
-# %%
-np.random.seed(0)
-n_points_per_cluster = 250
-
-C1 = [-5, -2] + 0.8 * np.random.randn(n_points_per_cluster, 2)
-C2 = [4, -1] + 0.1 * np.random.randn(n_points_per_cluster, 2)
-C3 = [1, -2] + 0.2 * np.random.randn(n_points_per_cluster, 2)
-C4 = [-2, 3] + 0.3 * np.random.randn(n_points_per_cluster, 2)
-C5 = [3, -2] + 1.6 * np.random.randn(n_points_per_cluster, 2)
-C6 = [5, 6] + 2 * np.random.randn(n_points_per_cluster, 2)
-X = np.vstack((C1, C2, C3, C4, C5, C6))
+X=np.array([mu_alpha,mu_delta]).T
+# %%This are the valuses for the tutorial
+# =============================================================================
+# np.random.seed(0)
+# n_points_per_cluster = 250
+# 
+# C1 = [-5, -2] + 0.8 * np.random.randn(n_points_per_cluster, 2)
+# C2 = [4, -1] + 0.1 * np.random.randn(n_points_per_cluster, 2)
+# C3 = [1, -2] + 0.2 * np.random.randn(n_points_per_cluster, 2)
+# C4 = [-2, 3] + 0.3 * np.random.randn(n_points_per_cluster, 2)
+# C5 = [3, -2] + 1.6 * np.random.randn(n_points_per_cluster, 2)
+# C6 = [5, 6] + 2 * np.random.randn(n_points_per_cluster, 2)
+# X = np.vstack((C1, C2, C3, C4, C5, C6))
+# =============================================================================
 # %%
 
 clust = OPTICS(min_samples=50, xi=0.05, metric='euclidean').fit(X)
-# X_stad = StandardScaler().fit_transform(X)
-X_stad = X
+X_stad = StandardScaler().fit_transform(X)
+# X_stad = X
 
 # clusterer = hdbscan.HDBSCAN(min_cluster_size=samples, min_samples=min_cor,).fit(X_stad)
 clusterer = OPTICS(min_samples=samples, xi=0.05, metric='euclidean').fit(X_stad)
@@ -122,53 +124,22 @@ ax.set_xlim(-10, 10)
 ax.set_ylim(-10,10)    
 ax.invert_xaxis()
 # %%
-# reachability = clusterer.reachability_[clusterer.ordering_]
+space = np.arange(len(X))
+reachability = clusterer.reachability_[clusterer.ordering_]
+labels = clusterer.labels_[clusterer.ordering_] # this gives you the ordering of the cluster by labels and reachabilty, that means that withn the labesl of each cluster are included the labels of noise that are close to each cluster
 # print(reachability)
 # fig, ax = plt.subplots(1,1,figsize=(8,8))
 # ax.scatter(np.arange(len(X)),reachability)
 # %%
+fig, ax = plt.subplots(1,1,figsize=(20,10))
 
-clu_reac_n=np.empty((len(X),5))
-clu_reac_n = clu_reac_n.astype(np.object)#I hace to transfor this into a numpy bject to stire the 4D color vector in a single dimesion of the matrix
-# %%
-dic_clus={}
-for i in range(0,n_clusters+1):
-    dic_clus['cluster_%s'%(i)]=[clusterer.reachability_[colores_index[i][0]],colores_index[i][0],np.full((len(colores_index[i][0]),4),colors[i]),l[colores_index[i][0]]]#Reachabily,index , color
-    # fig, ax = plt.subplots(1,1,figsize=(8,8))
-    # ax.scatter(np.arange(0,len(colores_index[i][0])),clusterer.reachability_[colores_index[i][0]], color=colors[i])
-
-# %%
-n=0
-for c in range(len(dic_clus)):
-    for j in range(len(dic_clus['cluster_%s'%(c)][0])):
-        clu_reac_n[n]=[n,dic_clus['cluster_%s'%(c)][1][j],dic_clus['cluster_%s'%(c)][0][j],dic_clus['cluster_%s'%(c)][2][j],dic_clus['cluster_%s'%(c)][3][j]]#number, index,reachabilty and color
-        n+=1
-        
-        # print(n)
-# %%
-fig, ax=plt.subplots(1,1,figsize=(8,8))
-ax.scatter(clu_reac_n[:,0],clu_reac_n[:,2],color=clu_reac_n[:,3])
-# ax.set_xlim(0,75)
-
-
-# %%
-
-orden=clu_reac_n[clu_reac_n[:,2].argsort()]
-
-fig, ax=plt.subplots(1,1,figsize=(8,8))
-
-
-ax.scatter(np.arange(len(X)),orden[:,2],color=orden[:,3])
-# %%
-fig, ax=plt.subplots(1,1,figsize=(20,10))
-for o in range(n_clusters):
-    print(o)
-    group=np.where(orden[:,4]==o)
-    ax.scatter(orden[:,0][group],orden[:,2][group],color=orden[:,3][group])
-
-
-
-
+for klass in range(0, n_clusters+1):
+    print(klass)
+    Xko =space[labels==klass]
+    Xk =space[np.where(labels==klass)]
+    Rk = reachability[np.where(labels == klass)]
+    ax.scatter(Xk, Rk, color=colors[klass], alpha=0.3)
+ax.scatter(space[np.where(labels==-1)], reachability[np.where(labels==-1)],color=colors[-1])
 
 
 
