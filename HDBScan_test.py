@@ -12,6 +12,18 @@ import hdbscan
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns 
+import numpy as np
+
+from sklearn.neighbors import NearestNeighbors
+from sklearn.cluster import DBSCAN
+from sklearn import metrics
+from sklearn.datasets import make_blobs
+from sklearn.preprocessing import StandardScaler
+import matplotlib.pylab as plt
+from sklearn.neighbors import KDTree
+from scipy import stats
+from kneed import DataGenerator, KneeLocator
+import pandas as pd
 
 
 pruebas='/Users/amartinez/Desktop/PhD/Libralato_data/pruebas/'
@@ -80,6 +92,53 @@ ax.scatter(data[:,0],data[:,1],color=ind_c,)#gor plotting the noise pointins giv
 # =============================================================================
 # %%
 # In this bit I gonna a use the quintuplet data with HDBscan and try to finf Ban cluster without using epsilon
+a, b, c, d, e, f =  np.loadtxt('/Users/banafsh/Python/Machine_Learning_clustering_pm_project/pm-mas.txt', unpack =True)
+
+#removing the scale on X for plotting it
+ind = np.where( (c > -10) & (c < 10) & (d < 10) & (d > -10))
+
+c = c[ind]
+d = d[ind]
+a = a[ind]
+b = b[ind]
+
+
+import math
+
+mu_delta = math.cos(math.radians(148.6)) * (c) + math.sin(math.radians(148.6)) * (d)
+mu_alpha = -1 * math.sin(math.radians(148.6)) * (c) + math.cos(math.radians(148.6)) * (d)
+
+
+mu = np.vstack((mu_alpha,mu_delta)).T
+# %%
+samples = 10
+X=np.array([mu_alpha,mu_delta]).T
+
+X_stad = StandardScaler().fit_transform(X)
+
+clustering = hdbscan.HDBSCAN(min_cluster_size=samples, min_samples=samples).fit(X_stad)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

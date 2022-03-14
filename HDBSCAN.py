@@ -118,16 +118,18 @@ for g in range(0,1):
 #     d_KNN = d_KNN[:,1] # this is the difference in bans method. She is selecting the distance to the closest 1st neigh.
 # =============================================================================
     
-    fig, ax = plt.subplots(1,1,figsize=(15,15))
+    fig, ax = plt.subplots(1,1,figsize=(8,8))
     ax.plot(np.arange(0,len(data),1),d_KNN)
-    kneedle = KneeLocator(np.arange(0,len(data),1), d_KNN, curve='convex', interp_method = "polynomial",direction="increasing")
+    kneedle = KneeLocator(np.arange(0,len(data),1), d_KNN, curve='concave', interp_method = "polynomial",direction="increasing")
     print(round(kneedle.knee, 3))
     print(round(kneedle.elbow, 3))
     print(round(kneedle.knee_y, 3))
     print(round(kneedle.elbow_y, 3))
     rodilla=round(kneedle.elbow_y, 3)
     ax.axhline(round(kneedle.elbow_y, 3),linestyle='dashed',color='k')
-
+    ax.legend(['knee=%s, min=%s'%(round(kneedle.elbow_y, 3),round(min(d_KNN),2))])
+    ax.set_xlabel('Point') 
+    ax.set_ylabel('%s-NN distance'%(samples)) 
    
 
 
@@ -136,7 +138,7 @@ for g in range(0,1):
     # %% tutorial at https://scikit-learn.org/stable/auto_examples/cluster/plot_dbscan.html#sphx-glr-auto-examples-cluster-plot-dbscan-py
     
     
-    epsilon=float(rodilla/10)
+    epsilon=float(rodilla/3)
     # epsilon=0.2
     
     clustering = hdbscan.HDBSCAN(min_cluster_size=samples, min_samples=min_cor,
