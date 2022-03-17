@@ -52,7 +52,7 @@ mu_alpha = -1 * math.sin(math.radians(148.6)) * (c) + math.cos(math.radians(148.
 mu = np.vstack((mu_alpha,mu_delta)).T
 
 # %%
-samples = 27
+samples = 2
 min_cor = 7
 X=np.array([mu_alpha,mu_delta]).T
 # %%This are the valuses for the tutorial
@@ -75,7 +75,7 @@ X_stad = StandardScaler().fit_transform(X)
 # X_stad = X
 
 # clusterer = hdbscan.HDBSCAN(min_cluster_size=samples, min_samples=min_cor,).fit(X_stad)
-clusterer = OPTICS(min_samples=samples, xi=0.00005, metric='euclidean').fit(X_stad)
+clusterer = OPTICS(min_samples=samples, xi=0.05, metric='euclidean').fit(X_stad)
 
 
 l=clusterer.labels_
@@ -131,8 +131,39 @@ labels = clusterer.labels_[clusterer.ordering_] # this gives you the ordering of
 # fig, ax = plt.subplots(1,1,figsize=(8,8))
 # ax.scatter(np.arange(len(X)),reachability)
 # %%
-fig, ax = plt.subplots(1,1,figsize=(20,10))
+# =============================================================================
+# fig, ax = plt.subplots(1,1,figsize=(10,5))
+# 
+# for klass in range(0, n_clusters+1):
+#     print(klass)
+#     Xko =space[labels==klass]
+#     Xk =space[np.where(labels==klass)]
+#     Rk = reachability[np.where(labels == klass)]
+#     ax.scatter(Xk, Rk, color=colors[klass], alpha=0.3)
+# ax.scatter(space[np.where(labels==-1)], reachability[np.where(labels==-1)],color=colors[-1])
+# ax.set_xlabel('Points(sorted by cluster)')
+# ax.set_ylabel('Reachabilty(epsilon)')
+# =============================================================================
 
+
+# %%
+# we are going to try and get the value for epsilon from the knee point in the reachabilty plot
+
+distances = np.sort(reachability)
+fif, ax =plt.subplots(1,1,figsize=(10,5))
+
+kneedle = KneeLocator(np.arange(0,len(distances)-1,1), distances[0:-1], interp_method = "polynomial",direction="increasing",curve='convex')
+rodilla=round(kneedle.knee_y, 3)
+
+ax.plot(list(range(len(reachability))),distances)
+ax.axhline(round(kneedle.elbow_y, 3),linestyle='dashed',color='k')
+ax.legend(['knee=%s, min=%s'%(round(kneedle.elbow_y, 3),round(min(distances),2))])
+ax.set_xlabel('Points(sorted by cluster)')
+ax.set_ylabel('Reachabilty(epsilon)')
+# print(round(kneedle.knee, 3))
+# print(round(kneedle.elbow, 3))
+# print(round(kneedle.knee_y, 3))
+# print(round(kneedle.elbow_y, 3))
 for klass in range(0, n_clusters+1):
     print(klass)
     Xko =space[labels==klass]
@@ -140,15 +171,6 @@ for klass in range(0, n_clusters+1):
     Rk = reachability[np.where(labels == klass)]
     ax.scatter(Xk, Rk, color=colors[klass], alpha=0.3)
 ax.scatter(space[np.where(labels==-1)], reachability[np.where(labels==-1)],color=colors[-1])
-
-
-
-
-
-
-
-
-
 
 
 
