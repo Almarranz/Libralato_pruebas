@@ -105,8 +105,8 @@ distances = np.sort(dist, axis=0)
 
 distances = distances[:,-1]# In here she uses 1, but shouldn't it be -1, that is the distance to the kneism neighbour?
 
-print('This is dis:',dist)
-print('This is disances:',distances)
+# print('This is dis:',dist)
+# print('This is disances:',distances)
 
 
 # plt.title('Distance variation at the 10th Neighbour')
@@ -121,10 +121,10 @@ for i in range(len(dist)):
 
 
 
-#print "np.mean(epsilon)=", np.mean(epsilon)
-
-n =[1, 3, 5, 10, 20, 30, 60, 90]
-eps = [0.27,0.31,0.347,0.365,0.354,0.344,0.31,0.29]
+print ("np.mean(epsilon)=", np.mean(epsilon))
+# %%
+# n =[1, 3, 5, 10, 20, 30, 60, 90]
+# eps = [0.27,0.31,0.347,0.365,0.354,0.344,0.31,0.29]
 
 #plt.plot(n, eps, "bo")
 
@@ -134,44 +134,46 @@ eps = [0.27,0.31,0.347,0.365,0.354,0.344,0.31,0.29]
 #plt.savefig("/Users/banafsheh/Python/Quintuplet/epsilon.pdf")
 # plt.show()
 
-
-from kneed import DataGenerator, KneeLocator
-
-kneedle = KneeLocator(list(range(len(c))), distances, curve="convex", direction="increasing", interp_method = "polynomial")
-
-
-knee_x = round(kneedle.knee, 3)
-knee_y = round(kneedle.knee_y, 3)
-
-print(knee_x)
-print(knee_y)
-
-
-plt.figure(figsize=(6,6))
-plt.plot(distances, 'darkblue')
-plt.xlabel("Points sorted by distance to the 10th nearest neighbour", fontsize = 11)
-plt.ylabel("Distance", fontsize = 11)
-
-plt.xlim(0, len(c))
-plt.ylim(0, max(distances))
-
-
-plt.hlines(knee_y, 0, knee_x, colors='k', linestyles='dashed', lw=2)
-
-
-# plt.savefig("/Users/banafsh/Python/Machine_Learning_practice/Distance_curve_vxvy_Quintuplet.pdf")
-
-
-plt.show()
-
-
+# This is for the knee locatot, you can either use the knee locator or the epsilon from the mean of the distances
+# =============================================================================
+# from kneed import DataGenerator, KneeLocator
+# 
+# kneedle = KneeLocator(list(range(len(c))), distances, curve="convex", direction="increasing", interp_method = "polynomial")
+# 
+# 
+# knee_x = round(kneedle.knee, 3)
+# knee_y = round(kneedle.knee_y, 3)
+# 
+# print(knee_x)
+# print(knee_y)
+# 
+# 
+# plt.figure(figsize=(6,6))
+# plt.plot(distances, 'darkblue')
+# plt.xlabel("Points sorted by distance to the 10th nearest neighbour", fontsize = 11)
+# plt.ylabel("Distance", fontsize = 11)
+# 
+# plt.xlim(0, len(c))
+# plt.ylim(0, max(distances))
+# 
+# 
+# plt.hlines(knee_y, 0, knee_x, colors='k', linestyles='dashed', lw=2)
+# 
+# 
+# # plt.savefig("/Users/banafsh/Python/Machine_Learning_practice/Distance_curve_vxvy_Quintuplet.pdf")
+# 
+# 
+# plt.show()
+# 
+# 
+# =============================================================================
 # In[4]:
 
 
 # #############################################################################
 # Compute DBSCAN
 # db = DBSCAN(eps=0.2, min_samples=10).fit(X)
-db = DBSCAN(eps=knee_y, min_samples=10).fit(X)
+db = DBSCAN(eps=np.mean(epsilon), min_samples=10).fit(X)
 
 #idenstifying the points which makes up our core points
 core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
@@ -303,16 +305,7 @@ plt.xlabel('x [pixels]', fontsize=16)
 plt.show()
 
 
-# In[17]:
 
-
-print(dist[0])
-
-
-# In[6]:
-
-
-print(distances)
 
 
 # In[ ]:
