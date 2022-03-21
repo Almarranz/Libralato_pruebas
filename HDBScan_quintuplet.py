@@ -58,8 +58,8 @@ X=np.array([mu_alpha,mu_delta]).T
 X_stad = StandardScaler().fit_transform(X)
 # X_stad = X
 
-# clusterer = hdbscan.HDBSCAN(min_cluster_size=samples, min_samples=min_cor,).fit(X_stad)
-clusterer = hdbscan.HDBSCAN(min_cluster_size=samples,cluster_selection_epsilon=0.1,cluster_selection_method = 'leaf')
+clusterer = hdbscan.HDBSCAN(min_cluster_size=samples, min_samples=min_cor,).fit(X_stad)
+# clusterer = hdbscan.HDBSCAN(min_cluster_size=samples,cluster_selection_epsilon=0.1,cluster_selection_method = 'leaf')
 clusterer.fit(X_stad)
 
 l=clusterer.labels_
