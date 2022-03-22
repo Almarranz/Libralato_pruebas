@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+Created on Mon Mar 21 14:02:42 2022
+
+@author: amartinez
+"""
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
 Created on Wed Mar  9 10:32:45 2022
 
 @author: amartinez
@@ -26,37 +34,18 @@ from kneed import DataGenerator, KneeLocator
 import pandas as pd
 
 
-# In this bit I gonna a use the quintuplet data with HDBscan and try to finf Ban cluster without using epsilon
-
-catal='/Users/amartinez/Desktop/PhD/Libralato_data/CATALOGS/'
-a, b, c, d, e, f =  np.loadtxt(catal + 'pm-mas_quitaplet_Ban.txt', unpack =True)
-
-
-
-#removing the scale on X for plotting it
-ind = np.where( (c > -10) & (c < 10) & (d < 10) & (d > -10))
-
-c = c[ind]
-d = d[ind]
-a = a[ind]
-b = b[ind]
-
-
-import math
-
-mu_delta = math.cos(math.radians(148.6)) * (c) + math.sin(math.radians(148.6)) * (d)
-mu_alpha = -1 * math.sin(math.radians(148.6)) * (c) + math.cos(math.radians(148.6)) * (d)
-
-
-mu = np.vstack((mu_alpha,mu_delta)).T
-
-# %%
-samples = 5
-min_cor = 5
-X=np.array([mu_alpha,mu_delta]).T
-
+C1 = [1, 1] 
+C2 = [1.1, 1.3]
+C3 = [1.4, 1.5] 
+C4 = [2, 2] 
+C5 = [2.1, 2.5] 
+C6 = [2.4, 2.3] 
+C7 = [1, 2.4]
+C8 = [2.4,2]
+X = np.vstack((C1, C2, C3, C4, C5, C6,C7,C8))
 X_stad = StandardScaler().fit_transform(X)
-# X_stad = X
+samples=3
+min_cor=2
 
 clusterer = hdbscan.HDBSCAN(min_cluster_size=samples, min_samples=min_cor,gen_min_span_tree=True).fit(X_stad)
 # clusterer = hdbscan.HDBSCAN(min_cluster_size=samples,cluster_selection_epsilon=0.1,cluster_selection_method = 'leaf')
@@ -94,12 +83,7 @@ for i in range(len(X)):
 fig, ax = plt.subplots(1,1,figsize=(7,7))
 ax.set_title('HDBScan')
 ax.scatter(X[:,0],X[:,1],color=ind_c,alpha=0.5,s =20)#gor plotting the noise pointins give some value to alpha
-ax.set_ylabel(r'$\mu_{\delta}$ [mas/yr]', fontsize=16)
-ax.set_xlabel(r'$\mu_{\alpha}$ [mas/yr]', fontsize=16)    
 
-ax.set_xlim(-10, 10)
-ax.set_ylim(-10,10)    
-ax.invert_xaxis()
      
 # %%
 # This plots each cluster poit with its corresponding colour
@@ -143,23 +127,9 @@ clusterer.minimum_spanning_tree_.plot(edge_cmap='viridis',
                                       edge_linewidth=2)
 
 
-ax.set_ylabel(r'$\mu_{\delta}$ [mas/yr]', fontsize=16)
-ax.set_xlabel(r'$\mu_{\alpha}$ [mas/yr]', fontsize=16)    
-
-# ax.set_xlim(-10, 10)
-# ax.set_ylim(-10,10)    
-ax.invert_xaxis()
-
-
-
-
-# %%
-fig, ax = plt.subplots(1,1,figsize=(20,10))
-
+#%%
+fig, ax = plt.subplots(1,1,figsize=(10,10))
 clusterer.single_linkage_tree_.plot(cmap='viridis', colorbar=True)
-
-
-
 
 
 
