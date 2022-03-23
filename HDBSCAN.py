@@ -142,7 +142,7 @@ for g in range(0,1):
     # epsilon=0.2
     
     clustering = hdbscan.HDBSCAN(min_cluster_size=samples, min_samples=min_cor,
-                                 cluster_selection_epsilon=epsilon,cluster_selection_method='leaf').fit(X_stad)
+                                 cluster_selection_epsilon=epsilon,gen_min_span_tree=True).fit(X_stad)
     
     # docu=DBSCAN.__doc__
     
@@ -251,8 +251,26 @@ for g in range(0,1):
         ax.set_ylabel('Ks') 
 
    
-    
-    
+ # %%
+fig, ax = plt.subplots(1,1,figsize=(20,10))
+
+clustering.single_linkage_tree_.plot(cmap='viridis', colorbar=True)
+# %%
+# %%
+fig, ax = plt.subplots(1,1,figsize=(10,10))
+clustering.minimum_spanning_tree_.plot(edge_cmap='viridis',
+                                      edge_alpha=0.6,
+                                      node_size=80,
+                                      edge_linewidth=2)
+   
+# %%
+# %%
+fig, ax = plt.subplots(1,1,figsize=(10,10))
+clustering.condensed_tree_.plot()
+# %%
+ig, ax = plt.subplots(1,1,figsize=(7,7))
+clustering.condensed_tree_.plot(select_clusters=True, selection_palette=colors)
+
     
     
     
