@@ -77,8 +77,8 @@ pms=[0,0,0,0]
 
 
 
-# for g in range(len(group_lst)):
-for g in range(0,1):
+for g in range(len(group_lst)):
+# for g in range(0,12):
     # print(group_lst[g])
     samples=5# number of minimun objects that defined a cluster
     min_cor=5# minimun number of objects aroun a point to be consider a core point
@@ -99,63 +99,16 @@ for g in range(0,1):
     X_stad = StandardScaler().fit_transform(X)
     print('These are the mean and std of X: %s %s'%(round(np.mean(X_stad),1),round(np.std(X_stad),1)))
         
-    X_stad = StandardScaler().fit_transform(X)
-    print('These are the mean and std of X: %s %s'%(round(np.mean(X_stad),1),round(np.std(X_stad),1)))
-    #THis is how I do it 
-    tree=KDTree(X_stad, leaf_size=2) 
-
-    # dist, ind = tree.query(iris[:,0:2], k=5)
-    dist, ind = tree.query(X_stad, k=samples) #DistNnce to the 1,2,3...k neighbour
-    d_KNN=sorted(dist[:,-1])#distance to the Kth neighbour
-    # d_KNN=sorted(dist[:,1])# this is how Ban do it
-
-    # This how Ban do it
-# =============================================================================
-#     nn = NearestNeighbors(n_neighbors=10, algorithm ='kd_tree')
-#     nn.fit(X_stad)# our training is basically our dataset itself
-#     dist, ind = nn.kneighbors(X_stad,10)
-#     d_KNN = np.sort(dist, axis=0)
-#     d_KNN = d_KNN[:,1] # this is the difference in bans method. She is selecting the distance to the closest 1st neigh.
-# =============================================================================
-    
-    fig, ax = plt.subplots(1,1,figsize=(8,8))
-    ax.plot(np.arange(0,len(data),1),d_KNN)
-    kneedle = KneeLocator(np.arange(0,len(data),1), d_KNN, curve='concave', interp_method = "polynomial",direction="increasing")
-    print(round(kneedle.knee, 3))
-    print(round(kneedle.elbow, 3))
-    print(round(kneedle.knee_y, 3))
-    print(round(kneedle.elbow_y, 3))
-    rodilla=round(kneedle.elbow_y, 3)
-    ax.axhline(round(kneedle.elbow_y, 3),linestyle='dashed',color='k')
-    ax.legend(['knee=%s, min=%s'%(round(kneedle.elbow_y, 3),round(min(d_KNN),2))])
-    ax.set_xlabel('Point') 
-    ax.set_ylabel('%s-NN distance'%(samples)) 
    
-
-
-
-
-    # %% tutorial at https://scikit-learn.org/stable/auto_examples/cluster/plot_dbscan.html#sphx-glr-auto-examples-cluster-plot-dbscan-py
     
+
     
-    epsilon=float(rodilla/3)
-    # epsilon=0.2
-    
-    clustering = hdbscan.HDBSCAN(min_cluster_size=samples, min_samples=min_cor,
-                                 cluster_selection_epsilon=epsilon,gen_min_span_tree=True).fit(X_stad)
+    clustering = hdbscan.HDBSCAN(min_cluster_size=samples, min_samples=min_cor
+                                 ,gen_min_span_tree=True).fit(X_stad)
     
     # docu=DBSCAN.__doc__
     
     l=clustering.labels_
-    # %%Plots the vector poits plots for all the selected stars
-    fig, ax = plt.subplots(1,1,figsize=(8,8))
-    # ax.scatter(X[:,0],X[:,1],s=10,alpha=0.5)
-    ax.scatter(data[:,-4],data[:,-3],s=10,alpha=0.5)
-    # ax.set_xlim(-15,15)
-    # ax.set_ylim(-15,15)
-    ax.set_xlabel(r'$\mathrm{\mu_{l} (mas\ yr^{-1})}$') 
-    ax.set_ylabel(r'$\mathrm{\mu_{b} (mas\ yr^{-1})}$') 
-    ax.set_title('Group %s'%(group))
     #%%
     
     
@@ -252,24 +205,23 @@ for g in range(0,1):
 
    
  # %%
-fig, ax = plt.subplots(1,1,figsize=(20,10))
-
-clustering.single_linkage_tree_.plot(cmap='viridis', colorbar=True)
+    # fig, ax = plt.subplots(1,1,figsize=(20,10))
+    
+    # clustering.single_linkage_tree_.plot(cmap='viridis', colorbar=True)
 # %%
 # %%
-fig, ax = plt.subplots(1,1,figsize=(10,10))
-clustering.minimum_spanning_tree_.plot(edge_cmap='viridis',
-                                      edge_alpha=0.6,
-                                      node_size=80,
-                                      edge_linewidth=2)
+    fig, ax = plt.subplots(1,1,figsize=(10,10))
+    clustering.minimum_spanning_tree_.plot(edge_cmap='viridis',
+                                          edge_alpha=0.6,
+                                          node_size=80,
+                                          edge_linewidth=2)
    
 # %%
 # %%
-fig, ax = plt.subplots(1,1,figsize=(10,10))
-clustering.condensed_tree_.plot()
+    fig, ax = plt.subplots(1,1,figsize=(10,10))
+    clustering.condensed_tree_.plot()
 # %%
-ig, ax = plt.subplots(1,1,figsize=(7,7))
-clustering.condensed_tree_.plot(select_clusters=True, selection_palette=colors)
+
 
     
     
