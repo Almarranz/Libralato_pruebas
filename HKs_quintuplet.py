@@ -84,13 +84,16 @@ ax.hist((qt_np[:,20] - qt_np[:,22]),bins='auto')
 r_u=10
 test=[]
 qt_np_c=SkyCoord(ra=qt_np[:,0]*u.degree,dec=qt_np[:,1]*u.degree)
-for t in range(10):
+for t in range(1):
     rand=np.random.choice(np.arange(0,len(qt_np_c)),1)
     gns_rand=qt_np[rand]
     gns_rand=SkyCoord(ra = gns_rand[:,0]*u.degree, dec=gns_rand[:,1]*u.degree)
     idxc, group, d2d,d3d = qt_np_c.search_around_sky(gns_rand, r_u*u.arcsec)
     test.append(max(gns_quit_c[group][:,20]-gns_quit_c[group][:,22])-min(gns_quit_c[group][:,20]-gns_quit_c[group][:,22]))
 print(np.mean(test),np.median(test),np.std(test))
+
+fig, ax = plt.subplots(1,1,figsize=(10,10))
+ax.scatter(gns_quit_c[group][:,0],gns_quit_c[group][:,1])
 
 
 # =============================================================================
