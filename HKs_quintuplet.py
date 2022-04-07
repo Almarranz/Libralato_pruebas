@@ -60,15 +60,20 @@ print(np.mean(gns_quit_c[:,20] - gns_quit_c[:,22]))
 print(np.std(gns_quit_c[:,20] - gns_quit_c[:,22]))
 
 # %%
-r_u=1
+r_u=5
 test=[]
 gns_quit_c_c=SkyCoord(ra=gns_quit_c[:,0]*u.degree,dec=gns_quit_c[:,1]*u.degree)
-for t in range(10):
+for t in range(1):
     rand=np.random.choice(np.arange(0,len(gns_quit_c)),1)
     gns_rand=gns_quit_c[rand]
-    gns_rand=SkyCoord(ra = gns_rand[:,0]*u.degree, dec=gns_rand[:,1]*u.degree)
-    idxc, group, d2d,d3d = gns_quit_c_c.search_around_sky(gns_rand, r_u*u.arcsec)
-    test.append(max(gns_quit_c[group][:,20]-gns_quit_c[group][:,22])-min(gns_quit_c[group][:,20]-gns_quit_c[group][:,22]))
+    gns_rand_c=SkyCoord(ra = gns_rand[:,0]*u.degree, dec=gns_rand[:,1]*u.degree)
+    idxc, indices, d2d,d3d = gns_quit_c_c.search_around_sky(gns_rand_c, r_u*u.arcsec)
+    test.append(max(gns_quit_c[indices][:,20]-gns_quit_c[indices][:,22])-min(gns_quit_c[indices][:,20]-gns_quit_c[indices][:,22]))
+    fig, ax = plt.subplots(1,1,figsize=(10,10))
+
+    ax.scatter(gns_quit_c[:,0],gns_quit_c[:,1])
+    ax.scatter(gns_quit_c[indices][:,0],gns_quit_c[indices][:,1],color='red')
+    ax.scatter(gns_rand_c.ra, gns_rand_c.dec,c ='blue')
 print(np.mean(test),np.median(test),np.std(test))
 
 # %%
@@ -76,24 +81,32 @@ qt= pd.read_csv(pruebas + 'quintuplet_test.csv')# this is the centrAL region of 
 
 qt_np=qt.to_numpy()
 
+cen=np.where(qt_np[:,20] - qt_np[:,22] > 1.3)
+qt_np=qt_np[cen]
+
 fig,ax = plt.subplots(1,1,figsize=(10,10))
 
 ax.hist((qt_np[:,20] - qt_np[:,22]),bins='auto')
 # %%
 
-r_u=10
+r_u=2
 test=[]
 qt_np_c=SkyCoord(ra=qt_np[:,0]*u.degree,dec=qt_np[:,1]*u.degree)
 for t in range(1):
     rand=np.random.choice(np.arange(0,len(qt_np_c)),1)
     gns_rand=qt_np[rand]
-    gns_rand=SkyCoord(ra = gns_rand[:,0]*u.degree, dec=gns_rand[:,1]*u.degree)
-    idxc, group, d2d,d3d = qt_np_c.search_around_sky(gns_rand, r_u*u.arcsec)
-    test.append(max(gns_quit_c[group][:,20]-gns_quit_c[group][:,22])-min(gns_quit_c[group][:,20]-gns_quit_c[group][:,22]))
+    gns_rand_c=SkyCoord(ra = gns_rand[:,0]*u.degree, dec=gns_rand[:,1]*u.degree)
+    idxc1, indices1, d2d1,d3d1 = gns_quit_c_c.search_around_sky(gns_rand_c, r_u*u.arcsec)
+    test.append(max(gns_quit_c[indices1][:,20]-gns_quit_c[indices1][:,22])-min(gns_quit_c[indices1][:,20]-gns_quit_c[indices1][:,22]))
+    fig, ax = plt.subplots(1,1,figsize=(10,10))
+
+    ax.scatter(gns_quit_c[:,0],gns_quit_c[:,1])
+    ax.scatter(gns_quit_c[indices1][:,0],gns_quit_c[indices1][:,1],color='red')
+    ax.scatter(gns_rand_c.ra, gns_rand_c.dec,c ='blue')
+print(max(gns_quit_c[indices1][:,20]-gns_quit_c[indices1][:,22]),min(gns_quit_c[indices1][:,20]-gns_quit_c[indices1][:,22]))
 print(np.mean(test),np.median(test),np.std(test))
 
-fig, ax = plt.subplots(1,1,figsize=(10,10))
-ax.scatter(gns_quit_c[group][:,0],gns_quit_c[group][:,1])
+
 
 
 # =============================================================================
@@ -104,6 +117,52 @@ ax.scatter(gns_quit_c[group][:,0],gns_quit_c[group][:,1])
 #     test1.append(max(gns_rand[:,20]-gns_rand[:,22])-min(gns_rand[:,20]-gns_rand[:,22]))
 # print(np.mean(test1),np.median(test1),np.std(test1))
 # =============================================================================
+#%% group=np.where(np.sqrt((catal[:,5]-catal[index[0],5])**2 + (catal[:,6]-catal[index[0],6])**2)< radio)
+
+
+r_u=0.001
+test=[]
+qt_np_c=SkyCoord(ra=qt_np[:,0]*u.degree,dec=qt_np[:,1]*u.degree)
+
+for t in range(1):
+    rand=np.random.choice(np.arange(0,len(qt_np_c)),1)
+    gns_rand=qt_np[rand]
+    gns_rand=SkyCoord(ra = gns_rand[:,0]*u.degree, dec=gns_rand[:,1]*u.degree)
+    group=np.where(np.sqrt((gns_rand.ra.value-gns_quit_c[:,0])**2 + (gns_rand.dec.value-gns_quit_c[:,1])**2)< r_u)
+    test.append(max(gns_quit_c[group][:,20]-gns_quit_c[group][:,22])-min(gns_quit_c[group][:,20]-gns_quit_c[group][:,22]))
+    fig, ax = plt.subplots(1,1,figsize=(10,10))
+
+    ax.scatter(gns_quit_c[:,0],gns_quit_c[:,1])
+    ax.scatter(gns_quit_c[group][:,0],gns_quit_c[group][:,1],color='red')
+    ax.scatter(gns_rand.ra, gns_rand.dec,c ='blue')
+    
+    fig, ax = plt.subplots(1,1,figsize=(10,10))
+    ax.scatter(gns_quit_c[:,20]-gns_quit_c[:,22],gns_quit_c[:,22])
+    ax.scatter(gns_quit_c[group][:,20]-gns_quit_c[group][:,22],gns_quit_c[group][:,22], c='red', s=5)
+    ax.invert_yaxis()
+print(np.mean(test),np.median(test),np.std(test))
+
+
+
+#%%
+print(max(gns_quit_c[group][:,20]-gns_quit_c[group][:,22]))
+
+print(min(gns_quit_c[group][:,20]-gns_quit_c[group][:,22]))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

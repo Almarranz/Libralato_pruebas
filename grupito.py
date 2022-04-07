@@ -88,7 +88,9 @@ center=np.where(gns_valid[:,20]-gns_valid[:,22]>1.3)
 gr_center=gr_all[center]
 good=np.where(gr_center[:,15]<90)
 gr_good=gr_center[good]
-# %%
+# %%This plots the good star remain in the data, most of them happen to be the ones consider as part of the archer cluster
+# we can study them to learn what a reminiscence of a cluster looks like
+# if this actually a reminiscence of the arches cluster??
 fix, ax = plt.subplots(1,1,figsize=(10,10))
 # ax.scatter(gns_valid[:,0],gns_valid[:,1])
 for c in range(len(gr_good)):
@@ -104,7 +106,6 @@ for i in range(len(gr_good)):
     colors.append(gr_good[i,-2]-gr_good[i,-1])
 print(max(colors)-min(colors))
 # %%
-print(gr_good[0,1])
 
 
 

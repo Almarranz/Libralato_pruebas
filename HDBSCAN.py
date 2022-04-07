@@ -219,7 +219,7 @@ for g in range(len(group_lst)):
 # %%
 # %%
     fig, ax = plt.subplots(1,1,figsize=(10,10))
-    clustering.condensed_tree_.plot()
+    clustering.condensed_tree_.plot(select_clusters=True, selection_palette=colors)
 # %%
 
 
