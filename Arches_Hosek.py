@@ -49,26 +49,6 @@ np.savetxt(pruebas + 'another_test.txt',np.array([new_coord.ra,new_coord.dec]).T
 
 
 
-# print(center_arc.transform_to(SkyOffsetFrame(origin=center_arc)))
-# =============================================================================
-# new_cor=offset_by(center_arc.ra.to('rad'),center_arc.dec.to('rad'),arc_coor.ra.to('rad'),arc_coor.dec.to('rad'),0)
-# =============================================================================
-#%%
-# =============================================================================
-# print(new_cor[0])
-# np.savetxt(pruebas + 'arch_coor_test.txt',np.array([new_cor[0],new_cor[1]]).T)
-# 
-# =============================================================================
-# %%
-# =============================================================================
-# arc_coor=SkyCoord(ra=arches['ra*']*u.arcsec,dec=arches['dec']*u.arcsec)
-# target=ICRS(arc_coor.ra,arc_coor.dec)
-# # %%
-# new_arc_coor=target.transform_to(SkyOffsetFrame(origin=center_arc))
-# #%%
-# print(new_arc_coor)
-# =============================================================================
-
 
 
 
