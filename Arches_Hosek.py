@@ -51,7 +51,10 @@ catal='/Users/amartinez/Desktop/PhD/Arches_and_Quintuplet_Hosek/'
 pruebas='/Users/amartinez/Desktop/PhD/Arches_and_Quintuplet_Hosek/pruebas/'
 #Arches reference point 
 center_arc = SkyCoord('17h45m50.4769267s', '-28d49m19.16770s', frame='icrs')
+#Choose Arches or Quintuplet
 arches=Table.read(catal + 'Arches_cat_H22_Pclust.fits')
+# arches = Table.read(catal + 'Quintuplet_cat_H22_Pclust.fits')
+
 columnas=str(arches.columns)
 arc_coor=SkyCoord(ra=arches['ra*']*u.arcsec+center_arc.ra,dec=arches['dec']*u.arcsec+ center_arc.dec)
 # %%
