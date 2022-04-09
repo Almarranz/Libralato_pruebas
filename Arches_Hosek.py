@@ -172,14 +172,15 @@ X=np.array([pml,pmb,l,b]).T
 X_stad = StandardScaler().fit_transform(X)
 # X_stad=X
 
-samples_dist=40
+samples_dist=10
 tree=KDTree(X, leaf_size=2) 
 dist, ind = tree.query(X_stad, k=samples_dist) 
 # d_KNN=sorted(dist[:,-1])
 nn=1
-d_KNN=sorted(dist[:,nn],reverse=True)
+rev=False
+d_KNN=sorted(dist[:,nn],reverse=rev)
 
-kneedle = KneeLocator(np.arange(0,len(X),1), d_KNN, curve='convex', interp_method = "polynomial",direction="decreasing")
+kneedle = KneeLocator(np.arange(0,len(X),1), d_KNN, curve='convex', interp_method = "polynomial",direction='increasing' if rev ==False else 'decreasing')
 rodilla=round(kneedle.elbow_y, 3)
 epsilon=rodilla
 fig, ax = plt.subplots(1,1,figsize=(8,8))

@@ -70,6 +70,7 @@ gns_valid= gns_np[idx[0][valid]]
 fix, ax = plt.subplots(1,1,figsize=(10,10))
 ax.scatter(gns_valid[:,0],gns_valid[:,1])
 ax.scatter(gr_valid[:,0],gr_valid[:,1],s=4)
+#%%
 
 # %%
 # count=0
@@ -107,6 +108,13 @@ for i in range(len(gr_good)):
 print(max(colors)-min(colors))
 # %%
 
+fix, ax = plt.subplots(1,1,figsize=(10,10))
+
+
+ax.scatter(gr_center[:,12],gr_center[:,13],s=10)
+ax.scatter(gr_good[:,12],gr_good[:,13],s=40,color='red')
+ax.set_xlim(-10,10)
+ax.set_ylim(-10,10)
 
 
 
