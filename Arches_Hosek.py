@@ -46,7 +46,7 @@ from matplotlib import rc
 rc('font',**{'family':'serif','serif':['Palatino']})
 plt.rcParams.update({'figure.max_open_warning': 0})# a warniing for matplot lib pop up because so many plots, this turining it of
 
-#%%
+#%% Test on commit
 catal='/Users/amartinez/Desktop/PhD/Arches_and_Quintuplet_Hosek/'
 pruebas='/Users/amartinez/Desktop/PhD/Arches_and_Quintuplet_Hosek/pruebas/'
 #Arches reference point 
@@ -170,7 +170,7 @@ X_stad = StandardScaler().fit_transform(X)
 # X_stad=X
 
 samples_dist=40
-tree=KDTree([[X.shape[0]],[4]], leaf_size=2) 
+tree=KDTree(X, leaf_size=2) 
 dist, ind = tree.query(X_stad, k=samples_dist) 
 # d_KNN=sorted(dist[:,-1])
 nn=1
