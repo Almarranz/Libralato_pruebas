@@ -73,7 +73,7 @@ X_stad = StandardScaler().fit_transform(X)
 # X_stad = X
 
 # clusterer = hdbscan.HDBSCAN(min_cluster_size=samples, min_samples=min_cor,).fit(X_stad)
-clusterer = OPTICS(min_samples=samples, xi=0.05,min_cluster_size=0.1, metric='euclidean').fit(X_stad)
+clusterer = OPTICS(min_samples=samples, xi=0.03, metric='euclidean').fit(X_stad)
 
 
 l=clusterer.labels_
@@ -157,11 +157,15 @@ ax.plot(list(range(len(reachability))),reachability)
 
 ax.set_xlabel('Points(sorted by cluster)')
 ax.set_ylabel('Reachabilty(epsilon)')
-def slope(x1, y1, x2, y2):
-    m = round((y2-y1)/(x2-x1),5)
+# def slope(x1, y1, x2, y2):
+#     m = round((y2-y1)/(x2-x1),5)
+#     return m
+
+def slope(y1, y2):
+    m = round((y1)/(y2),10)
     return m
 
-indx_f=20000
+indx_f=10000
 indx_i=1
 plus = 5
 for klass in range(0, n_clusters):
@@ -173,13 +177,22 @@ for klass in range(0, n_clusters):
     print(klass,Xk[1],Rk[1])
     ax.scatter(Xk, Rk, color=colors[klass], alpha=0.03)
     try:
-        steep_f = slope(Xk[indx_f],Rk[indx_f],Xk[indx_f+plus],Rk[indx_f+plus])
-        steep_i = slope(Xk[indx_i],Rk[indx_i],Xk[indx_i+plus],Rk[indx_i+plus])
+        steep_f = slope(Rk[indx_f],Rk[indx_f+plus])
+        steep_i = slope(Rk[indx_i],Rk[indx_i+plus])
         ax.annotate('%s'%(steep_i),(Xk[indx_i+plus],Rk[indx_i+plus]),color = colors[klass],weight='bold')
         ax.annotate('%s'%(steep_f),(Xk[indx_f+plus],Rk[indx_f+plus]),color = colors[klass],weight='bold')
     except:
-       steep_f = slope(Xk[-2],Rk[-2],Xk[-1],Rk[-1])
-       ax.annotate('%s'%(steep_f),(Xk[-1],Rk[-1]),color = colors[klass],weight='bold')
+        steep_f = slope(Rk[-2],Rk[-1])
+        ax.annotate('%s'%(steep_f),(Xk[-1],Rk[-1]),color = colors[klass],weight='bold')
+
+    # try:
+    #     steep_f = slope(Xk[indx_f],Rk[indx_f],Xk[indx_f+plus],Rk[indx_f+plus])
+    #     steep_i = slope(Xk[indx_i],Rk[indx_i],Xk[indx_i+plus],Rk[indx_i+plus])
+    #     ax.annotate('%s'%(steep_i),(Xk[indx_i+plus],Rk[indx_i+plus]),color = colors[klass],weight='bold')
+    #     ax.annotate('%s'%(steep_f),(Xk[indx_f+plus],Rk[indx_f+plus]),color = colors[klass],weight='bold')
+    # except:
+    #     steep_f = slope(Xk[-2],Rk[-2],Xk[-1],Rk[-1])
+    #     ax.annotate('%s'%(steep_f),(Xk[-1],Rk[-1]),color = colors[klass],weight='bold')
 
     
 ax.scatter(space[np.where(labels==-1)], reachability[np.where(labels==-1)],color=colors[-1],alpha=0.3)

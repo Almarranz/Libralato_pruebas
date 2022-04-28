@@ -65,7 +65,7 @@ X = np.vstack((C1, C2, C3, C4, C5, C6))
 # 
 # 
 # =============================================================================
-clust = OPTICS(min_samples=50, xi=0.05, metric='euclidean').fit(X)
+clust = OPTICS(min_samples=50, xi=0.05,min_cluster_size=0.05, metric='euclidean').fit(X)
 
 # Run the fit
 # clust.fit(X)
