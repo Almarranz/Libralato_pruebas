@@ -163,28 +163,29 @@ clustering.condensed_tree_.plot(select_clusters=True,selection_palette=colors)
 # %%
 import random
 # Here we are going to create an artificial dense cluster in and mixing with the test data, then we will try to findings with hdbscan
-cluster_false =np.empty((100,2))
-for i in range(100):
+size_false = 10
+cluster_false =np.empty((size_false,2))
+for i in range(size_false):
     cluster_false[i][0],cluster_false[i][1]= random.uniform(0.04, 0.044),random.uniform(-0.10, -0.102)
 
 
-# %%
-print(cluster_false.shape)
+# %
 
 data1 = np.r_[data,cluster_false]
-# %%
+# %
 
-fig ,ax = plt.subplots(1,1,figsize=(10,10))
-ax.scatter(data1[:,0],data1[:,1], alpha= 0.3)
+# fig ,ax = plt.subplots(1,1,figsize=(10,10))
+# ax.scatter(data1[:,0],data1[:,1], alpha= 0.3)
 
-fig ,ax = plt.subplots(1,1,figsize=(10,10))
-ax.scatter(data[:,0],data[:,1], alpha= 0.3)
-np.savetxt(morralla + 'cluster_false.txt',data1)
+# fig ,ax = plt.subplots(1,1,figsize=(10,10))
+# ax.scatter(data[:,0],data[:,1], alpha= 0.3)
+# np.savetxt(morralla + 'cluster_false.txt',data1)
 
-# %%
+# %
 X=np.array([data1[:,0],data1[:,1]]).T
 X_stad = StandardScaler().fit_transform(X)
 samples_dist=30
+
 
 clustering = hdbscan.HDBSCAN(min_cluster_size=samples_dist, gen_min_span_tree=True,
                              allow_single_cluster=False).fit(X_stad)
@@ -213,7 +214,7 @@ for c in u_labels:
 fig, ax = plt.subplots(1,1,figsize=(8,8))
 ax.scatter(X[:,0],X[:,1], color=colors[-1],s=50,zorder=1,alpha=0.1)
 for i in range(len(set(l))-1):
-    ax.scatter(X[:,0][colores_index[i]],X[:,1][colores_index[i]], color=colors[i],s=50,alpha =0.0011,zorder=3)
+    ax.scatter(X[:,0][colores_index[i]],X[:,1][colores_index[i]], color=colors[i],s=50,zorder=3,alpha=0.05)
 
 
     

@@ -38,6 +38,11 @@ data1_coord = SkyCoord(ra  = ra,
 data1_galactic = data1_coord.galactic
 # %%
 for i in range(1000,1010):
+    print(round(pmra[i].value,3),round(pmdec[i].value,3))
+    print(round(data1_coord.pm_ra_cosdec[i].value,3),round(data1_coord.pm_dec[i].value,3))
     print(round(data1_galactic.pm_l_cosb[i].value,3),round(data1_galactic.pm_b[i].value,3))
     print(round(cat_gal[i][0],3),round(cat_gal[i][1],3))
     print(20*'#')
+    
+# %%
+print(data1_coord[0])

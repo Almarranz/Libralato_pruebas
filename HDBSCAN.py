@@ -75,16 +75,16 @@ group_lst=Ms_all[:,-1]#indtinfication number for the Ms
 # pms=[-3.156,-5.585,-6.411,-0.219]#this are the ecu(mua,mud) and galactic(mul,mub) pm of SrgA* (Reid & Brunthaler (2020))
 pms=[0,0,0,0]
 
+radio = 76
 
-
-for g in range(len(group_lst)):
-# for g in range(0,12):
+# for g in range(len(group_lst)):
+for g in range(0,1):
     # print(group_lst[g])
     samples=5# number of minimun objects that defined a cluster
     min_cor=5# minimun number of objects aroun a point to be consider a core point
     group=int(group_lst[g])
     #ra,dec,x_c,y_c,mua,dmua,mud,dmud,time,n1,n2,idt,m139,Separation,Ks,H,mul,mub,l,b
-    data=np.loadtxt(pruebas + 'group_%s_%s.txt'%(group,name))
+    data=np.loadtxt(pruebas + 'group_radio%s_%s_%s.txt'%(radio,group,name))
     
     this=np.where(Ms_all[:,-1]==group)
     Ms=Ms_all[this]
