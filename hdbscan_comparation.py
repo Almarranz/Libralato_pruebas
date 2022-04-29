@@ -64,7 +64,7 @@ results='/Users/amartinez/Desktop/PhD/Libralato_data/results/'
 
 name='WFC3IR'
 # name='ACSWFC'
-trimmed_data='no'
+trimmed_data='yes'
 if trimmed_data=='yes':
     pre=''
 elif trimmed_data=='no':
@@ -115,8 +115,8 @@ pms=[0,0,0,0]
 for file_to_remove in glob.glob(pruebas+'%scluster*.txt'%(pre)):#Remove the files for previpus runs adn radios
     os.remove(file_to_remove) 
 
-# for g in range(len(group_lst)):
-for g in range(0,5):
+for g in range(len(group_lst)):
+# for g in range(18,19):
     seed(g)
     fig, ax = plt.subplots(1,1,figsize=(30,10))
     ax.set_ylim(0,10)
@@ -136,7 +136,7 @@ for g in range(0,5):
         
         this=np.where(Ms_all[:,-1]==group)
         Ms=Ms_all[this]
-    # %%    
+    # %    
         ra_=data[:,5]
         dec_=data[:,6]
         # Process needed for the trasnformation to galactic coordinates
@@ -145,7 +145,7 @@ for g in range(0,5):
         
         t_gal= QTable([gal_c.l,gal_c.b], names=('l','b'))  
         
-    # %%
+    # %
         if pixel == 'no':
             X=np.array([data[:,-6]-pms[2],data[:,-5]-pms[3],t_gal['l'].value,t_gal['b'].value]).T
         elif pixel == 'yes':
@@ -159,34 +159,34 @@ for g in range(0,5):
        
        
         m_c_size = 5 # mini size of a cluster(in_cluster_size)
-        m_core = 10 # number of point within a distance for a point to be core (min_samples)
+        m_core = 5 # number of point within a distance for a point to be core (min_samples)
         clustering = hdbscan.HDBSCAN(min_cluster_size=m_c_size, min_samples=m_core, gen_min_span_tree=True,
                                      allow_single_cluster=False,cluster_selection_epsilon=0,
-                                     cluster_selection_method = 'leaf').fit(X_stad)
+                                     cluster_selection_method = 'leaf',alpha=1.1).fit(X_stad)
         
         l=clustering.labels_
         print('This is the number of clusters: %s'%(len(set(l))-1))
 
-        #%%
+        #%
         n_clusters = len(set(l)) - (1 if -1 in l else 0)
         print('Group %s.Number of cluster, min_sambles=%s: %s'%(group,m_c_size,n_clusters))
         n_noise=list(l).count(-1)
-        # %%
+        # %
         u_labels = set(l)
         colors=[plt.cm.rainbow(i) for i in np.linspace(0,1,len(set(l)))]# Returns a color for each cluster. Each color consists in four number, RGBA, red, green, blue and alpha. Full opacity black would be then 0,0,0,1
-        # %%
+        # %
         
-        # %%
+        # %
         for k in range(len(colors)): #give noise color black with opacity 0.1
             if list(u_labels)[k] == -1:
                 colors[k]=[0,0,0,0.1]
-        # %%       
+        # %      
         colores_index=[]
         
         for c in u_labels:
             cl_color=np.where(l==c)
             colores_index.append(cl_color)
-        # %%
+        # %
         # print(colores_index)
         if n_clusters > 0:
             for i in range(len(set(l))-1):
@@ -290,7 +290,7 @@ for g in range(0,5):
                                                                                               X[:,1][colores_index[i]],
                                                                                               data[:,3][colores_index[i]],data[:,4][colores_index[i]]]).T,fmt='%.7f', header ='ra, dec, x, y, pml, pmb, H, Ks')
                     
-                    # %%'ra','dec','x_c','y_c','mua','dmua','mud','dmud','time','n1','n2','idt','m139','Separation','Ks','H'
+                    # %'ra','dec','x_c','y_c','mua','dmua','mud','dmud','time','n1','n2','idt','m139','Separation','Ks','H'
                     # "'RA_gns','DE_gns','Jmag','Hmag','Ksmag','ra','dec','x_c','y_c','mua','dmua','mud','dmud','time','n1','n2','ID','mul','mub','dmul','dmub','m139','Separation'",
                 
                     radio=0.05
@@ -314,11 +314,13 @@ for g in range(0,5):
                     ax[2].set_ylabel('Ks') 
                         
                     
-# %%
+# %
         radio=0.05
         area=np.where(np.sqrt((catal[:,5]-Ms[0,4])**2 + (catal[:,6]-Ms[0,5])**2)< radio)
 
         fig, ax = plt.subplots(1,3,figsize=(30,10))
+        ax[0].set_title('Group %s, radio = %s, # of Clusters = %s'%(group,r_u[r], n_clusters),color=plt.cm.rainbow(random()))
+
         for i in range(len(set(l))-1):
             min_c=min(data[:,3][colores_index[i]]-data[:,4][colores_index[i]])
             max_c=max(data[:,3][colores_index[i]]-data[:,4][colores_index[i]])
@@ -344,7 +346,7 @@ for g in range(0,5):
         ax[1].set_ylabel('y') 
         ax[2].set_title('#%s/112,min stars/cluster = %s, cluster#=%s'%(g, m_c_size,i),color=plt.cm.rainbow(random()))
         ax[2].scatter(catal[:,3][area]-catal[:,4][area],catal[:,4][area],color='k',marker='o',alpha=0.01,zorder=1)
-        
+        ax[0].invert_xaxis()
 
         fig, ax = plt.subplots(1,1,figsize=(8,8))
         clustering.condensed_tree_.plot(select_clusters=True,selection_palette=colors)
