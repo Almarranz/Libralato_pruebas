@@ -112,11 +112,11 @@ pms=[0,0,0,0]
 # pms=[0,0,-5.60,-0.20] #this is from the dynesty adjustment
 # pms=np.array(pms)
 
-for file_to_remove in glob.glob(pruebas+'%scluster*.txt'%(pre)):#Remove the files for previpus runs adn radios
+for file_to_remove in glob.glob(pruebas+'hdbs_%scluster*.txt'%(pre)):#Remove the files for previpus runs adn radios
     os.remove(file_to_remove) 
 
 for g in range(len(group_lst)):
-# for g in range(18,19):
+# for g in range(5,6):
     seed(g)
     fig, ax = plt.subplots(1,1,figsize=(30,10))
     ax.set_ylim(0,10)
@@ -162,7 +162,7 @@ for g in range(len(group_lst)):
         m_core = 5 # number of point within a distance for a point to be core (min_samples)
         clustering = hdbscan.HDBSCAN(min_cluster_size=m_c_size, min_samples=m_core, gen_min_span_tree=True,
                                      allow_single_cluster=False,cluster_selection_epsilon=0,
-                                     cluster_selection_method = 'leaf',alpha=1.1).fit(X_stad)
+                                     cluster_selection_method = 'leaf').fit(X_stad)
         
         l=clustering.labels_
         print('This is the number of clusters: %s'%(len(set(l))-1))
@@ -194,8 +194,10 @@ for g in range(len(group_lst)):
                 min_c=min(data[:,3][colores_index[i]]-data[:,4][colores_index[i]])
                 max_c=max(data[:,3][colores_index[i]]-data[:,4][colores_index[i]])
                 min_Ks=min(data[:,4][colores_index[i]])
-                if max_c-min_c <0.3:
-                    index1=np.where((catal[:,5]==Ms[0,4]) & (catal[:,6]==Ms[0,5]) ) # looping a picking the stars coord on the Ms catalog
+                min_nth = np.sort(data[:,4][colores_index[i]])                
+                index1=np.where((catal[:,5]==Ms[0,4]) & (catal[:,6]==Ms[0,5]) ) # looping a picking the stars coord on the Ms catalog
+
+                if max_c-min_c <0.3 and min_nth[2]<14.5:
                     print(Ms[0,4],Ms[0,5])
                     print(catal[:,5][index1],catal[:,6][index1])
                     print(index1)
@@ -280,16 +282,21 @@ for g in range(len(group_lst)):
                     
                     
                     if pixel == 'no':
-                        np.savetxt(pruebas + '%scluster%s_of_group%s.txt'%(pre,i,g),np.array([data[:,5][colores_index[i]],data[:,6][colores_index[i]],t_gal['l'][colores_index[i]].value,t_gal['b'][colores_index[i]].value,
+                        clus_array = np.array([data[:,5][colores_index[i]],data[:,6][colores_index[i]],t_gal['l'][colores_index[i]].value,t_gal['b'][colores_index[i]].value,
                                                                                               X[:,0][colores_index[i]], 
                                                                                               X[:,1][colores_index[i]],
-                                                                                              data[:,3][colores_index[i]],data[:,4][colores_index[i]]]).T,fmt='%.7f', header ='ra, dec, l, b, pml, pmb, H, Ks')
+                                                                                              data[:,3][colores_index[i]],data[:,4][colores_index[i]],int(g),int(i)]).T
+                        clus_array1= np.c_[clus_array, np.full((len(X[:,0][colores_index[i]]),1),g),np.full((len(X[:,0][colores_index[i]]),1),i)]
+                        np.savetxt(pruebas + 'hdbs_%scluster%s_of_group%s.txt'%(pre,i,g),clus_array1,fmt='%.7f '*8 + '%.0f '*2, header ='ra, dec, l, b, pml, pmb, H, Ks, group, cluster')
                     elif pixel == 'yes':
-                        np.savetxt(pruebas + '%scluster%s_of_group%s.txt'%(pre,i,g),np.array([data[:,5][colores_index[i]],data[:,6][colores_index[i]],data[:,7][colores_index[i]], data[:,8][colores_index[i]],
+                        clus_array = np.array([data[:,5][colores_index[i]],data[:,6][colores_index[i]],data[:,7][colores_index[i]], data[:,8][colores_index[i]],
                                                                                               X[:,0][colores_index[i]], 
                                                                                               X[:,1][colores_index[i]],
-                                                                                              data[:,3][colores_index[i]],data[:,4][colores_index[i]]]).T,fmt='%.7f', header ='ra, dec, x, y, pml, pmb, H, Ks')
+                                                                                              data[:,3][colores_index[i]],data[:,4][colores_index[i]]]).T
+                        clus_array1= np.c_[clus_array, np.full((len(X[:,0][colores_index[i]]),1),g),np.full((len(X[:,0][colores_index[i]]),1),i)]
+                        np.savetxt(pruebas + 'hdbs_%scluster%s_of_group%s.txt'%(pre,i,g),clus_array1,fmt='%.7f '*8 + '%.0f '*2, header ='ra, dec, x, y, pml, pmb, H, Ks, group, cluster')
                     
+
                     # %'ra','dec','x_c','y_c','mua','dmua','mud','dmud','time','n1','n2','idt','m139','Separation','Ks','H'
                     # "'RA_gns','DE_gns','Jmag','Hmag','Ksmag','ra','dec','x_c','y_c','mua','dmua','mud','dmud','time','n1','n2','ID','mul','mub','dmul','dmub','m139','Separation'",
                 
