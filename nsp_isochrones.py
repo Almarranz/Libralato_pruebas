@@ -11,11 +11,13 @@ import pylab as py
 import pdb
 import matplotlib.pyplot as plt
 
-
+# =============================================================================
+# ISOCHRONE CONSTRUCTOR
+# =============================================================================
 # In[5]:
 
 
-AKs = [1.7,1.75,1.8,1.85,1.9,1.95,2.0,2.05,2.10] # extinction in mags
+AKs = [1.6, 1.65, 1.7,1.75,1.8,1.85,1.9,1.95,2.0,2.05,2.10] # extinction in mags
 dist = 8000 # distance in parsec
 metallicity = 0.30 # Metallicity in [M/H]
 
