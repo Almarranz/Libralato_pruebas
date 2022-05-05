@@ -17,6 +17,7 @@ from astropy.coordinates import match_coordinates_sky
 import pandas as pd
 import astropy.units as u
 from astropy.coordinates import SkyCoord
+import os
 # %%
 name='WFC3IR'
 cata='/Users/amartinez/Desktop/PhD/Libralato_data/CATALOGS/'
@@ -42,29 +43,44 @@ Aks_gns = pd.read_fwf(gns_ext + 'central.txt', sep =' ',header = None)
 
 # %%
 AKs_np = Aks_gns.to_numpy()
-# %%
-# center = np.where(AKs_np[:,6]-AKs_np[:,8] > 1.3)
-# center = np.where(AKs_np[:,11] == -1)
-# %%
-# AKs_center =AKs_np[center]
-AKs_center =AKs_np
+center = np.where(AKs_np[:,6]-AKs_np[:,8] > 1.3)
+AKs_center =AKs_np[center]
+
 # %%
 clu_gr = [4,1]
 search = 'dbs'
-clus_L = np.loadtxt('/Users/amartinez/Desktop/PhD/Libralato_data/pruebas/%s_cluster%s_of_group%s.txt'%(search,clu_gr[0],clu_gr[1]))
-
 gns_coord = SkyCoord(ra=AKs_center[:,0]*u.degree, dec=AKs_center[:,2]*u.degree)
-clus_coord =  SkyCoord(ra=clus_L[:,0]*u.degree, dec=clus_L[:,1]*u.degree)
+with open(pruebas +'AKs_%s_clusters.txt'%(search),'w') as file:
+    file.write('# mean AKs, group, cluster')
+for g in range(95):
+    for c in range(6):
+        
+        try:
+            clus_L = np.loadtxt(pruebas + '%s_cluster%s_of_group%s.txt'%(search,c,g))
+            print('%s_cluster%s_of_group%s.txt'%(search,g,c))
+            
+            clus_coord =  SkyCoord(ra=clus_L[:,0]*u.degree, dec=clus_L[:,1]*u.degree)
+            
+            idx = clus_coord.match_to_catalog_sky(gns_coord)
+            gns_match = AKs_center[idx[0]]
+            good = np.where(gns_match[:,11] == -1)
+            if len(good[0]) != len(gns_match[:,11]):
+                print('%s foreground stars in this cluster'%(len(gns_match[:,11]) - len(good)))
+            gns_match_good = gns_match[good]
+            AKs_clus = [float(gns_match_good[i,18]) for i in range(len(gns_match_good[:,18]))]
+            with open(pruebas +'AKs_%s_clusters.txt'%(search),'a') as file:
+                file. write('\n'+'%.2f %.2f %s %s'%(np.mean(AKs_clus), np.std(AKs_clus), g, c))
+                #file.close
+        except:
+            pass
+            
 
-# %%
-idx = clus_coord.match_to_catalog_sky(gns_coord)
 
-# %%
-gns_match = AKs_center[idx[0]]
 
-# %%
 
-print(idx[1])
+
+
+
 
 
 
