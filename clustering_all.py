@@ -98,7 +98,14 @@ catal_all = np.loadtxt(cata + '%s_pm_galactic.txt'%(name))
 
 
 #mul, mub, mua, mud, ra, dec,dmul,dmub, position in GALCEN_TABLE_D.cat 
-Ms_all=np.loadtxt(pruebas +'pm_of_Ms_in_%s.txt'%(name))# this are the information (pm, coordinates and ID) for the Ms that remain in the data after triming it 
+Ms_all=np.loadtxt(pruebas +'pm_of_Ms_in_%s.txt'%(name))# this are the information (pm, coordinates and ID) for the Ms that remain in the data after triming it 4
+# %%
+# ra, dec, other things
+#Selecting the massive stars to plotting in the xy plot
+Ms_ra, Ms_dec = np.loadtxt(cata + 'GALCEN_TABLE_D.cat',usecols=(0,1),unpack = True)
+
+Ms_xy = [int(np.where((Ms_ra[i]==(catal_all[:,0])) & ((Ms_dec[i]==catal_all[:,1])))[0]) for i in range(len(Ms_ra)) if len(np.where((Ms_ra[i]==(catal_all[:,0])) & ((Ms_dec[i]==catal_all[:,1])))[0]) >0]
+
 # %%
 Aks_gns = pd.read_fwf(gns_ext + 'central.txt', sep =' ',header = None)
 
@@ -113,7 +120,7 @@ gns_coord = SkyCoord(ra=AKs_center[:,0]*u.degree, dec=AKs_center[:,2]*u.degree)
 AKs_list =  np.arange(1.6,2.11,0.01)
 # %%
 pixel = 'yes'
-cluster_by = 'all'
+cluster_by = 'vel'
 
 pms =[0,0,0,0] 
 data = catal
@@ -136,10 +143,13 @@ elif cluster_by == 'pm':
     X_stad = StandardScaler().fit_transform(X[:,[0,1]])
 elif cluster_by == 'all':
     X_stad = StandardScaler().fit_transform(X)
+elif cluster_by == 'vel':
+    X = np.array([np.sqrt([data[:,-6]**2 + data[:,-5]**2]), np.sqrt(data[:,7]**2 + data[:,8]**2)])
+    X_stad = StandardScaler().fit_transform(X)
     
 tree=KDTree(X_stad, leaf_size=2) 
 
-samples=5# number of minimun objects that defined a cluster
+samples=8# number of minimun objects that defined a cluster
 samples_dist = samples# t
 
 dist, ind = tree.query(X_stad, k=samples_dist) #DistNnce to the 1,2,3...k neighbour
@@ -158,7 +168,7 @@ clustering = DBSCAN(eps=epsilon, min_samples=samples).fit(X_stad)
 l=clustering.labels_
 
 loop=0
-while len(set(l))<30: # min number of cluster to find. It star looking at the min values of the Knn distance plot and increases epsilon until the cluster are found. BE careful cose ALL cluster will be found with the lastest (and biggest) value of eps, so it might lost some clusters, becouse of the conditions.
+while len(set(l))<10: # min number of cluster to find. It star looking at the min values of the Knn distance plot and increases epsilon until the cluster are found. BE careful cose ALL cluster will be found with the lastest (and biggest) value of eps, so it might lost some clusters, becouse of the conditions.
                      # What I mean is that with a small epsilon it may found a cluster that fulfill the condition (max diff of color), but when increasing epsilon some other stars maybe added to the cluster with a bigger diff in color and break the rule.
                      # This does not seem a problem when 'while <6' but it is when 'while <20' for example...
     loop +=1
@@ -215,6 +225,9 @@ for c in u_labels:
     colores_index.append(cl_color)
 # %
 # print(colores_index)
+for files_to_erase in glob.glob(pruebas +  'all_%s_%scluster*_eps%s.txt'%(name,pre,epsilon)):
+    os.remove(files_to_erase)
+
 if n_clusters > 0:
     for i in range(len(set(l))-1):
         
@@ -243,7 +256,26 @@ if n_clusters > 0:
             ax[0].set_ylim(-10,10)
             ax[0].set_xlabel(r'$\mathrm{\mu_{l} (mas\ yr^{-1})}$') 
             ax[0].set_ylabel(r'$\mathrm{\mu_{b} (mas\ yr^{-1})}$') 
-    
+            ax[0].invert_xaxis()
+            
+            mul_sig, mub_sig = np.std(X[:,0][colores_index[i]]), np.std(X[:,1][colores_index[i]])
+            mul_mean, mub_mean = np.mean(X[:,0][colores_index[i]]), np.mean(X[:,1][colores_index[i]])
+            
+            mul_sig_all, mub_sig_all = np.std(X[:,0]), np.std(X[:,1])
+            mul_mean_all, mub_mean_all = np.mean(X[:,0]), np.mean(X[:,1])
+            
+            
+            vel_txt = '\n'.join(('mul = %s, mub = %s'%(round(mul_mean,3), round(mub_mean,3)),
+                                 '$\sigma_{mul}$ = %s, $\sigma_{mub}$ = %s'%(round(mul_sig,3), round(mub_sig,3)))) 
+            vel_txt_all = '\n'.join(('mul = %s, mub = %s'%(round(mul_mean_all,3), round(mub_mean_all,3)),
+                                 '$\sigma_{mul}$ = %s, $\sigma_{mub}$ = %s'%(round(mul_sig_all,3), round(mub_sig_all,3))))
+            
+            propiedades = dict(boxstyle='round', facecolor=colors[i], alpha=0.2)
+            propiedades_all = dict(boxstyle='round', facecolor=colors[-1], alpha=0.1)
+            ax[0].text(0.05, 0.95, vel_txt, transform=ax[0].transAxes, fontsize=14,
+                verticalalignment='top', bbox=propiedades)
+            ax[0].text(0.05, 0.85, vel_txt_all, transform=ax[0].transAxes, fontsize=14,
+                verticalalignment='top', bbox=propiedades_all)
             if pixel =='no':
                 t_gal['l'] = t_gal['l'].wrap_at('180d')
                 
@@ -269,7 +301,7 @@ if n_clusters > 0:
                 ax[1].set_ylabel('y') 
                 ax[1].yaxis.set_major_formatter(FormatStrFormatter('%.0f'))
                 ax[1].xaxis.set_major_formatter(FormatStrFormatter('%.0f'))
-                
+                ax[1].scatter(catal_all[:,2][Ms_xy],catal_all[:,3][Ms_xy],color = 'red', s = 100)
         
             # ax[2].scatter(data[:,3]-data[:,4],data[:,4], color=colors[-1],s=50,zorder=1, alpha=0.1)
             ax[2].scatter(data[:,3][colores_index[i]]-data[:,4][colores_index[i]],data[:,4][colores_index[i]], color=colors[i],s=50,zorder=3, alpha=1)
@@ -339,7 +371,7 @@ if n_clusters > 0:
             clus = cluster.star_systems
             clus_ndiff = cluster_ndiff.star_systems
             
-            ax[2].scatter(clus['m_hawki_H']-clus['m_hawki_Ks'],clus['m_hawki_Ks'],color = 'r',label='With dAKs = %s mag'%(dAks))
+            ax[2].scatter(clus['m_hawki_H']-clus['m_hawki_Ks'],clus['m_hawki_Ks'],color = 'r',label='With dAKs = %s mag'%(dAks),alpha=0.1)
             ax[2].scatter(clus_ndiff['m_hawki_H']-clus_ndiff['m_hawki_Ks'],clus_ndiff['m_hawki_Ks'],color = 'k',label='With dAKs = %s mag'%(0),alpha=0.3)
             ax[2].legend(loc =3, fontsize = 12)
 
@@ -348,12 +380,23 @@ if n_clusters > 0:
             txt_AKs = '\n'.join(('AKs = %.2f'%(AKs_clus),'std_AKs = %.2f'%(std_AKs)))
             props = dict(boxstyle='round', facecolor='w', alpha=0.5)
             # place a text box in upper left in axes coords
-            ax[2].text(0.05, 0.95, txt_AKs, transform=ax[2].transAxes, fontsize=14,
+            ax[2].text(0.65, 0.95, txt_AKs, transform=ax[2].transAxes, fontsize=14,
                 verticalalignment='top', bbox=props)
-            ax[2].text(0.05, 0.85, txt_srn, transform=ax[2].transAxes, fontsize=14,
+            ax[2].text(0.65, 0.85, txt_srn, transform=ax[2].transAxes, fontsize=14,
                 verticalalignment='top', bbox=props)
 
-
+            if pixel == 'yes':
+                clus_array = np.array([data[:,5][colores_index[i]],data[:,6][colores_index[i]],t_gal['l'][colores_index[i]].value,t_gal['b'][colores_index[i]].value,
+                                                                                      X[:,0][colores_index[i]], 
+                                                                                      X[:,1][colores_index[i]],
+                                                                                      data[:,3][colores_index[i]],data[:,4][colores_index[i]]]).T
+                clus_array1= np.c_[clus_array, np.full((len(X[:,0][colores_index[i]]),1),i)]
+                np.savetxt(pruebas + 'all_%s_%scluster%s_eps%s.txt'%(name,pre,i,epsilon),clus_array1,fmt='%.7f '*8 + '%.0f ', header ='ra, dec, l, b, pml, pmb, H, Ks,cluster')
+            
+            # %'ra','dec','x_c','y_c','mua','dmua','mud','dmud','time','n1','n2','idt','m139','Separation','Ks','H'
+            # "'RA_gns','DE_gns','Jmag','Hmag','Ksmag','ra','dec','x_c','y_c','mua','dmua','mud','dmud','time','n1','n2','ID','mul','mub','dmul','dmub','m139','Separation'",
+# %%
+print(int(Ms_xy[0]))
 
 
 
