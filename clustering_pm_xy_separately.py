@@ -175,38 +175,58 @@ for g in range(89,90):
         
         X=np.array([data[:,-6]-pms[2],data[:,-5]-pms[3],data[:,7],data[:,8]]).T
         
-        X_stad_xy = X[:,[2,3]]
-        X_stad_pm=  X[:,[0,1]]
+        # X_stad_xy = X[:,[2,3]]
+        # X_stad_pm=  X[:,[0,1]]
         # X_stad_pm = StandardScaler().fit_transform(X[:,[2,3]])
         # X_stad_xy= StandardScaler().fit_transform(X[:,[0,1]])
-        # X_stad_all = StandardScaler().fit_transform(X)
+        X_stad_all = StandardScaler().fit_transform(X)
+        
+        
+        X_used = X_stad_all
         
         # Closest neightbour
-        tree=KDTree(X_stad_pm, leaf_size=2) 
-        dist, ind = tree.query(X_stad_pm, k=samples_dist) #DistNnce to the 1,2,3...k neighbour
+        tree=KDTree(X_used, leaf_size=2) 
+        dist, ind = tree.query(X_used, k=samples_dist) #DistNnce to the 1,2,3...k neighbour
         d_KNN=sorted(dist[:,-1])#distance to the Kth neighbour
-        # epsilon = round(min(d_KNN),3)
-        epsilon = 0.165
-        clustering = DBSCAN(eps=epsilon, min_samples=samples).fit(X_stad_pm)
+        epsilon = round(min(d_KNN),3)
+        # epsilon = 0.165
+        clustering = DBSCAN(eps=epsilon, min_samples=samples).fit(X_used)
         l=clustering.labels_
         loop=0
-        while len(set(l))<3: # min number of cluster to find. It star looking at the min values of the Knn distance plot and increases epsilon until the cluster are found. BE careful cose ALL cluster will be found with the lastest (and biggest) value of eps, so it might lost some clusters, becouse of the conditions.
-                             # What I mean is that with a small epsilon it may found a cluster that fulfill the condition (max diff of color), but when increasing epsilon some other stars maybe added to the cluster with a bigger diff in color and break the rule.
-                             # This does not seem a problem when 'while <6' but it is when 'while <20' for example...
-            loop +=1
-            clustering = DBSCAN(eps=epsilon, min_samples=samples).fit(X_stad_pm)
-            
-            l=clustering.labels_
-            epsilon +=0.001 # if choose epsilon as min d_KNN you loop over epsilon and a "<" simbol goes in the while loop
-            # samples +=1 # if you choose epsilon as codo, you loop over the number of sambles and a ">" goes in the  while loop
-            # print('DBSCAN loop %s. Trying with eps=%s. cluster = %s '%(loop,round(epsilon,3),len(set(l))-1))
-            if loop >100:
-                print('breaking out')
-                break
-        print('This many loops: %s'%(loop))       
-        # print('breaking the loop')
-        print('This is the number of clusters: %s'%(len(set(l))-1))
-        
+        if r_u[r] == 43:
+            while len(set(l))<3: # min number of cluster to find. It star looking at the min values of the Knn distance plot and increases epsilon until the cluster are found. BE careful cose ALL cluster will be found with the lastest (and biggest) value of eps, so it might lost some clusters, becouse of the conditions.
+                                 # What I mean is that with a small epsilon it may found a cluster that fulfill the condition (max diff of color), but when increasing epsilon some other stars maybe added to the cluster with a bigger diff in color and break the rule.
+                                 # This does not seem a problem when 'while <6' but it is when 'while <20' for example...
+                loop +=1
+                clustering = DBSCAN(eps=epsilon, min_samples=samples).fit(X_used)
+                
+                l=clustering.labels_
+                epsilon +=0.001 # if choose epsilon as min d_KNN you loop over epsilon and a "<" simbol goes in the while loop
+                # samples +=1 # if you choose epsilon as codo, you loop over the number of sambles and a ">" goes in the  while loop
+                # print('DBSCAN loop %s. Trying with eps=%s. cluster = %s '%(loop,round(epsilon,3),len(set(l))-1))
+                if loop >5000:
+                    print('breaking out')
+                    break
+            print('This many loops: %s'%(loop))       
+            # print('breaking the loop')
+            print('This is the number of clusters: %s'%(len(set(l))-1))
+        elif r_u[r] == 76:
+            while len(set(l))<10: # min number of cluster to find. It star looking at the min values of the Knn distance plot and increases epsilon until the cluster are found. BE careful cose ALL cluster will be found with the lastest (and biggest) value of eps, so it might lost some clusters, becouse of the conditions.
+                                 # What I mean is that with a small epsilon it may found a cluster that fulfill the condition (max diff of color), but when increasing epsilon some other stars maybe added to the cluster with a bigger diff in color and break the rule.
+                                 # This does not seem a problem when 'while <6' but it is when 'while <20' for example...
+                loop +=1
+                clustering = DBSCAN(eps=epsilon, min_samples=samples).fit(X_used)
+                
+                l=clustering.labels_
+                epsilon +=0.001 # if choose epsilon as min d_KNN you loop over epsilon and a "<" simbol goes in the while loop
+                # samples +=1 # if you choose epsilon as codo, you loop over the number of sambles and a ">" goes in the  while loop
+                # print('DBSCAN loop %s. Trying with eps=%s. cluster = %s '%(loop,round(epsilon,3),len(set(l))-1))
+                if loop >5000:
+                    print('breaking out')
+                    break
+            print('This many loops: %s'%(loop))       
+            # print('breaking the loop')
+            print('This is the number of clusters: %s'%(len(set(l))-1))
        # =============================================================================
         
         # %Plots the vector poits plots for all the selected stars
@@ -506,8 +526,8 @@ for g in range(89,90):
                     if len(index1[0]) > 0:
                             ax[2].scatter((catal[:,3][index1]-catal[:,4][index1]),catal[:,4][index1], color='springgreen',s=400,marker='2',zorder=3)
 
-# %%
-print(list(dic_clus.keys()))
+# %
+
 cl_nu = dic_clus[list(dic_clus.keys())[0]][2][0][0]
 cl_nu1 = dic_clus[list(dic_clus.keys())[cl_nu]][2][0][0]
 for cl in range(cl_nu):
@@ -522,7 +542,7 @@ for cl in range(cl_nu):
 # %%
 
 
-print(len(igual[0][0]))
+print(cl_nu1)
         
 
 
