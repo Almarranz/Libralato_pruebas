@@ -109,24 +109,84 @@ Ms_ra, Ms_dec = np.loadtxt(cata + 'GALCEN_TABLE_D.cat',usecols=(0,1),unpack = Tr
 Ms_xy = [int(np.where((Ms_ra[i]==(catal_all[:,0])) & ((Ms_dec[i]==catal_all[:,1])))[0]) for i in range(len(Ms_ra)) if len(np.where((Ms_ra[i]==(catal_all[:,0])) & ((Ms_dec[i]==catal_all[:,1])))[0]) >0]
 # %%
 
+fig, ax = plt.subplots(1,1,figsize=(10,10))
+ax.scatter(catal[:,7],catal[:,8],color = 'k', alpha = 0.3)
+
+# %%
+ra_=catal[:,5]
+dec_=catal[:,6]
+# Process needed for the trasnformation to galactic coordinates
+gal_c = SkyCoord(ra=ra_*u.degree, dec=dec_*u.degree).galactic#you are using frame 'fk5' but maybe it si J2000, right? becouse this are Paco`s coordinates. Try out different frames
 
 
+t_gal= QTable([gal_c.l,gal_c.b], names=('l','b')) 
+fig, ax = plt.subplots(1,1,figsize=(10,10))
+t_gal['l'] = t_gal['l'].wrap_at('180d')
+ax.invert_xaxis()
+ax.scatter(t_gal['l'].value,t_gal['b'].value,color = 'k', alpha = 0.3)
 
 
+# %%
+# line = np.where((catal[:,7] >11000) & (catal[:,7]<12000))
+# # %
+# xy_selc = catal[line]
+# # %
+# xy_selc_sort = np.flip(xy_selc[np.argsort(xy_selc[:,8])],0)
+
+# m = (27667.3063-29465.5753)/(13597.558- 11324.3373)
+m=-0.80
+fig, ax = plt.subplots(1,1,figsize=(10,10))
+ax.scatter(catal[:,7],catal[:,8],color = 'k', alpha = 0.3)
+for i in np.arange(16000,41000,2500):
+    ax.scatter(np.arange(0,25000,10),i + m*np.arange(0,25000,10),color = 'r', alpha = 0.1,s=1)
+m1=1
+for i in np.arange(-20000,30000,2500):
+    ax.scatter(np.arange(0,25000,10),i + m1*np.arange(0,25000,10),color = 'b', alpha = 0.1,s=1)
+ax.set_xlim(0,25000)
+ax.set_ylim(0,40000)
+#   x_c        y_c     
+# 11324.3373 29465.5753
+# 13597.558  27667.3063
+#%%
+x = catal[:,7]
+yb1 = 5000 + m1*catal[:,7]
+yr1 = 9000 + m1*catal[:,7]
+yb = 34000 + m*catal[:,7]
+yr = 36000 + m*catal[:,7]
 
 
+# fr = np.interp(catal[:,7],x,yr)
+# fb = np.interp(catal[:,7],x,yb)
 
+# c1 = catal[:,8] < fr
+# c2 = catal[:,8] > fb
+# good = np.where((catal[:,8]>fb) &(catal[:,8]<fr))
+good = np.where((catal[:,8]>yb) & (catal[:,8]<yr) & (catal[:,8]>yb1) &(catal[:,8]<yr1))
+fig, ax = plt.subplots(1,1,figsize=(10,10))
+ax.scatter(catal[:,7],catal[:,8],color = 'k', alpha = 0.3)
+# ax.scatter(catal[:,7],catal[:,8],c=(c1&c2), s=1, cmap="summer_r")
+ax.scatter(catal[:,7][good],catal[:,8][good],c='g')
+ax.plot(x,yr,color ='orange')
+ax.plot(x,yb,color ='yellow')
+ax.plot(x,yr1,color ='r')
+ax.plot(x,yb1,color ='b')
 
+# %%
+import random
+colores =['r', 'b', 'g', 'orange','pink','darkblue','yellow','royalblue']
+fig, ax = plt.subplots(1,1,figsize=(10,10))
+ax.scatter(catal[:,7],catal[:,8],color = 'k', alpha = 0.3)
+for i in np.arange(16000,41000,2000):
+    yb = i + m*catal[:,7]
+    yr = i+2500 + m*catal[:,7]
+    for j in np.arange(-20000,30000,2000):
+        yb1 = j + m1*catal[:,7]
+        yr1 = j+2500 + m1*catal[:,7]
+        good = np.where((catal[:,8]>yb) & (catal[:,8]<yr) & (catal[:,8]>yb1) &(catal[:,8]<yr1))
+        ax.scatter(catal[:,7][good],catal[:,8][good],c=random.choice(colores))
 
-
-
-
-
-
-
-
-
-
+# %%
+print(random.choice(colores))
 
 
 
