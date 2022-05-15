@@ -137,10 +137,10 @@ ax.scatter(t_gal['l'].value,t_gal['b'].value,color = 'k', alpha = 0.3)
 m=-0.80
 fig, ax = plt.subplots(1,1,figsize=(10,10))
 ax.scatter(catal[:,7],catal[:,8],color = 'k', alpha = 0.3)
-for i in np.arange(16000,41000,2500):
+for i in np.arange(16000,44000,4000):
     ax.scatter(np.arange(0,25000,10),i + m*np.arange(0,25000,10),color = 'r', alpha = 0.1,s=1)
 m1=1
-for i in np.arange(-20000,30000,2500):
+for i in np.arange(-20000,30000,3000):
     ax.scatter(np.arange(0,25000,10),i + m1*np.arange(0,25000,10),color = 'b', alpha = 0.1,s=1)
 ax.set_xlim(0,25000)
 ax.set_ylim(0,40000)
@@ -172,21 +172,40 @@ ax.plot(x,yr1,color ='r')
 ax.plot(x,yb1,color ='b')
 
 # %%
-import random
+
+chunks =0
+vacio = 0
 colores =['r', 'b', 'g', 'orange','pink','darkblue','yellow','royalblue']
 fig, ax = plt.subplots(1,1,figsize=(10,10))
 ax.scatter(catal[:,7],catal[:,8],color = 'k', alpha = 0.3)
-for i in np.arange(16000,41000,2000):
+step=4000
+step1=2000
+for i in np.arange(16000,44000,step):
     yb = i + m*catal[:,7]
-    yr = i+2500 + m*catal[:,7]
-    for j in np.arange(-20000,30000,2000):
+    yr = i+step + m*catal[:,7]
+    for j in np.arange(-20000,30000,step1):
         yb1 = j + m1*catal[:,7]
-        yr1 = j+2500 + m1*catal[:,7]
+        yr1 = j+step1 + m1*catal[:,7]
         good = np.where((catal[:,8]>yb) & (catal[:,8]<yr) & (catal[:,8]>yb1) &(catal[:,8]<yr1))
+        if len(good[0])<1:
+            vacio +=1
         ax.scatter(catal[:,7][good],catal[:,8][good],c=random.choice(colores))
-
+# =============================================================================
+#         t_gal['l'] = t_gal['l'].wrap_at('180d')
+#         ax.invert_xaxis()
+#         ax.scatter(t_gal['l'][good].value,t_gal['b'][good].value,c=random.choice(colores), alpha = 0.3)
+#         chunks +=1
+# =============================================================================
+for i in np.arange(16000,44000,step):
+    ax.scatter(np.arange(0,25000,10),i + m*np.arange(0,25000,10),color = 'r', alpha = 0.1,s=1)
+m1=1
+for i in np.arange(-20000,30000,step1):
+    ax.scatter(np.arange(0,25000,10),i + m1*np.arange(0,25000,10),color = 'b', alpha = 0.1,s=1)
+ax.set_xlim(0,25000)
+ax.set_ylim(0,40000)
+print(chunks, vacio)
 # %%
-print(random.choice(colores))
+print(len(np.arange(16000,41000,2000)),len(np.arange(-20000,30000,2000)))
 
 
 
