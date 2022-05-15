@@ -207,6 +207,81 @@ print(chunks, vacio)
 # %%
 print(len(np.arange(16000,41000,2000)),len(np.arange(-20000,30000,2000)))
 
+# %%
+# =============================================================================
+# HEre we are divied the data in sections
+# =============================================================================
+fig, ax = plt.subplots(1,1,figsize=(10,10))
+ax.scatter(catal[:,7],catal[:,8],color = 'k', alpha = 0.3)
+# =============================================================================
+# Section A
+# =============================================================================
+
+yr_A = 32600 + m*catal[:,7]
+yb_Adown = 19000 + m1*catal[:,7]
+
+sec_A = np.where((catal[:,8]<yr_A) & (catal[:,8]>yb_Adown))
+ax.scatter(catal[:,7][sec_A],catal[:,8][sec_A],color = 'b', alpha = 0.3)
+
+# %
+# =============================================================================
+# Section B
+# =============================================================================
+# fig, ax = plt.subplots(1,1,figsize=(10,10))
+yr_B = 32600 + m*catal[:,7]
+yb_Bup = 24000 + m1*catal[:,7]
+yb_Bdown = -1000 + m1*catal[:,7]
+
+sec_B = np.where((catal[:,8]>yr_B) & (catal[:,8]>yb_Bdown) &(catal[:,8]<yb_Bup))
+ax.scatter(catal[:,7][sec_B],catal[:,8][sec_B],color = 'red', alpha = 0.3)
+
+# ax.set_xlim(6000,25000)
+# ax.set_ylim(17000,40000)
+
+# %
+# =============================================================================
+# Section C
+# =============================================================================
+# fig, ax = plt.subplots(1,1,figsize=(10,10))
+# ax.scatter(catal[:,7],catal[:,8],color = 'k', alpha = 0.3)
+
+yr_Cup = 32600 + m*catal[:,7]
+yr_Cdown = 23500 + m*catal[:,7]
+yb_Cup = 1000 + m1*catal[:,7]
+sec_C = np.where((catal[:,8]<yr_Cup) & (catal[:,8]>yr_Cdown) & (catal[:,8]<yb_Cup) )
+ax.scatter(catal[:,7][sec_C],catal[:,8][sec_C],color = 'green', alpha = 0.3)
+
+
+
+
+# %
+# =============================================================================
+# Section_D
+# =============================================================================
+
+# fig, ax = plt.subplots(1,1,figsize=(10,10))
+# ax.scatter(catal[:,7],catal[:,8],color = 'k', alpha = 0.3)
+
+yr_Dup = 23500 + m*catal[:,7]
+yb_Dup = 1000 + m1*catal[:,7]
+sec_D = np.where((catal[:,8]<yr_Dup) & (catal[:,8]<yb_Dup) )
+ax.scatter(catal[:,7][sec_D],catal[:,8][sec_D],color = 'orange', alpha = 0.3)
+
+
+# %%
+col =['b','r','g','orange']
+fig, ax = plt.subplots(1,1,figsize=(10,10))
+t_gal['l'] = t_gal['l'].wrap_at('180d')
+ax.invert_xaxis()
+sections =[sec_A,sec_B,sec_C,sec_D]
+con = 0
+for s in sections:
+    ax.scatter(t_gal['l'][s].value,t_gal['b'][s].value,c=col[con], alpha = 0.3)
+    con +=1
+
+
+
+
 
 
 
