@@ -5,7 +5,7 @@ Created on Wed May 11 17:43:41 2022
 
 @author: amartinez
 """
-
+import hdbscan
 from sklearn.cluster import DBSCAN
 from sklearn.neighbors import NearestNeighbors
 import numpy as np
@@ -165,31 +165,42 @@ rodilla=round(kneedle.elbow_y, 3)
 codo = round(elbow.elbow_y, 3)
 
 
-epsilon = round(min(d_KNN),3)+0.01
+epsilon = round(min(d_KNN),3)
 # sys.exit('salida')
 # epsilon=0.08
-clustering = DBSCAN(eps=epsilon, min_samples=samples).fit(X_stad)
-l=clustering.labels_
-
-loop=0
-while len(set(l))<100: # min number of cluster to find. It star looking at the min values of the Knn distance plot and increases epsilon until the cluster are found. BE careful cose ALL cluster will be found with the lastest (and biggest) value of eps, so it might lost some clusters, becouse of the conditions.
-                     # What I mean is that with a small epsilon it may found a cluster that fulfill the condition (max diff of color), but when increasing epsilon some other stars maybe added to the cluster with a bigger diff in color and break the rule.
-                     # This does not seem a problem when 'while <6' but it is when 'while <20' for example...
-    loop +=1
+clus_method = 'hdbs'
+if clus_method == 'dbs':
     clustering = DBSCAN(eps=epsilon, min_samples=samples).fit(X_stad)
-    
     l=clustering.labels_
-    epsilon +=0.001 # if choose epsilon as min d_KNN you loop over epsilon and a "<" simbol goes in the while loop
-    # samples +=1 # if you choose epsilon as codo, you loop over the number of sambles and a ">" goes in the  while loop
-    # print('DBSCAN loop %s. Trying with eps=%s. cluster = %s '%(loop,round(epsilon,3),len(set(l))-1))
-    if loop >100:
-        print('breaking out')
-        break
-       
-# print('breaking the loop')
+    
+    
+    loop=0
+    while len(set(l))<5: # min number of cluster to find. It star looking at the min values of the Knn distance plot and increases epsilon until the cluster are found. BE careful cose ALL cluster will be found with the lastest (and biggest) value of eps, so it might lost some clusters, becouse of the conditions.
+                         # What I mean is that with a small epsilon it may found a cluster that fulfill the condition (max diff of color), but when increasing epsilon some other stars maybe added to the cluster with a bigger diff in color and break the rule.
+                         # This does not seem a problem when 'while <6' but it is when 'while <20' for example...
+        loop +=1
+        clustering = DBSCAN(eps=epsilon, min_samples=samples).fit(X_stad)
+        
+        l=clustering.labels_
+        epsilon +=0.001 # if choose epsilon as min d_KNN you loop over epsilon and a "<" simbol goes in the while loop
+        # samples +=1 # if you choose epsilon as codo, you loop over the number of sambles and a ">" goes in the  while loop
+        # print('DBSCAN loop %s. Trying with eps=%s. cluster = %s '%(loop,round(epsilon,3),len(set(l))-1))
+        if loop >100:
+            print('breaking out')
+            break
+           
+    # print('breaking the loop')
+    
+elif clus_method == 'hdbs':
+    samples = samples # mini size of a cluster(in_cluster_size)
+    samples = samples # number of point within a distance for a point to be core (min_samples)
+    m_c_size, m_core = samples, samples
+    
+    clustering = hdbscan.HDBSCAN(min_cluster_size=m_c_size, min_samples=m_core, gen_min_span_tree=True,
+                                     allow_single_cluster=False,cluster_selection_epsilon=0,
+                                     cluster_selection_method = 'leaf').fit(X_stad)
+    l=clustering.labels_    
 print('This is the number of clusters: %s'%(len(set(l))-1))
-
-
 fig, ax = plt.subplots(1,1,figsize=(8,8))
 ax.plot(np.arange(0,len(data),1),d_KNN)
 # ax.legend(['knee=%s, min=%s, eps=%s, Dim.=%s'%(round(kneedle.elbow_y, 3),round(min(d_KNN),2),round(epsilon,2),len(X[0]))])
@@ -249,7 +260,7 @@ if n_clusters > 0:
             # fig, ax = plt.subplots(1,3,figsize=(30,10))
             # ax[2].invert_yaxis()
            
-           
+            ax[0].set_title('Min %s-NN distance = %s. %s '%(samples,round(min(d_KNN),3),clus_method))
             # t_gal['l'] = t_gal['l'].wrap_at('180d')
             ax[0].scatter(X[:,0][colores_index[-1]],X[:,1][colores_index[-1]], color=colors[-1],s=50,zorder=1)
             ax[0].scatter(X[:,0],X[:,1], color=colors[-1],s=50,zorder=1)
@@ -305,7 +316,7 @@ if n_clusters > 0:
                 ax[1].set_title('Radio = %s'%(radio))
                 
                 c2 = SkyCoord(ra = data[:,0][colores_index[i]]*u.deg,dec = data[:,1][colores_index[i]]*u.deg)
-                sep = c2[0].separation(c2)
+                sep = [max(c2[c_mem].separation(c2)) for c_mem in range(len(c2))]
                 rad = max(sep)/2
                  
                 prop = dict(boxstyle='round', facecolor=colors[i], alpha=0.2)
@@ -414,6 +425,10 @@ if n_clusters > 0:
                 clus_array1= np.c_[clus_array, np.full((len(X[:,0][colores_index[i]]),1),i)]
                 np.savetxt(pruebas + 'all_%s_%scluster%s_eps%s.txt'%(name,pre,i,epsilon),clus_array1,fmt='%.7f '*8 + '%.0f ', header ='ra, dec, l, b, pml, pmb, H, Ks,cluster')
             
+if clus_method == 'hdbs':
+    fig, ax = plt.subplots(1,1,figsize=(8,8))
+    clustering.condensed_tree_.plot(select_clusters=True,selection_palette=colors)
+    ax.grid()            
             # %'ra','dec','x_c','y_c','mua','dmua','mud','dmud','time','n1','n2','idt','m139','Separation','Ks','H'
             # "'RA_gns','DE_gns','Jmag','Hmag','Ksmag','ra','dec','x_c','y_c','mua','dmua','mud','dmud','time','n1','n2','ID','mul','mub','dmul','dmub','m139','Separation'",
 # %%
@@ -439,12 +454,9 @@ if n_clusters > 0:
 #                     ax[0].text(0.65, 0.95, vel_txt_rand, transform=ax[0].transAxes, fontsize=14,
 #                         verticalalignment='top', bbox=prop_random)
 # =============================================================================
-                   
-for ms in range(len(Ms_xy)):
+# %%                 
+# for ms in range(len(Ms_xy)):
     
-    ax[1].scatter(catal_all[:,2][Ms_xy],catal_all[:,3][Ms_xy],color = 'red', s = 100)
 
-# %%
-print(data[:,6][colores_index[0][0][0]])
-# %%
-print(rad.to(u.arcsec))
+
+
