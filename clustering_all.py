@@ -120,7 +120,7 @@ gns_coord = SkyCoord(ra=AKs_center[:,0]*u.degree, dec=AKs_center[:,2]*u.degree)
 AKs_list =  np.arange(1.6,2.11,0.01)
 # %%
 pixel = 'yes'
-cluster_by = 'vel'
+cluster_by = 'all'
 
 pms =[0,0,0,0] 
 data = catal
@@ -128,7 +128,7 @@ data = catal
 ra_=data[:,5]
 dec_=data[:,6]
 # Process needed for the trasnformation to galactic coordinates
-coordenadas = SkyCoord(ra=ra_*u.degree, dec=dec_*u.degree, frame='fk5')#you are using frame 'fk5' but maybe it si J2000, right? becouse this are Paco`s coordinates. Try out different frames
+coordenadas = SkyCoord(ra=ra_*u.degree, dec=dec_*u.degree)#
 gal_c=coordenadas.galactic
 
 t_gal= QTable([gal_c.l,gal_c.b], names=('l','b'))  
@@ -143,13 +143,17 @@ elif cluster_by == 'pm':
     X_stad = StandardScaler().fit_transform(X[:,[0,1]])
 elif cluster_by == 'all':
     X_stad = StandardScaler().fit_transform(X)
-elif cluster_by == 'vel':
-    X = np.array([np.sqrt([data[:,-6]**2 + data[:,-5]**2]), np.sqrt(data[:,7]**2 + data[:,8]**2)])
-    X_stad = StandardScaler().fit_transform(X)
-    
+
+#this aproach below isn´t working...
+# =============================================================================
+# elif cluster_by == 'vel':
+#     X_vel = np.array([np.sqrt(data[:,-6]**2 + data[:,-5]**2),data[:,-6]/data[:,-5] ,np.sqrt(data[:,7]**2 + data[:,8]**2),data[:,7]/data[:,8]]).T
+#     X_stad = StandardScaler().fit_transform(X_vel)
+#     
+# =============================================================================
 tree=KDTree(X_stad, leaf_size=2) 
 
-samples=8# number of minimun objects that defined a cluster
+samples=7# number of minimun objects that defined a cluster
 samples_dist = samples# t
 
 dist, ind = tree.query(X_stad, k=samples_dist) #DistNnce to the 1,2,3...k neighbour
@@ -163,12 +167,12 @@ codo = round(elbow.elbow_y, 3)
 
 epsilon = round(min(d_KNN),3)+0.01
 # sys.exit('salida')
-# epsilon=0.5575
+# epsilon=0.08
 clustering = DBSCAN(eps=epsilon, min_samples=samples).fit(X_stad)
 l=clustering.labels_
 
 loop=0
-while len(set(l))<10: # min number of cluster to find. It star looking at the min values of the Knn distance plot and increases epsilon until the cluster are found. BE careful cose ALL cluster will be found with the lastest (and biggest) value of eps, so it might lost some clusters, becouse of the conditions.
+while len(set(l))<100: # min number of cluster to find. It star looking at the min values of the Knn distance plot and increases epsilon until the cluster are found. BE careful cose ALL cluster will be found with the lastest (and biggest) value of eps, so it might lost some clusters, becouse of the conditions.
                      # What I mean is that with a small epsilon it may found a cluster that fulfill the condition (max diff of color), but when increasing epsilon some other stars maybe added to the cluster with a bigger diff in color and break the rule.
                      # This does not seem a problem when 'while <6' but it is when 'while <20' for example...
     loop +=1
@@ -292,16 +296,33 @@ if n_clusters > 0:
                 ax[1].xaxis.set_major_formatter(FormatStrFormatter('%.3f'))
         
             else:
-                ax[1].scatter(X[:,2], X[:,3], color=colors[-1],s=50,zorder=1,alpha=0.01)#plots in galactic
-                ax[1].quiver(X[:,2], X[:,3], X[:,0]-pms[2], X[:,1]-pms[3], alpha=0.5, color=colors[-1],zorder=1)
-                ax[1].quiver(X[:,2][colores_index[-1]], X[:,3][colores_index[-1]], X[:,0][colores_index[-1]]-pms[2], X[:,1][colores_index[-1]]-pms[3], alpha=0.5, color=colors[-1])
+                # ax[1].scatter(X[:,2], X[:,3], color=colors[-1],s=50,zorder=1,alpha=0.01)#plots in galactic
+                # ax[1].quiver(X[:,2], X[:,3], X[:,0]-pms[2], X[:,1]-pms[3], alpha=0.5, color=colors[-1],zorder=1)
+                # ax[1].quiver(X[:,2][colores_index[-1]], X[:,3][colores_index[-1]], X[:,0][colores_index[-1]]-pms[2], X[:,1][colores_index[-1]]-pms[3], alpha=0.5, color=colors[-1])
+               # t_gal['l'].value,t_gal['b'].value
+               
+                radio = 500*u.arcsec
+                ax[1].set_title('Radio = %s'%(radio))
+                
+                c2 = SkyCoord(ra = data[:,0][colores_index[i]]*u.deg,dec = data[:,1][colores_index[i]]*u.deg)
+                sep = c2[0].separation(c2)
+                rad = max(sep)/2
+                 
+                prop = dict(boxstyle='round', facecolor=colors[i], alpha=0.2)
+                ax[1].text(0.65, 0.95, 'aprox cluster radio = %s"'%(round(rad.to(u.arcsec).value,2)), transform=ax[1].transAxes, fontsize=14,
+                                        verticalalignment='top', bbox=prop)
+                
+                id_clus, id_arc, d2d,d3d = ap_coor.search_around_sky(SkyCoord([data[:,5][colores_index[i][0][0]]*u.deg], [data[:,6][colores_index[i][0][0]]*u.deg], frame='icrs'),coordenadas, radio)
+                ax[1].scatter(X[:,2][id_arc], X[:,3][id_arc], color=colors[-1],s=50,zorder=1,alpha=0.01)#plots in galactic
+                ax[1].quiver(X[:,2][id_arc], X[:,3][id_arc], X[:,0][id_arc]-pms[2], X[:,1][id_arc]-pms[3], alpha=0.5, color=colors[-1],zorder=1)
+                
                 ax[1].scatter(X[:,2][colores_index[i]], X[:,3][colores_index[i]], color=colors[i],s=50,zorder=3)#plots in galactic
                 ax[1].quiver(X[:,2][colores_index[i]], X[:,3][colores_index[i]], X[:,0][colores_index[i]]-pms[2], X[:,1][colores_index[i]]-pms[3], alpha=0.5, color=colors[i])
                 ax[1].set_xlabel('x') 
                 ax[1].set_ylabel('y') 
                 ax[1].yaxis.set_major_formatter(FormatStrFormatter('%.0f'))
                 ax[1].xaxis.set_major_formatter(FormatStrFormatter('%.0f'))
-                ax[1].scatter(catal_all[:,2][Ms_xy],catal_all[:,3][Ms_xy],color = 'red', s = 100)
+                # ax[1].scatter(catal_all[:,2][Ms_xy],catal_all[:,3][Ms_xy],color = 'red', s = 100)
         
             # ax[2].scatter(data[:,3]-data[:,4],data[:,4], color=colors[-1],s=50,zorder=1, alpha=0.1)
             ax[2].scatter(data[:,3][colores_index[i]]-data[:,4][colores_index[i]],data[:,4][colores_index[i]], color=colors[i],s=50,zorder=3, alpha=1)
@@ -370,7 +391,7 @@ if n_clusters > 0:
             cluster_ndiff = synthetic.ResolvedCluster(iso, my_imf, mass)
             clus = cluster.star_systems
             clus_ndiff = cluster_ndiff.star_systems
-            
+            ax[2].set_title('Cluster %s, eps = %s'%(i,round(epsilon,3)))
             ax[2].scatter(clus['m_hawki_H']-clus['m_hawki_Ks'],clus['m_hawki_Ks'],color = 'r',label='With dAKs = %s mag'%(dAks),alpha=0.1)
             ax[2].scatter(clus_ndiff['m_hawki_H']-clus_ndiff['m_hawki_Ks'],clus_ndiff['m_hawki_Ks'],color = 'k',label='With dAKs = %s mag'%(0),alpha=0.3)
             ax[2].legend(loc =3, fontsize = 12)
@@ -396,10 +417,34 @@ if n_clusters > 0:
             # %'ra','dec','x_c','y_c','mua','dmua','mud','dmud','time','n1','n2','idt','m139','Separation','Ks','H'
             # "'RA_gns','DE_gns','Jmag','Hmag','Ksmag','ra','dec','x_c','y_c','mua','dmua','mud','dmud','time','n1','n2','ID','mul','mub','dmul','dmub','m139','Separation'",
 # %%
-print(int(Ms_xy[0]))
+# =============================================================================
+# Density test around Ms
+# =============================================================================
+# =============================================================================
+#                     #Choose a random cluster:
+# =============================================================================
+                    # c1 = SkyCoord(ra = data[:,0][colores_index[0]]*u.deg ,dec = data[:,1][colores_index[0]]*u.deg)
+# =============================================================================
+#                     c2 = SkyCoord(ra = data[:,0][colores_index[i]]*u.deg,dec = data[:,1][colores_index[i]]*u.deg)
+#                     sep = c2[0].separation(c2)
+#                     rad = max(sep)/2
+#                     rand = np.random.choice(np.arange(0,len(data)),1) 
+#                     id_clus, id_arc, d2d,d3d = ap_coor.search_around_sky(SkyCoord([coordenadas[rand[0]].ra.value]*u.deg, coordenadas[rand[0]].dec.value*u.deg, frame='icrs'),coordenadas, rad)
+#                     ax[1].scatter(data[:,7][id_arc],data[:,8][id_arc], color = 'orange')
+#                     ax[0].scatter(data[:,17][id_arc],data[:,18][id_arc], color ='orange')
+#                     vel_txt_rand = '\n'.join(('mul = %s, mub = %s'%(round(np.mean(data[:,17][id_arc]),3), round(np.mean(data[:,18][id_arc]),3)),
+#                                          '$\sigma_{mul}$ = %s, $\sigma_{mub}$ = %s'%(round(np.std(data[:,17][id_arc]),3), round(np.std(data[:,18][id_arc]),3)))) 
+#                     
+#                     prop_random = dict(boxstyle='round', facecolor='orange', alpha=0.2)
+#                     ax[0].text(0.65, 0.95, vel_txt_rand, transform=ax[0].transAxes, fontsize=14,
+#                         verticalalignment='top', bbox=prop_random)
+# =============================================================================
+                   
+for ms in range(len(Ms_xy)):
+    
+    ax[1].scatter(catal_all[:,2][Ms_xy],catal_all[:,3][Ms_xy],color = 'red', s = 100)
 
-
-
-
-
-
+# %%
+print(data[:,6][colores_index[0][0][0]])
+# %%
+print(rad.to(u.arcsec))
