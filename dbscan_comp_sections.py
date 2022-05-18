@@ -76,10 +76,13 @@ else:
     sys.exit("Have to set trimmed_data to either 'yes' or 'no'")
     
 # %%
-section = 'A'#sections from A to D. Maybe make a script for each section...
+# section = 'A'#sections from A to D. Maybe make a script for each section...
+section = 'All'#selecting the whole thing
 # "'RA_gns','DE_gns','Jmag','Hmag','Ksmag','ra','dec','x_c','y_c','mua','dmua','mud','dmud','time','n1','n2','ID','mul','mub','dmul','dmub','m139','Separation'",
-
-catal=np.loadtxt(results + 'sec_%s_%smatch_GNS_and_%s_refined_galactic.txt'%(section,pre,name))
+if section == 'All':
+    catal=np.loadtxt(results + '%smatch_GNS_and_%s_refined_galactic.txt'%(pre,name))
+else:
+    catal=np.loadtxt(results + 'sec_%s_%smatch_GNS_and_%s_refined_galactic.txt'%(section,pre,name))
 # Definition of center can: m139 - Ks(libralato and GNS) or H - Ks(GNS and GNS)
 center_definition='G_G'#this variable can be L_G or G_G
 if center_definition =='L_G':
@@ -128,7 +131,8 @@ gns_coord = SkyCoord(ra=AKs_center[:,0]*u.degree, dec=AKs_center[:,2]*u.degree)
 # %
 AKs_list =  np.arange(1.6,2.11,0.01)
 # %%
-for file_to_erase in glob.glob(pruebas + 'all_%s_%scluster*_eps*.txt'%(name,pre)):
+
+for file_to_erase in glob.glob(pruebas + 'Sec_%s_%s_%scluster*_eps*.txt'%(section,name,pre)):
     os.remove(file_to_erase)
 # %
 
@@ -186,10 +190,11 @@ clus_method = 'dbs'
 clustering = DBSCAN(eps=epsilon, min_samples=samples).fit(X_stad)
 l=clustering.labels_
 
-
+save_clus =''
 loop=0
-while len(set(l))<15: # min number of cluster to find. It star looking at the min values of the Knn distance plot and increases epsilon until the cluster are found. BE careful cose ALL cluster will be found with the lastest (and biggest) value of eps, so it might lost some clusters, becouse of the conditions.
-# while epsilon<rodilla:                    # What I mean is that with a small epsilon it may found a cluster that fulfill the condition (max diff of color), but when increasing epsilon some other stars maybe added to the cluster with a bigger diff in color and break the rule.
+# while len(set(l))<15: # min number of cluster to find. It star looking at the min values of the Knn distance plot and increases epsilon until the cluster are found. BE careful cose ALL cluster will be found with the lastest (and biggest) value of eps, so it might lost some clusters, becouse of the conditions.
+# while epsilon<rodilla:
+while save_clus != 'stop':                    # What I mean is that with a small epsilon it may found a cluster that fulfill the condition (max diff of color), but when increasing epsilon some other stars maybe added to the cluster with a bigger diff in color and break the rule.
                      # This does not seem a problem when 'while <6' but it is when 'while <20' for example...
     loop +=1
     clustering = DBSCAN(eps=epsilon, min_samples=samples).fit(X_stad)
@@ -433,9 +438,9 @@ while len(set(l))<15: # min number of cluster to find. It star looking at the mi
                         save_clus = input('Awnser:')
                         print('You said: %s'%(save_clus))
                         if save_clus =='yes' or save_clus =='y':
-                            np.savetxt(pruebas + 'all_%s_%scluster%s_eps%s.txt'%(name,pre,i,round(epsilon,3)),clus_array1,fmt='%.7f '*8 + '%.0f ', header ='ra, dec, l, b, pml, pmb, H, Ks,cluster')
-                            for check in glob.glob(pruebas + 'all_%s_%scluster*_eps*.txt'%(name,pre)):
-                                if 'all_%s_%scluster%s_eps%s.txt'%(name,pre,i,round(epsilon,3)) != os.path.basename(check):
+                            np.savetxt(pruebas + 'Sec_%s_%s_%scluster%s_eps%s.txt'%(section,name,pre,i,round(epsilon,3)),clus_array1,fmt='%.7f '*8 + '%.0f ', header ='ra, dec, l, b, pml, pmb, H, Ks,cluster')
+                            for check in glob.glob(pruebas + 'Sec_%s_%s_%scluster*_eps*.txt'%(section,name,pre)):
+                                if 'Sec_%s_%s_%scluster%s_eps%s.txt'%(section,name,pre,i,round(epsilon,3)) != os.path.basename(check):
                                     ra_dec_clus = clus_array[:,0:2]
                                     ra_dec = np.loadtxt(check,usecols=(0,1))
                                     aset = set([tuple(x) for x in ra_dec_clus])
@@ -443,13 +448,17 @@ while len(set(l))<15: # min number of cluster to find. It star looking at the mi
                                     intersection = np.array([x for x in aset & bset])
                                     if len(intersection)> 0 and len(intersection) == len(ra_dec_clus):
                                         print('You have the exact same cluster in: %s'%(os.path.basename(check)))
-                                        os.remove(pruebas + 'all_%s_%scluster%s_eps%s.txt'%(name,pre,i,round(epsilon,3)))
+                                        os.remove(pruebas + 'Sec_%s_%s_%scluster%s_eps%s.txt'%(section,name,pre,i,round(epsilon,3)))
                                     elif len(intersection)> 0 and len(intersection) < len(ra_dec_clus):
                                         print('This cluster(%s) has %s more stars than %s. It will be saved'
-                                              %('all_%s_%scluster%s_eps%s.txt'%(name,pre,i,round(epsilon,3)),len(ra_dec_clus) - len(intersection),os.path.basename(check)))
+                                              %('Sec_%s_%s_%scluster%s_eps%s.txt'%(section, name,pre,i,round(epsilon,3)),len(ra_dec_clus) - len(intersection),os.path.basename(check)))
                                         os.remove(check)
                                         # np.savetxt(pruebas + 'all_%s_%scluster%s_eps%s.txt'%(name,pre,i,round(epsilon,3)),clus_array1,fmt='%.7f '*8 + '%.0f ', header ='ra, dec, l, b, pml, pmb, H, Ks,cluster')
-
+                        elif save_clus == 'stop':
+                            sys.exit('You stop it')
+                        elif save_clus =='jump':
+                            new_epsilon = input('Select the new epsilon:')
+                            epsilon = new_epsilon -0.01
 # %%
 # for check in glob.glob(pruebas + 'all_%s_%scluster*_eps*.txt'%(name,pre)):
 #     ra_dec_clus = clus_array[:,0:2]
@@ -470,9 +479,7 @@ while len(set(l))<15: # min number of cluster to find. It star looking at the mi
 # bset = set([tuple(x) for x in B])
 # intersection = np.array([x for x in aset & bset])
 # print(intersection)
-        
-        
-        
+  
         
         
         
