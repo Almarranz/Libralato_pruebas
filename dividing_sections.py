@@ -58,7 +58,6 @@ cata='/Users/amartinez/Desktop/PhD/Libralato_data/CATALOGS/'
 pruebas='/Users/amartinez/Desktop/PhD/Libralato_data/pruebas/'
 results='/Users/amartinez/Desktop/PhD/Libralato_data/results/'
 gns_ext = '/Users/amartinez/Desktop/PhD/Libralato_data/extinction_maps/'
-
 name='WFC3IR'
 # name='ACSWFC'
 trimmed_data='yes'
@@ -71,6 +70,8 @@ else:
     sys.exit("Have to set trimmed_data to either 'yes' or 'no'")
 
 section = 'A'#selecting the whole thing
+subsec = '/Users/amartinez/Desktop/PhD/Libralato_data/pruebas/subsec_%s/'%(section)
+
 # "'RA_gns','DE_gns','Jmag','Hmag','Ksmag','ra','dec','x_c','y_c','mua','dmua','mud','dmud','time','n1','n2','ID','mul','mub','dmul','dmub','m139','Separation'",
 if section == 'All':
     catal=np.loadtxt(results + '%smatch_GNS_and_%s_refined_galactic.txt'%(pre,name))
@@ -99,52 +100,46 @@ clus_test = np.loadtxt(pruebas + 'dbs_cluster1_of_group89.txt')
 m1 = -0.85
 m = 1.1
 step = 1000
-# 
 
-
-fig, ax = plt.subplots(1,1, figsize=(10,10))
-ax.scatter(catal[:,7],catal[:,8])
-for i in range(0, 2):
-    yr =  (27000 + i*step) + m1*catal[:,7]
-    ax.plot(catal[:,7],yr, color ='r')
-    for j in range(0,9):
-        yg = (26300 - j*step) + m*catal[:,7]
-        ax.plot(catal[:,7],yg, color ='g')
-        
-ax.scatter(clus_test[:,2],clus_test[:,3])
-# ax.set_xlim(0,)
-ax.set_ylim(min(catal[:,8]-500),max(catal[:,8]+500))
-# %%
-
+for f_remove in glob.glob(pruebas + 'subsec_%s/subsec*'%(section)):
+    os.remove(f_remove)
 colores =['b','r','g','orange','fuchsia']
+missing =0
 fig, ax = plt.subplots(1,1, figsize=(10,10))
 ax.scatter(catal[:,7],catal[:,8])
-for i in np.arange(26300,2000,-step):
+fila =-1
+for i in np.arange(26300,17300,-step):
+    fila = int((26300 - i)/1000)
     yg_1 =  i + m*catal[:,7]
-    yg_2 =  i + step +m*catal[:,7]
-    # good = np.where((catal[:,8]>yg_1)&(catal[:,8]<yg_2))
-    for j in np.arange(46000,26000,-step):
-        yr_1 = i + m1*catal[:,7]
-        yr_2 = i + step +m1*catal[:,7]
-        ax.plot(catal[:,7],yr_1, color ='g')
+    yg_2 =  i - step +m*catal[:,7]
+    ax.plot(catal[:,7],yg_1, color ='g')
+    # ax.scatter(catal[:,7][good],catal[:,8][good],color =np.random.choice(colores))
+    for j in np.arange(33000,26000,-step):
+        columna =int((33000 - j)/step)
+       
+        yr_1 = j + m1*catal[:,7]
+        yr_2 = j - step +m1*catal[:,7]
+        ax.plot(catal[:,7],yr_1, color ='r')
+        good = np.where((catal[:,8]<yg_1)&(catal[:,8]>yg_2)
+                        & (catal[:,8]<yr_1)&(catal[:,8]>yr_2))
+        ax.scatter(catal[:,7][good],catal[:,8][good],color =np.random.choice(colores))
+        if len(good[0]>0):
+            print(fila,columna)
+            np.savetxt(pruebas + 'subsec_%s/subsec_%s_%s_%s.txt'%(section, section, fila, columna)
+                       ,catal[good],fmt='%.7f %.7f %.4f %.4f %.4f %.7f %.7f %.4f %.4f %.5f %.5f %.5f %.5f %.0f %.0f %.0f %.0f %.5f %.5f %.5f %.5f %.5f %.3f',
+                       header ="'RA_gns','DE_gns','Jmag','Hmag','Ksmag','ra','dec','x_c','y_c','mua','dmua','mud','dmud','time','n1','n2','ID','mul','mub','dmul','dmub','m139','Separation'")
+            missing += len(good[0])
+print(missing, len(catal))
     # ax.scatter(catal[:,7][good],catal[:,8][good],color =np.random.choice(colores))
     # for j in range(26300 - j*step,26300):
         
-    #     ax.scatter(clus_test[:,2],clus_test[:,3])
+ax.scatter(clus_test[:,2],clus_test[:,3])
 ax.set_ylim(min(catal[:,8]-500),max(catal[:,8]+500))
-# %% 
-yr_d = yr =  (27000 + 0*step) + m1*catal[:,7]
-yr_u =  (2000 + 1*step) + m1*catal[:,7]
-sec = np.where((catal[:,8]>yr_d) & (catal[:,8]<yr_u) )
-
+# %%
+subs = np.loadtxt(subsec +'subsec_A_3_2.txt')
 fig, ax = plt.subplots(1,1, figsize=(10,10))
 ax.scatter(catal[:,7],catal[:,8])
-ax.scatter(catal[sec][:,7],catal[sec][:,8])
-
-  
-# %%
-coloes =['b','r','g','orange']
-print(np.random.choice(coloes))
+ax.scatter(subs[:,7],subs[:,8])
 
 
 
