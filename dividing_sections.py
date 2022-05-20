@@ -93,35 +93,58 @@ vel_lim = np.where((catal[:,19]<=dmu_lim) & (catal[:,20]<=dmu_lim))
 catal=catal[vel_lim]
 
 # 'ra dec x_c  y_c mua dmua mud dmud time n1 n2 ID mul mub dmul dmub '
-catal_all = np.loadtxt(cata + '%s_pm_galactic.txt'%(name))
+# catal_all = np.loadtxt(cata + '%s_pm_galactic.txt'%(name))
 # %%
 clus_test = np.loadtxt(pruebas + 'dbs_cluster1_of_group89.txt')
 m1 = -0.85
 m = 1.1
-y0_p = 26250
-y0_pe = 32850
-step_p = 1000
-y1_p = y0_p + m*catal[:,7]
-y2_p = (y0_p - step_p) + m*catal[:,7]
+step = 1000
+# 
 
-y1_pe = y0_pe + m1*catal[:,7]
-y2_pe = (y0_pe - step_p) + m1*catal[:,7]
 
 fig, ax = plt.subplots(1,1, figsize=(10,10))
 ax.scatter(catal[:,7],catal[:,8])
-for i in range(0, 10):
-    
-    ax.plot(catal[:,7],y1_p-step_p*i, color = 'r')
-    ax.plot(catal[:,7],y2_p, color = 'r')
-    ax.plot(catal[:,7],y1_pe, color = 'g')
-    ax.plot(catal[:,7],y2_pe-step_p*i, color = 'g')
+for i in range(0, 2):
+    yr =  (27000 + i*step) + m1*catal[:,7]
+    ax.plot(catal[:,7],yr, color ='r')
+    for j in range(0,9):
+        yg = (26300 - j*step) + m*catal[:,7]
+        ax.plot(catal[:,7],yg, color ='g')
+        
 ax.scatter(clus_test[:,2],clus_test[:,3])
+# ax.set_xlim(0,)
 ax.set_ylim(min(catal[:,8]-500),max(catal[:,8]+500))
+# %%
 
+colores =['b','r','g','orange','fuchsia']
+fig, ax = plt.subplots(1,1, figsize=(10,10))
+ax.scatter(catal[:,7],catal[:,8])
+for i in np.arange(26300,2000,-step):
+    yg_1 =  i + m*catal[:,7]
+    yg_2 =  i + step +m*catal[:,7]
+    # good = np.where((catal[:,8]>yg_1)&(catal[:,8]<yg_2))
+    for j in np.arange(46000,26000,-step):
+        yr_1 = i + m1*catal[:,7]
+        yr_2 = i + step +m1*catal[:,7]
+        ax.plot(catal[:,7],yr_1, color ='g')
+    # ax.scatter(catal[:,7][good],catal[:,8][good],color =np.random.choice(colores))
+    # for j in range(26300 - j*step,26300):
+        
+    #     ax.scatter(clus_test[:,2],clus_test[:,3])
+ax.set_ylim(min(catal[:,8]-500),max(catal[:,8]+500))
+# %% 
+yr_d = yr =  (27000 + 0*step) + m1*catal[:,7]
+yr_u =  (2000 + 1*step) + m1*catal[:,7]
+sec = np.where((catal[:,8]>yr_d) & (catal[:,8]<yr_u) )
 
+fig, ax = plt.subplots(1,1, figsize=(10,10))
+ax.scatter(catal[:,7],catal[:,8])
+ax.scatter(catal[sec][:,7],catal[sec][:,8])
 
-
-
+  
+# %%
+coloes =['b','r','g','orange']
+print(np.random.choice(coloes))
 
 
 
