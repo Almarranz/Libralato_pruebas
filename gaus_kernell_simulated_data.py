@@ -90,7 +90,7 @@ ax.hist(catal_all[:,var],bins='auto',density = 'True',histtype='step',color='#93
 # lest adjust the data to a gaussian kernel distributiom
 # Ajuste del modelo KDE, folloing: https://www.cienciadedatos.net/documentos/pystats02-kernel-density-estimation-kde-python.html
 # ==============================================================================
-var = -6
+var = -5
 # datos = catal[:,var]
 # datos = catal_all[:,var]
 datos = sub_catal[:,var]
@@ -98,6 +98,7 @@ datos = sub_catal[:,var]
 modelo_kde = KernelDensity(kernel='gaussian', bandwidth=0.67444)
 
 modelo_kde.fit(X=datos.reshape(-1,1))
+muestra = modelo_kde.sample(len(datos))
 # %
 new_X = np.arange(-10,16,1)
 log_density_pred = modelo_kde.score_samples(X=new_X.reshape(-1, 1))
@@ -107,9 +108,8 @@ print(density_pred)
 # %
 fig, ax = plt.subplots(1,1,figsize = (10,10))
 
-ax.hist(datos,bins=len(new_X),histtype='step',color='k',linewidth=10,)
-ax.vlines(np.mean(datos),0,160)
-ax.plot(new_X,density_pred*300,color='red',linewidth=4)
+ax.hist(datos,bins='auto',histtype='step',color='k',linewidth=10,)
+ax.hist(muestra, bins = 'auto', histtype ='step')
 # %%
 
 # %
@@ -145,11 +145,30 @@ modelo_kde_final = grid.best_estimator_
 
 
 # %%
-mub_sim_l = np.random.normal(loc=np.mean(datos), scale=1.338, size=len(datos))
-fig, ax = plt.subplots(1,1,figsize = (10,10))
-ax.hist(datos,bins=len(new_X),histtype='step',color='k',linewidth=10,)
+# =============================================================================
+# Trying a new aproach from here: https://www.youtube.com/watch?v=7OPOYk9E1KU
+# =============================================================================
 
-ax.hist(mub_sim_l,bins=len(new_X),histtype='step',color='r',linewidth=10,)
+from scipy.stats import norm, gaussian_kde
+
+# %
+var = -6
+datos = sub_catal[:,var]
+scipy_kernel = gaussian_kde(datos)
+u = np.arange(-30,10,0.1)
+v = scipy_kernel.evaluate(u)
+
+fig, ax = plt.subplots(1,1, figsize=(10,10))
+n, bins, pact =ax.hist(datos,density = 'True',bins =len(u))
+ax.plot(u,v)
+# %%
+sample = scipy_kernel.resample(len(datos))
+# %%
+fig, ax = plt.subplots(1,1, figsize=(10,10))
+ax.hist(datos,bins = 'auto', histtype='step')
+ax.hist(sample[0],bins ='auto',histtype='step')
+
+
 
 
 
