@@ -30,6 +30,7 @@ from random import random
 import glob
 from sklearn.preprocessing import StandardScaler
 import os
+from scipy.stats import norm, gaussian_kde
 # %%
 rcParams.update({'xtick.major.pad': '7.0'})
 rcParams.update({'xtick.major.size': '7.5'})
@@ -77,96 +78,24 @@ catal_all = np.loadtxt(results + '%smatch_GNS_and_%s_refined_galactic.txt'%(pre,
 catal=np.loadtxt(results + 'sec_%s_%smatch_GNS_and_%s_refined_galactic.txt'%(section,pre,name))
 sub_catal = np.loadtxt(subsec + 'subsec_A_%s_%s.txt'%(row_col[0],row_col[1]))    
 # %%    
-fig, ax = plt.subplots(1,1,figsize = (10,10))
+
 var = -6
-var1 =-5
-ax.hist(catal_all[:,var],bins='auto',density = 'True',histtype='step',color='#9370DB')
-# ax.hist(catal[:,var],bins='auto',density = 'True',histtype='step')
-# ax.hist(sub_catal[:,var],bins='auto',density = 'True',histtype='step')
-# fig, ax = plt.subplots(1,1,figsize = (10,10))
-# ax.scatter(sub_catal[:,var],sub_catal[:,var1])
-# ax.hist2d(sub_catal[:,var],sub_catal[:,var1],density = 'True',bins = 100,alpha = 0.5)
-# %%
-# lest adjust the data to a gaussian kernel distributiom
-# Ajuste del modelo KDE, folloing: https://www.cienciadedatos.net/documentos/pystats02-kernel-density-estimation-kde-python.html
-# ==============================================================================
-var = -5
-# datos = catal[:,var]
-# datos = catal_all[:,var]
-datos = sub_catal[:,var]
+mul,mub = sub_catal[:,-6],sub_catal[:,-5]
+mul_kernel = gaussian_kde(mul)
+mub_kernel = gaussian_kde(mub)
+mub_sim = mub_kernel.resample(len(sub_catal))
+mul_sim = mul_kernel.resample(len(sub_catal))
 
-modelo_kde = KernelDensity(kernel='gaussian', bandwidth=0.67444)
+fig, ax = plt.subplots(1,2, figsize=(20,10))
+ax[0].hist(mul, bins ='auto', histtype ='step',color = 'k',label ='real')
+ax[0].hist(mul_sim[0], bins ='auto', histtype = 'step',label ='sim')
+ax[1].hist(mub, bins ='auto', histtype ='step',color = 'k',label ='real')
+ax[1].hist(mub_sim[0], bins ='auto', histtype = 'step',label ='sim')
+ax[0].set_xlabel('mul')
+ax[1].set_xlabel('mub')
+ax[0].legend(loc =2 )
+ax[1].legend(loc =2)
 
-modelo_kde.fit(X=datos.reshape(-1,1))
-muestra = modelo_kde.sample(len(datos))
-# %
-new_X = np.arange(-10,16,1)
-log_density_pred = modelo_kde.score_samples(X=new_X.reshape(-1, 1))
-#Se aplica el exponente para deshacer el logaritmo
-density_pred = np.exp(log_density_pred)
-print(density_pred)
-# %
-fig, ax = plt.subplots(1,1,figsize = (10,10))
-
-ax.hist(datos,bins='auto',histtype='step',color='k',linewidth=10,)
-ax.hist(muestra, bins = 'auto', histtype ='step')
-# %%
-
-# %
-# # Validación cruzada para identificar kernel y bandwidth
-# # ==============================================================================
-from scipy import stats
-from sklearn.neighbors import KernelDensity
-from sklearn.model_selection import GridSearchCV
-from sklearn.model_selection import KFold
-param_grid = {'kernel': ['gaussian'],
-              'bandwidth' : np.linspace(0.01, 3, 10)
-              }
-
-grid = GridSearchCV(
-        estimator  = KernelDensity(),
-        param_grid = param_grid,
-        n_jobs     = -1,
-        cv         = 10, 
-        verbose    = 0
-      )
-
-# Se asigna el resultado a _ para que no se imprima por pantalla
-_ = grid.fit(X = datos.reshape((-1,1)))
-
-# %
-print("----------------------------------------")
-print("Mejores hiperparámetros encontrados (cv)")
-print("----------------------------------------")
-print(grid.best_params_, ":", grid.best_score_, grid.scoring)
-
-modelo_kde_final = grid.best_estimator_
-
-
-
-# %%
-# =============================================================================
-# Trying a new aproach from here: https://www.youtube.com/watch?v=7OPOYk9E1KU
-# =============================================================================
-
-from scipy.stats import norm, gaussian_kde
-
-# %
-var = -6
-datos = sub_catal[:,var]
-scipy_kernel = gaussian_kde(datos)
-u = np.arange(-30,10,0.1)
-v = scipy_kernel.evaluate(u)
-
-fig, ax = plt.subplots(1,1, figsize=(10,10))
-n, bins, pact =ax.hist(datos,density = 'True',bins =len(u))
-ax.plot(u,v)
-# %%
-sample = scipy_kernel.resample(len(datos))
-# %%
-fig, ax = plt.subplots(1,1, figsize=(10,10))
-ax.hist(datos,bins = 'auto', histtype='step')
-ax.hist(sample[0],bins ='auto',histtype='step')
 
 
 
