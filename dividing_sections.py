@@ -99,7 +99,7 @@ catal=catal[vel_lim]
 clus_test = np.loadtxt(pruebas + 'dbs_cluster1_of_group89.txt')
 m1 = -0.85
 m = 1.1
-step = 1000
+step = 2000
 
 for f_remove in glob.glob(pruebas + 'subsec_%s/subsec*'%(section)):
     os.remove(f_remove)
@@ -109,13 +109,13 @@ fig, ax = plt.subplots(1,1, figsize=(10,10))
 ax.scatter(catal[:,7],catal[:,8])
 fila =-1
 for i in np.arange(26300,17300,-step):
-    fila = int((26300 - i)/1000)
+    columna = int((26300 - i)/step)
     yg_1 =  i + m*catal[:,7]
     yg_2 =  i - step +m*catal[:,7]
     ax.plot(catal[:,7],yg_1, color ='g')
     # ax.scatter(catal[:,7][good],catal[:,8][good],color =np.random.choice(colores))
     for j in np.arange(33000,26000,-step):
-        columna =int((33000 - j)/step)
+        fila =int((33000 - j)/step)
        
         yr_1 = j + m1*catal[:,7]
         yr_2 = j - step +m1*catal[:,7]
@@ -123,20 +123,24 @@ for i in np.arange(26300,17300,-step):
         good = np.where((catal[:,8]<yg_1)&(catal[:,8]>yg_2)
                         & (catal[:,8]<yr_1)&(catal[:,8]>yr_2))
         ax.scatter(catal[:,7][good],catal[:,8][good],color =np.random.choice(colores))
-        if len(good[0]>0):
-            print(fila,columna)
-            np.savetxt(pruebas + 'subsec_%s/subsec_%s_%s_%s.txt'%(section, section, fila, columna)
-                       ,catal[good],fmt='%.7f %.7f %.4f %.4f %.4f %.7f %.7f %.4f %.4f %.5f %.5f %.5f %.5f %.0f %.0f %.0f %.0f %.5f %.5f %.5f %.5f %.5f %.3f',
-                       header ="'RA_gns','DE_gns','Jmag','Hmag','Ksmag','ra','dec','x_c','y_c','mua','dmua','mud','dmud','time','n1','n2','ID','mul','mub','dmul','dmub','m139','Separation'")
-            missing += len(good[0])
+        if len(good[0])>0:
+            print(columna,fila)
+            if len(catal[good])>10:
+                print('this is the len of the list: %s'%(len(catal[good])))
+                np.savetxt(pruebas + 'subsec_%s/subsec_%s_%s_%s.txt'%(section, section, columna, fila)
+                           ,catal[good],fmt='%.7f %.7f %.4f %.4f %.4f %.7f %.7f %.4f %.4f %.5f %.5f %.5f %.5f %.0f %.0f %.0f %.0f %.5f %.5f %.5f %.5f %.5f %.3f',
+                           header ="'RA_gns','DE_gns','Jmag','Hmag','Ksmag','ra','dec','x_c','y_c','mua','dmua','mud','dmud','time','n1','n2','ID','mul','mub','dmul','dmub','m139','Separation'")
+                missing += len(good[0])
 print(missing, len(catal))
     # ax.scatter(catal[:,7][good],catal[:,8][good],color =np.random.choice(colores))
     # for j in range(26300 - j*step,26300):
         
 ax.scatter(clus_test[:,2],clus_test[:,3])
 ax.set_ylim(min(catal[:,8]-500),max(catal[:,8]+500))
+ax.set_xlabel('x (130 mas/pix)')
+ax.set_ylabel('y (130 mas/pix)')
 # %%
-subs = np.loadtxt(subsec +'subsec_A_3_2.txt')
+subs = np.loadtxt(subsec +'subsec_A_1_1.txt')
 fig, ax = plt.subplots(1,1, figsize=(10,10))
 ax.scatter(catal[:,7],catal[:,8])
 ax.scatter(subs[:,7],subs[:,8])
