@@ -77,12 +77,14 @@ else:
     
 # %%
 # section = 'A'#sections from A to D. Maybe make a script for each section...
-section = 'All'#selecting the whole thing
+section = 'A'#selecting the whole thing
 # "'RA_gns','DE_gns','Jmag','Hmag','Ksmag','ra','dec','x_c','y_c','mua','dmua','mud','dmud','time','n1','n2','ID','mul','mub','dmul','dmub','m139','Separation'",
 if section == 'All':
     catal=np.loadtxt(results + '%smatch_GNS_and_%s_refined_galactic.txt'%(pre,name))
 else:
     catal=np.loadtxt(results + 'sec_%s_%smatch_GNS_and_%s_refined_galactic.txt'%(section,pre,name))
+    # catal=np.genfromtxt(pruebas + 'sec_%s_%smatch_GNS_and_%s_refined_galactic.txt'%(section,pre,name))
+
 # Definition of center can: m139 - Ks(libralato and GNS) or H - Ks(GNS and GNS)
 center_definition='G_G'#this variable can be L_G or G_G
 if center_definition =='L_G':
@@ -94,7 +96,7 @@ elif center_definition =='G_G':
     catal=catal[valid]
     center=np.where(catal[:,3]-catal[:,4]>1.3)
 catal=catal[center]
-dmu_lim = .5
+dmu_lim = 1
 vel_lim = np.where((catal[:,19]<=dmu_lim) & (catal[:,20]<=dmu_lim))
 catal=catal[vel_lim]
 
@@ -119,6 +121,7 @@ Ms_ra, Ms_dec = np.loadtxt(cata + 'GALCEN_TABLE_D.cat',usecols=(0,1),unpack = Tr
 Ms_xy = [int(np.where((Ms_ra[i]==(catal_all[:,0])) & ((Ms_dec[i]==catal_all[:,1])))[0]) for i in range(len(Ms_ra)) if len(np.where((Ms_ra[i]==(catal_all[:,0])) & ((Ms_dec[i]==catal_all[:,1])))[0]) >0]
 
 # %%
+
 Aks_gns = pd.read_fwf(gns_ext + 'central.txt', sep =' ',header = None)
 
 # %
@@ -139,7 +142,8 @@ for file_to_erase in glob.glob(pruebas + 'Sec_%s_%s_%scluster*_eps*.txt'%(sectio
 pixel = 'yes'
 cluster_by = 'all'
 
-pms =[0,0,-5.72,-0.17]# galactic pm obtained from the dynesty adjustement 
+# pms =[0,0,-5.72,-0.17]# galactic pm obtained from the dynesty adjustement 
+pms =[0,0,0,0]
 data = catal
 
 ra_=data[:,5]
@@ -170,7 +174,7 @@ elif cluster_by == 'all':
 # =============================================================================
 tree=KDTree(X_stad, leaf_size=2) 
 
-samples=5# number of minimun objects that defined a cluster
+samples=10# number of minimun objects that defined a cluster
 samples_dist = samples# t
 
 dist, ind = tree.query(X_stad, k=samples_dist) #DistNnce to the 1,2,3...k neighbour
@@ -198,7 +202,7 @@ while save_clus != 'stop':                    # What I mean is that with a small
                      # This does not seem a problem when 'while <6' but it is when 'while <20' for example...
     loop +=1
     clustering = DBSCAN(eps=epsilon, min_samples=samples).fit(X_stad)
-    print('\n'.join(('*'*len('EPSILON = %s'),'EPSILON = %s'%(epsilon))))
+    print('\n'.join(('*'*len('EPSILON = %s'),'EPSILON = %s,loop = %s'%(epsilon,loop))))
     l=clustering.labels_
     epsilon +=0.01 # if choose epsilon as min d_KNN you loop over epsilon and a "<" simbol goes in the while loop
     # samples +=1 # if you choose epsilon as codo, you loop over the number of sambles and a ">" goes in the  while loop
@@ -265,7 +269,7 @@ while save_clus != 'stop':                    # What I mean is that with a small
                 min_c_J=min(data[:,2][colores_index[i]]-data[:,4][colores_index[i]])
                 max_c_J=max(data[:,2][colores_index[i]]-data[:,4][colores_index[i]])
             
-                if max_c-min_c <0.3 and any(min_nth<140.5):
+                if max_c-min_c <0.3 and any(min_nth<13):
                     fig, ax = plt.subplots(1,3,figsize=(30,10))
                     # fig, ax = plt.subplots(1,3,figsize=(30,10))
                     # ax[2].invert_yaxis()
@@ -276,7 +280,7 @@ while save_clus != 'stop':                    # What I mean is that with a small
                     ax[0].scatter(X[:,0],X[:,1], color=colors[-1],s=50,zorder=1)
                     # ax[1].quiver(t_gal['l'][colores_index[-1]].value,t_gal['b'][colores_index[-1]].value, X[:,0][colores_index[-1]]-pms[2], X[:,1][colores_index[-1]]-pms[3], alpha=0.5, color=colors[-1])
             
-                    ax[0].scatter(X[:,0][colores_index[i]],X[:,1][colores_index[i]], color=colors[i],s=50,zorder=3)
+                    ax[0].scatter(X[:,0][colores_index[i]],X[:,1][colores_index[i]], color='blueviolet',s=50,zorder=3)
                     ax[0].set_xlim(-10,10)
                     ax[0].set_ylim(-10,10)
                     ax[0].set_xlabel(r'$\mathrm{\mu_{l} (mas\ yr^{-1})}$') 
@@ -330,15 +334,15 @@ while save_clus != 'stop':                    # What I mean is that with a small
                         rad = max(sep)/2
                          
                         prop = dict(boxstyle='round', facecolor=colors[i], alpha=0.2)
-                        ax[1].text(0.65, 0.95, 'aprox cluster radio = %s"'%(round(rad.to(u.arcsec).value,2)), transform=ax[1].transAxes, fontsize=14,
+                        ax[1].text(0.65, 0.95, 'aprox cluster radio = %s"\n cluster stars = %s '%(round(rad.to(u.arcsec).value,2),len(colores_index[i][0])), transform=ax[1].transAxes, fontsize=14,
                                                 verticalalignment='top', bbox=prop)
                         
                         id_clus, id_arc, d2d,d3d = ap_coor.search_around_sky(SkyCoord([data[:,5][colores_index[i][0][0]]*u.deg], [data[:,6][colores_index[i][0][0]]*u.deg], frame='icrs'),coordenadas, radio)
                         ax[1].scatter(X[:,2][id_arc], X[:,3][id_arc], color=colors[-1],s=50,zorder=1,alpha=0.01)#plots in galactic
                         ax[1].quiver(X[:,2][id_arc], X[:,3][id_arc], X[:,0][id_arc]*-1, X[:,1][id_arc], alpha=0.5, color=colors[-1],zorder=1)
                         
-                        ax[1].scatter(X[:,2][colores_index[i]], X[:,3][colores_index[i]], color=colors[i],s=50,zorder=3)#plots in galactic
-                        ax[1].quiver(X[:,2][colores_index[i]], X[:,3][colores_index[i]], X[:,0][colores_index[i]]*-1, X[:,1][colores_index[i]], alpha=0.5, color=colors[i])
+                        ax[1].scatter(X[:,2][colores_index[i]], X[:,3][colores_index[i]], color='blueviolet',s=50,zorder=3)#plots in galactic
+                        ax[1].quiver(X[:,2][colores_index[i]], X[:,3][colores_index[i]], X[:,0][colores_index[i]]*-1, X[:,1][colores_index[i]], alpha=0.5, color='blueviolet')#colors[i]
                         ax[1].set_xlabel('x') 
                         ax[1].set_ylabel('y') 
                         ax[1].yaxis.set_major_formatter(FormatStrFormatter('%.0f'))
@@ -346,9 +350,7 @@ while save_clus != 'stop':                    # What I mean is that with a small
                         # ax[1].scatter(catal_all[:,2][Ms_xy],catal_all[:,3][Ms_xy],color = 'red', s = 100)
                 
                     # ax[2].scatter(data[:,3]-data[:,4],data[:,4], color=colors[-1],s=50,zorder=1, alpha=0.1)
-                    ax[2].scatter(data[:,3][colores_index[i]]-data[:,4][colores_index[i]],data[:,4][colores_index[i]], color=colors[i],s=50,zorder=3, alpha=1)
-                    ax[2].invert_yaxis()
-        
+                    
                     clus_coord =  SkyCoord(ra=data[:,5][colores_index[i]]*u.degree, dec=data[:,6][colores_index[i]]*u.degree)
                     idx = clus_coord.match_to_catalog_sky(gns_coord)
                     gns_match = AKs_center[idx[0]]
@@ -366,14 +368,19 @@ while save_clus != 'stop':                    # What I mean is that with a small
                     # print('\n'.join((10*'§','%s %s'%(AKs_clus,AKs),10*'§')))
                     if abs(AKs - AKs_clus)>0.2:
                         print(''*len(frase)+'\n'+frase+'\n'+''*len(frase))
-                        
+                    ax[2].scatter(data[:,3][colores_index[i]]-data[:,4][colores_index[i]],data[:,4][colores_index[i]], color='blueviolet',s=50,zorder=3, alpha=1)
+                    ax[2].invert_yaxis()    
                     iso_dir = '/Users/amartinez/Desktop/PhD/Libralato_data/nsd_isochrones/'
                     
-                    dist = 8200 # distance in parsec
+                    dist = 8000 # distance in parsec
                     metallicity = 0.17 # Metallicity in [M/H]
-                    # logAge = np.log10(0.61*10**9.)
+                    # logAge_600 = np.log10(0.61*10**9.)
                     logAge = np.log10(0.010*10**9.)
-                    
+# =============================================================================
+#                     logAge_30 = np.log10(0.030*10**9.)
+#                     logAge_60 = np.log10(0.060*10**9.)
+#                     logAge_90 = np.log10(0.090*10**9.)
+# =============================================================================
                     evo_model = evolution.MISTv1() 
                     atm_func = atmospheres.get_merged_atmosphere
                     red_law = reddening.RedLawNoguerasLara18()
@@ -384,7 +391,22 @@ while save_clus != 'stop':                    # What I mean is that with a small
                                                     red_law=red_law, filters=filt_list,
                                                         iso_dir=iso_dir)
                     
-                    
+# =============================================================================
+#                     iso_30 = synthetic.IsochronePhot(logAge_30, AKs, dist, metallicity=metallicity,
+#                                                     evo_model=evo_model, atm_func=atm_func,
+#                                                     red_law=red_law, filters=filt_list,
+#                                                         iso_dir=iso_dir)
+#                     iso_60 = synthetic.IsochronePhot(logAge_60, AKs, dist, metallicity=metallicity,
+#                                                     evo_model=evo_model, atm_func=atm_func,
+#                                                     red_law=red_law, filters=filt_list,
+#                                                         iso_dir=iso_dir)
+#                     
+#                     iso_90 = synthetic.IsochronePhot(logAge_90, AKs, dist, metallicity=metallicity,
+#                                                     evo_model=evo_model, atm_func=atm_func,
+#                                                     red_law=red_law, filters=filt_list,
+#                                                         iso_dir=iso_dir)
+#                     #%
+# =============================================================================
                     #%
                     
                     
@@ -413,9 +435,9 @@ while save_clus != 'stop':                    # What I mean is that with a small
                     clus = cluster.star_systems
                     clus_ndiff = cluster_ndiff.star_systems
                     ax[2].set_title('Cluster %s, eps = %s'%(i,round(epsilon,3)))
-                    ax[2].scatter(clus['m_hawki_H']-clus['m_hawki_Ks'],clus['m_hawki_Ks'],color = 'r',label='With dAKs = %s mag'%(dAks),alpha=0.1)
-                    ax[2].scatter(clus_ndiff['m_hawki_H']-clus_ndiff['m_hawki_Ks'],clus_ndiff['m_hawki_Ks'],color = 'k',label='With dAKs = %s mag'%(0),alpha=0.3)
-                    ax[2].legend(loc =3, fontsize = 12)
+                    ax[2].scatter(clus['m_hawki_H']-clus['m_hawki_Ks'],clus['m_hawki_Ks'],color = 'r',alpha=0.1)
+                    ax[2].scatter(clus_ndiff['m_hawki_H']-clus_ndiff['m_hawki_Ks'],clus_ndiff['m_hawki_Ks'],color = 'k',alpha=0.3)
+                    
         
                     txt_srn = '\n'.join(('metallicity = %s'%(metallicity),'dist = %.1f Kpc'%(dist/1000),'mass =%.0fx$10^{3}$ $M_{\odot}$'%(mass/1000),
                                          'age = %.0f Myr'%(10**logAge/10**6)))
@@ -426,6 +448,19 @@ while save_clus != 'stop':                    # What I mean is that with a small
                         verticalalignment='top', bbox=props)
                     ax[2].text(0.65, 0.85, txt_srn, transform=ax[2].transAxes, fontsize=14,
                         verticalalignment='top', bbox=props)
+                    ax[2].plot(iso.points['m_hawki_H'] - iso.points['m_hawki_Ks'], 
+                                      iso.points['m_hawki_Ks'], 'b-',  label='10 Myr')
+# =============================================================================
+#                     ax[2].plot(iso_30.points['m_hawki_H'] - iso_30.points['m_hawki_Ks'], 
+#                                       iso_30.points['m_hawki_Ks'], 'orange',  label='30 Myr')
+#                     ax[2].plot(iso_60.points['m_hawki_H'] - iso_60.points['m_hawki_Ks'], 
+#                                       iso_60.points['m_hawki_Ks'],  label='60 Myr')
+#                     ax[2].plot(iso_90.points['m_hawki_H'] - iso_90.points['m_hawki_Ks'], 
+#                                       iso_90.points['m_hawki_Ks'],  label='90 Myr')
+# =============================================================================
+                    ax[2].set_xlabel('H$-$Ks')
+                    ax[2].set_ylabel('Ks')
+                    ax[2].legend(loc =3, fontsize = 12)
                     plt.show()
                     if pixel == 'yes':
                         clus_array = np.array([data[:,5][colores_index[i]],data[:,6][colores_index[i]],t_gal['l'][colores_index[i]].value,t_gal['b'][colores_index[i]].value,
@@ -433,7 +468,7 @@ while save_clus != 'stop':                    # What I mean is that with a small
                                                                                               X[:,1][colores_index[i]],
                                                                                               data[:,3][colores_index[i]],data[:,4][colores_index[i]]]).T
                         clus_array1= np.c_[clus_array, np.full((len(X[:,0][colores_index[i]]),1),i)]
-                        frase = 'Do you want to save this cluster?'
+                        frase = 'Do you want to save this cluster?\n("yes", "no" or "jump" to a new epsilon)'
                         print('\n'.join((len(frase)*'π',frase,len(frase)*'π')))
                         save_clus = input('Awnser:')
                         print('You said: %s'%(save_clus))
@@ -450,7 +485,7 @@ while save_clus != 'stop':                    # What I mean is that with a small
                                         print('You have the exact same cluster in: %s'%(os.path.basename(check)))
                                         os.remove(pruebas + 'Sec_%s_%s_%scluster%s_eps%s.txt'%(section,name,pre,i,round(epsilon,3)))
                                     elif len(intersection)> 0 and len(intersection) < len(ra_dec_clus):
-                                        print('This cluster(%s) has %s more stars than %s. It will be saved'
+                                        print('This cluster(%s) has %s more stars than %s. New will be saved old removed'
                                               %('Sec_%s_%s_%scluster%s_eps%s.txt'%(section, name,pre,i,round(epsilon,3)),len(ra_dec_clus) - len(intersection),os.path.basename(check)))
                                         os.remove(check)
                                         # np.savetxt(pruebas + 'all_%s_%scluster%s_eps%s.txt'%(name,pre,i,round(epsilon,3)),clus_array1,fmt='%.7f '*8 + '%.0f ', header ='ra, dec, l, b, pml, pmb, H, Ks,cluster')
@@ -458,7 +493,8 @@ while save_clus != 'stop':                    # What I mean is that with a small
                             sys.exit('You stop it')
                         elif save_clus =='jump':
                             new_epsilon = input('Select the new epsilon:')
-                            epsilon = new_epsilon -0.01
+                            epsilon = float(new_epsilon) -0.01
+                            break
 # %%
 # for check in glob.glob(pruebas + 'all_%s_%scluster*_eps*.txt'%(name,pre)):
 #     ra_dec_clus = clus_array[:,0:2]
@@ -479,17 +515,38 @@ while save_clus != 'stop':                    # What I mean is that with a small
 # bset = set([tuple(x) for x in B])
 # intersection = np.array([x for x in aset & bset])
 # print(intersection)
-  
+# %%
+fig , ax = plt.subplots(1,1,figsize=(10,10))
+ax.plot(iso.points['m_hawki_H'] - iso.points['m_hawki_Ks'], 
+                  iso.points['m_hawki_Ks'], 'b')
         
         
+# %%
+clus_coord =  SkyCoord(ra=data[:,5][colores_index[i]]*u.degree, dec=data[:,6][colores_index[i]]*u.degree)
+idx = clus_coord.match_to_catalog_sky(gns_coord)
+gns_match = AKs_center[idx[0]]
+good = np.where(gns_match[:,11] == -1)
+if len(good[0]) != len(gns_match[:,11]):
+    print('%s foreground stars in this cluster'%(len(gns_match[:,11]) - len(good)))
+gns_match_good = gns_match[good]
+AKs_clus_all = [float(gns_match_good[i,18]) for i in range(len(gns_match_good[:,18]))  if gns_match_good[i,18] !='-']
         
+# %%
+Ah_lst = []
+Aks_lst = []
+for m in range(len(colores_index[i][0])):
+    clus_coord =  SkyCoord(ra=data[:,5][colores_index[i][0][m]]*u.degree, dec=data[:,6][colores_index[i][0][m]]*u.degree)
+    idx = clus_coord.match_to_catalog_sky(gns_coord)
+    gns_match = AKs_center[idx[0]]
+    Ah_lst.append(float(gns_match[16]))
+    Aks_lst.append(float(gns_match[18]))
+    print(gns_match[16],gns_match[18])
+    print(clus_coord)
+    
         
-        
-        
-        
-        
-        
-        
+# %%
+print(data[:,3][colores_index[i]]-np.array(Ah_lst)-(data[:,4][colores_index[i]]-np.array(Aks_lst)))
+print(np.array(Ah_lst))
         
         
         
