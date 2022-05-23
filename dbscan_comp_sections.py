@@ -132,7 +132,8 @@ AKs_center =AKs_np[center]#TODO
 gns_coord = SkyCoord(ra=AKs_center[:,0]*u.degree, dec=AKs_center[:,2]*u.degree)
 # %
 # %
-AKs_list =  np.arange(1.6,2.11,0.01)
+AKs_list1 =  np.arange(1.6,2.11,0.01)
+AKs_list = np.append(AKs_list1,0)
 # %%
 
 for file_to_erase in glob.glob(pruebas + 'Sec_%s_%s_%scluster*_eps*.txt'%(section,name,pre)):
@@ -174,7 +175,7 @@ elif cluster_by == 'all':
 # =============================================================================
 tree=KDTree(X_stad, leaf_size=2) 
 
-samples=10# number of minimun objects that defined a cluster
+samples=5# number of minimun objects that defined a cluster
 samples_dist = samples# t
 
 dist, ind = tree.query(X_stad, k=samples_dist) #DistNnce to the 1,2,3...k neighbour
@@ -351,36 +352,57 @@ while save_clus != 'stop':                    # What I mean is that with a small
                 
                     # ax[2].scatter(data[:,3]-data[:,4],data[:,4], color=colors[-1],s=50,zorder=1, alpha=0.1)
                     
-                    clus_coord =  SkyCoord(ra=data[:,5][colores_index[i]]*u.degree, dec=data[:,6][colores_index[i]]*u.degree)
-                    idx = clus_coord.match_to_catalog_sky(gns_coord)
-                    gns_match = AKs_center[idx[0]]
-                    good = np.where(gns_match[:,11] == -1)
-                    if len(good[0]) != len(gns_match[:,11]):
-                        print('%s foreground stars in this cluster'%(len(gns_match[:,11]) - len(good)))
-                    gns_match_good = gns_match[good]
-                    AKs_clus_all = [float(gns_match_good[i,18]) for i in range(len(gns_match_good[:,18]))  if gns_match_good[i,18] !='-']
+                    # This is for plotting the cluster and the isochrone with extiontion
+# =============================================================================
+#                     clus_coord =  SkyCoord(ra=data[:,5][colores_index[i]]*u.degree, dec=data[:,6][colores_index[i]]*u.degree)
+#                     idx = clus_coord.match_to_catalog_sky(gns_coord)
+#                     gns_match = AKs_center[idx[0]]
+#                     good = np.where(gns_match[:,11] == -1)
+#                     if len(good[0]) != len(gns_match[:,11]):
+#                         print('%s foreground stars in this cluster'%(len(gns_match[:,11]) - len(good)))
+#                     gns_match_good = gns_match[good]
+#                     AKs_clus_all = [float(gns_match_good[i,18]) for i in range(len(gns_match_good[:,18]))  if gns_match_good[i,18] !='-']
+#                         
+#                     AKs_clus, std_AKs = np.mean(AKs_clus_all),np.std(AKs_clus_all)
+#                     absolute_difference_function = lambda list_value : abs(list_value - AKs_clus)
+#                     
+#                     AKs = min(AKs_list, key=absolute_difference_function)
+#                     frase = 'Diff in extintion bigger than 0.2!'
+#                     # print('\n'.join((10*'§','%s %s'%(AKs_clus,AKs),10*'§')))
+#                     if abs(AKs - AKs_clus)>0.2:
+#                         print(''*len(frase)+'\n'+frase+'\n'+''*len(frase))
+#                     ax[2].scatter(data[:,3][colores_index[i]]-data[:,4][colores_index[i]],data[:,4][colores_index[i]], color='blueviolet',s=50,zorder=3, alpha=1)
+#                     ax[2].invert_yaxis()    
+# =============================================================================
+                    # Thi subtract the extiontion to Ks and H and plots the isochrone withput extinction
+                    H_Ks_yes = []
+                    Ks_yes = []
+                    for m in range(len(colores_index[i][0])):
+                        clus_coord =  SkyCoord(ra=data[:,5][colores_index[i][0][m]]*u.degree, dec=data[:,6][colores_index[i][0][m]]*u.degree)
+                        idx = clus_coord.match_to_catalog_sky(gns_coord)
+                        gns_match = AKs_center[idx[0]]
+                        # print(type(gns_match[16])) 
+                        if gns_match[16] != '-' and gns_match[18] != '-':
+                            H_Ks_yes.append((data[:,3][colores_index[i][0][m]]-float(gns_match[16]))-((data[:,4][colores_index[i][0][m]]-float(gns_match[18]))))
+                            Ks_yes.append(data[:,4][colores_index[i][0][m]]-float(gns_match[18]))
                         
-                    AKs_clus, std_AKs = np.mean(AKs_clus_all),np.std(AKs_clus_all)
-                    absolute_difference_function = lambda list_value : abs(list_value - AKs_clus)
+                    ax[2].scatter(H_Ks_yes,Ks_yes, color='blueviolet',s=50,zorder=3, alpha=1)
+                    ax[2].invert_yaxis()  
                     
+                    AKs_clus = np.mean(H_Ks_yes)
+                    std_AKs = np.std(H_Ks_yes)
+                    absolute_difference_function = lambda list_value : abs(list_value - AKs_clus)
                     AKs = min(AKs_list, key=absolute_difference_function)
-                    frase = 'Diff in extintion bigger than 0.2!'
-                    # print('\n'.join((10*'§','%s %s'%(AKs_clus,AKs),10*'§')))
-                    if abs(AKs - AKs_clus)>0.2:
-                        print(''*len(frase)+'\n'+frase+'\n'+''*len(frase))
-                    ax[2].scatter(data[:,3][colores_index[i]]-data[:,4][colores_index[i]],data[:,4][colores_index[i]], color='blueviolet',s=50,zorder=3, alpha=1)
-                    ax[2].invert_yaxis()    
+                    std_AKs = 0.3
                     iso_dir = '/Users/amartinez/Desktop/PhD/Libralato_data/nsd_isochrones/'
                     
                     dist = 8000 # distance in parsec
                     metallicity = 0.17 # Metallicity in [M/H]
                     # logAge_600 = np.log10(0.61*10**9.)
                     logAge = np.log10(0.010*10**9.)
-# =============================================================================
-#                     logAge_30 = np.log10(0.030*10**9.)
-#                     logAge_60 = np.log10(0.060*10**9.)
-#                     logAge_90 = np.log10(0.090*10**9.)
-# =============================================================================
+                    logAge_30 = np.log10(0.030*10**9.)
+                    logAge_60 = np.log10(0.060*10**9.)
+                    logAge_90 = np.log10(0.090*10**9.)
                     evo_model = evolution.MISTv1() 
                     atm_func = atmospheres.get_merged_atmosphere
                     red_law = reddening.RedLawNoguerasLara18()
@@ -391,22 +413,20 @@ while save_clus != 'stop':                    # What I mean is that with a small
                                                     red_law=red_law, filters=filt_list,
                                                         iso_dir=iso_dir)
                     
-# =============================================================================
-#                     iso_30 = synthetic.IsochronePhot(logAge_30, AKs, dist, metallicity=metallicity,
-#                                                     evo_model=evo_model, atm_func=atm_func,
-#                                                     red_law=red_law, filters=filt_list,
-#                                                         iso_dir=iso_dir)
-#                     iso_60 = synthetic.IsochronePhot(logAge_60, AKs, dist, metallicity=metallicity,
-#                                                     evo_model=evo_model, atm_func=atm_func,
-#                                                     red_law=red_law, filters=filt_list,
-#                                                         iso_dir=iso_dir)
-#                     
-#                     iso_90 = synthetic.IsochronePhot(logAge_90, AKs, dist, metallicity=metallicity,
-#                                                     evo_model=evo_model, atm_func=atm_func,
-#                                                     red_law=red_law, filters=filt_list,
-#                                                         iso_dir=iso_dir)
-#                     #%
-# =============================================================================
+                    iso_30 = synthetic.IsochronePhot(logAge_30, AKs, dist, metallicity=metallicity,
+                                                    evo_model=evo_model, atm_func=atm_func,
+                                                    red_law=red_law, filters=filt_list,
+                                                        iso_dir=iso_dir)
+                    iso_60 = synthetic.IsochronePhot(logAge_60, AKs, dist, metallicity=metallicity,
+                                                    evo_model=evo_model, atm_func=atm_func,
+                                                    red_law=red_law, filters=filt_list,
+                                                        iso_dir=iso_dir)
+                    
+                    iso_90 = synthetic.IsochronePhot(logAge_90, AKs, dist, metallicity=metallicity,
+                                                    evo_model=evo_model, atm_func=atm_func,
+                                                    red_law=red_law, filters=filt_list,
+                                                        iso_dir=iso_dir)
+                    #%
                     #%
                     
                     
@@ -450,14 +470,12 @@ while save_clus != 'stop':                    # What I mean is that with a small
                         verticalalignment='top', bbox=props)
                     ax[2].plot(iso.points['m_hawki_H'] - iso.points['m_hawki_Ks'], 
                                       iso.points['m_hawki_Ks'], 'b-',  label='10 Myr')
-# =============================================================================
-#                     ax[2].plot(iso_30.points['m_hawki_H'] - iso_30.points['m_hawki_Ks'], 
-#                                       iso_30.points['m_hawki_Ks'], 'orange',  label='30 Myr')
-#                     ax[2].plot(iso_60.points['m_hawki_H'] - iso_60.points['m_hawki_Ks'], 
-#                                       iso_60.points['m_hawki_Ks'],  label='60 Myr')
-#                     ax[2].plot(iso_90.points['m_hawki_H'] - iso_90.points['m_hawki_Ks'], 
-#                                       iso_90.points['m_hawki_Ks'],  label='90 Myr')
-# =============================================================================
+                    ax[2].plot(iso_30.points['m_hawki_H'] - iso_30.points['m_hawki_Ks'], 
+                                      iso_30.points['m_hawki_Ks'], 'orange',  label='30 Myr')
+                    ax[2].plot(iso_60.points['m_hawki_H'] - iso_60.points['m_hawki_Ks'], 
+                                      iso_60.points['m_hawki_Ks'],  label='60 Myr')
+                    ax[2].plot(iso_90.points['m_hawki_H'] - iso_90.points['m_hawki_Ks'], 
+                                      iso_90.points['m_hawki_Ks'],  label='90 Myr')
                     ax[2].set_xlabel('H$-$Ks')
                     ax[2].set_ylabel('Ks')
                     ax[2].legend(loc =3, fontsize = 12)
@@ -516,39 +534,17 @@ while save_clus != 'stop':                    # What I mean is that with a small
 # intersection = np.array([x for x in aset & bset])
 # print(intersection)
 # %%
-fig , ax = plt.subplots(1,1,figsize=(10,10))
-ax.plot(iso.points['m_hawki_H'] - iso.points['m_hawki_Ks'], 
-                  iso.points['m_hawki_Ks'], 'b')
-        
-        
-# %%
-clus_coord =  SkyCoord(ra=data[:,5][colores_index[i]]*u.degree, dec=data[:,6][colores_index[i]]*u.degree)
-idx = clus_coord.match_to_catalog_sky(gns_coord)
-gns_match = AKs_center[idx[0]]
-good = np.where(gns_match[:,11] == -1)
-if len(good[0]) != len(gns_match[:,11]):
-    print('%s foreground stars in this cluster'%(len(gns_match[:,11]) - len(good)))
-gns_match_good = gns_match[good]
-AKs_clus_all = [float(gns_match_good[i,18]) for i in range(len(gns_match_good[:,18]))  if gns_match_good[i,18] !='-']
-        
-# %%
-Ah_lst = []
-Aks_lst = []
+H_Ks_yes = []
+Ks_yes = []
 for m in range(len(colores_index[i][0])):
     clus_coord =  SkyCoord(ra=data[:,5][colores_index[i][0][m]]*u.degree, dec=data[:,6][colores_index[i][0][m]]*u.degree)
     idx = clus_coord.match_to_catalog_sky(gns_coord)
     gns_match = AKs_center[idx[0]]
-    Ah_lst.append(float(gns_match[16]))
-    Aks_lst.append(float(gns_match[18]))
-    print(gns_match[16],gns_match[18])
-    print(clus_coord)
-    
-        
+    # print(type(gns_match[16])) 
+    if gns_match[16] != '-' and gns_match[18] != '-':
+        H_Ks_yes.append((data[:,3][colores_index[i][0][m]]-float(gns_match[16]))-((data[:,4][colores_index[i][0][m]]-float(gns_match[18]))))
+        Ks_yes.append(data[:,4][colores_index[i][0][m]]-float(gns_match[18]))
 # %%
-print(data[:,3][colores_index[i]]-np.array(Ah_lst)-(data[:,4][colores_index[i]]-np.array(Aks_lst)))
-print(np.array(Ah_lst))
-        
-        
-        
-        
+print(np.std(H_Ks_yes))
+
         
