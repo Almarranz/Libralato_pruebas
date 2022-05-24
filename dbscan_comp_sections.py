@@ -113,12 +113,17 @@ catal_all = np.loadtxt(cata + '%s_pm_galactic.txt'%(name))
 
 
 # %%
+
 # %%
 # ra, dec, other things
 #Selecting the massive stars to plotting in the xy plot
 Ms_ra, Ms_dec = np.loadtxt(cata + 'GALCEN_TABLE_D.cat',usecols=(0,1),unpack = True)
 
-Ms_xy = [int(np.where((Ms_ra[i]==(catal_all[:,0])) & ((Ms_dec[i]==catal_all[:,1])))[0]) for i in range(len(Ms_ra)) if len(np.where((Ms_ra[i]==(catal_all[:,0])) & ((Ms_dec[i]==catal_all[:,1])))[0]) >0]
+# Ms_xy = [int(np.where((Ms_ra[i]==(catal_all[:,0])) & ((Ms_dec[i]==catal_all[:,1])))[0]) for i in range(len(Ms_ra)) if len(np.where((Ms_ra[i]==(catal_all[:,0])) & ((Ms_dec[i]==catal_all[:,1])))[0]) >0]
+Ms_xy = [int(np.where((Ms_ra[i]==(catal[:,0])) & ((Ms_dec[i]==catal[:,1])))[0]) for i in range(len(Ms_ra)) if len(np.where((Ms_ra[i]==(catal[:,0])) & ((Ms_dec[i]==catal[:,1])))[0]) >0]
+
+# coordenadas_MS =SkyCoord(ra = catal_all[:,0][Ms_xy]*u.deg, dec = catal_all[:,1][Ms_xy]*u.deg) 
+coordenadas_MS =SkyCoord(ra = catal[:,0][Ms_xy]*u.deg, dec = catal[:,1][Ms_xy]*u.deg) 
 
 # %%
 
@@ -332,19 +337,28 @@ while save_clus != 'stop':                    # What I mean is that with a small
                        # t_gal['l'].value,t_gal['b'].value
                        
                         radio = 500*u.arcsec
+                        
                         ax[1].set_title('Radio = %s, max d$\mu_{l,b}$ = %s'%(radio,dmu_lim))
                         
+                        #This calcualte the maximun distance between cluster members to have a stimation of the cluster radio
                         c2 = SkyCoord(ra = data[:,0][colores_index[i]]*u.deg,dec = data[:,1][colores_index[i]]*u.deg)
                         sep = [max(c2[c_mem].separation(c2)) for c_mem in range(len(c2))]
                         rad = max(sep)/2
-                         
+                        
+                        radio_MS = max(sep)
+                        
                         prop = dict(boxstyle='round', facecolor=colors[i], alpha=0.2)
                         ax[1].text(0.65, 0.95, 'aprox cluster radio = %s"\n cluster stars = %s '%(round(rad.to(u.arcsec).value,2),len(colores_index[i][0])), transform=ax[1].transAxes, fontsize=14,
                                                 verticalalignment='top', bbox=prop)
-                        
+                        #This looks for all the star within a radio 'radio' around the frist member of the cluster for plotting, also look for the MS whitin
                         id_clus, id_arc, d2d,d3d = ap_coor.search_around_sky(SkyCoord([data[:,5][colores_index[i][0][0]]*u.deg], [data[:,6][colores_index[i][0][0]]*u.deg], frame='icrs'),coordenadas, radio)
+                        id_clus_MS, id_arc_MS, d2d_MS,d3d_MS = ap_coor.search_around_sky(SkyCoord([data[:,5][colores_index[i][0][0]]*u.deg], [data[:,6][colores_index[i][0][0]]*u.deg], frame='icrs'),coordenadas_MS, radio)
+
                         ax[1].scatter(X[:,2][id_arc], X[:,3][id_arc], color=colors[-1],s=50,zorder=1,alpha=0.01)#plots in galactic
                         ax[1].quiver(X[:,2][id_arc], X[:,3][id_arc], X[:,0][id_arc]*-1, X[:,1][id_arc], alpha=0.5, color=colors[-1],zorder=1)
+                        
+                        ax[1].scatter(X[:,2][id_arc_MS], X[:,3][id_arc_MS], color='red',s=50,zorder=1,alpha=1)#plots in galactic
+
                         
                         ax[1].scatter(X[:,2][colores_index[i]], X[:,3][colores_index[i]], color='blueviolet',s=50,zorder=3)#plots in galactic
                         ax[1].quiver(X[:,2][colores_index[i]], X[:,3][colores_index[i]], X[:,0][colores_index[i]]*-1, X[:,1][colores_index[i]], alpha=0.5, color='blueviolet')#colors[i]
@@ -357,6 +371,8 @@ while save_clus != 'stop':                    # What I mean is that with a small
                     # ax[2].scatter(data[:,3]-data[:,4],data[:,4], color=colors[-1],s=50,zorder=1, alpha=0.1)
                     
                     # This is for plotting the cluster and the isochrone with extiontion
+                    # here look for the values of extintiction for the cluster stars in the extintion catalog
+                    # if does not have a value it will not plot the star in the CMD
                     H_Ks_yes = []
                     Ks_yes = []
                     AKs_clus_all =[]
@@ -570,6 +586,13 @@ for m in range(len(colores_index[i][0])):
         H_Ks_yes.append((data[:,3][colores_index[i][0][m]]-float(gns_match[16]))-((data[:,4][colores_index[i][0][m]]-float(gns_match[18]))))
         Ks_yes.append(data[:,4][colores_index[i][0][m]]-float(gns_match[18]))
 # %%
-print(np.std(H_Ks_yes))
+id_clus_MS, id_arc_MS, d2d_MS,d3d_MS = ap_coor.search_around_sky(SkyCoord([data[:,5][colores_index[i][0][0]]*u.deg], [data[:,6][colores_index[i][0][0]]*u.deg], frame='icrs'),coordenadas_MS, radio)
+
+# %%
+
+print(id_arc_MS)
+
+
+
 
         
