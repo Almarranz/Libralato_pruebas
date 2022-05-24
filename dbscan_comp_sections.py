@@ -77,13 +77,13 @@ else:
     
 # %%
 # section = 'A'#sections from A to D. Maybe make a script for each section...
-section = 'A'#selecting the whole thing
+section = 'A_1_0'#selecting the whole thing
 # "'RA_gns','DE_gns','Jmag','Hmag','Ksmag','ra','dec','x_c','y_c','mua','dmua','mud','dmud','time','n1','n2','ID','mul','mub','dmul','dmub','m139','Separation'",
 if section == 'All':
     catal=np.loadtxt(results + '%smatch_GNS_and_%s_refined_galactic.txt'%(pre,name))
 else:
-    catal=np.loadtxt(results + 'sec_%s_%smatch_GNS_and_%s_refined_galactic.txt'%(section,pre,name))
-    # catal=np.genfromtxt(pruebas + 'sec_%s_%smatch_GNS_and_%s_refined_galactic.txt'%(section,pre,name))
+    # catal=np.loadtxt(results + 'sec_%s_%smatch_GNS_and_%s_refined_galactic.txt'%(section,pre,name))
+    catal=np.genfromtxt(pruebas +'subsec_%s/subsec_%s.txt'%('A',section))
 
 # Definition of center can: m139 - Ks(libralato and GNS) or H - Ks(GNS and GNS)
 center_definition='G_G'#this variable can be L_G or G_G
@@ -270,7 +270,7 @@ while save_clus != 'stop':                    # What I mean is that with a small
                 min_c_J=min(data[:,2][colores_index[i]]-data[:,4][colores_index[i]])
                 max_c_J=max(data[:,2][colores_index[i]]-data[:,4][colores_index[i]])
             
-                if max_c-min_c <0.3 and any(min_nth<13):
+                if max_c-min_c <0.5 and any(min_nth<14):
                     fig, ax = plt.subplots(1,3,figsize=(30,10))
                     # fig, ax = plt.subplots(1,3,figsize=(30,10))
                     # ax[2].invert_yaxis()
@@ -353,47 +353,67 @@ while save_clus != 'stop':                    # What I mean is that with a small
                     # ax[2].scatter(data[:,3]-data[:,4],data[:,4], color=colors[-1],s=50,zorder=1, alpha=0.1)
                     
                     # This is for plotting the cluster and the isochrone with extiontion
-# =============================================================================
-#                     clus_coord =  SkyCoord(ra=data[:,5][colores_index[i]]*u.degree, dec=data[:,6][colores_index[i]]*u.degree)
-#                     idx = clus_coord.match_to_catalog_sky(gns_coord)
-#                     gns_match = AKs_center[idx[0]]
-#                     good = np.where(gns_match[:,11] == -1)
-#                     if len(good[0]) != len(gns_match[:,11]):
-#                         print('%s foreground stars in this cluster'%(len(gns_match[:,11]) - len(good)))
-#                     gns_match_good = gns_match[good]
-#                     AKs_clus_all = [float(gns_match_good[i,18]) for i in range(len(gns_match_good[:,18]))  if gns_match_good[i,18] !='-']
-#                         
-#                     AKs_clus, std_AKs = np.mean(AKs_clus_all),np.std(AKs_clus_all)
-#                     absolute_difference_function = lambda list_value : abs(list_value - AKs_clus)
-#                     
-#                     AKs = min(AKs_list, key=absolute_difference_function)
-#                     frase = 'Diff in extintion bigger than 0.2!'
-#                     # print('\n'.join((10*'§','%s %s'%(AKs_clus,AKs),10*'§')))
-#                     if abs(AKs - AKs_clus)>0.2:
-#                         print(''*len(frase)+'\n'+frase+'\n'+''*len(frase))
-#                     ax[2].scatter(data[:,3][colores_index[i]]-data[:,4][colores_index[i]],data[:,4][colores_index[i]], color='blueviolet',s=50,zorder=3, alpha=1)
-#                     ax[2].invert_yaxis()    
-# =============================================================================
-                    # Thi subtract the extiontion to Ks and H and plots the isochrone withput extinction
                     H_Ks_yes = []
                     Ks_yes = []
+                    AKs_clus_all =[]
                     for m in range(len(colores_index[i][0])):
                         clus_coord =  SkyCoord(ra=data[:,5][colores_index[i][0][m]]*u.degree, dec=data[:,6][colores_index[i][0][m]]*u.degree)
                         idx = clus_coord.match_to_catalog_sky(gns_coord)
                         gns_match = AKs_center[idx[0]]
                         # print(type(gns_match[16])) 
                         if gns_match[16] != '-' and gns_match[18] != '-':
-                            H_Ks_yes.append((data[:,3][colores_index[i][0][m]]-float(gns_match[16]))-((data[:,4][colores_index[i][0][m]]-float(gns_match[18]))))
-                            Ks_yes.append(data[:,4][colores_index[i][0][m]]-float(gns_match[18]))
+                            AKs_clus_all.append(float(gns_match[18]))
+                            H_Ks_yes.append(data[:,3][colores_index[i][0][m]]-data[:,4][colores_index[i][0][m]])
+                            Ks_yes.append(data[:,4][colores_index[i][0][m]])
                         
                     ax[2].scatter(H_Ks_yes,Ks_yes, color='blueviolet',s=50,zorder=3, alpha=1)
                     ax[2].invert_yaxis()  
                     
-                    AKs_clus = np.mean(H_Ks_yes)
-                    std_AKs = np.std(H_Ks_yes)
+                    AKs_clus, std_AKs = np.mean(AKs_clus_all),np.std(AKs_clus_all)
                     absolute_difference_function = lambda list_value : abs(list_value - AKs_clus)
                     AKs = min(AKs_list, key=absolute_difference_function)
-                    std_AKs = 0.3
+                    
+                    # clus_coord =  SkyCoord(ra=data[:,5][colores_index[i]]*u.degree, dec=data[:,6][colores_index[i]]*u.degree)
+                    # idx = clus_coord.match_to_catalog_sky(gns_coord)
+                    # gns_match = AKs_center[idx[0]]
+                    # good = np.where(gns_match[:,11] == -1)
+                    # if len(good[0]) != len(gns_match[:,11]):
+                    #     print('%s foreground stars in this cluster'%(len(gns_match[:,11]) - len(good)))
+                    # gns_match_good = gns_match[good]
+                    # AKs_clus_all = [float(gns_match_good[i,18]) for i in range(len(gns_match_good[:,18]))  if gns_match_good[i,18] !='-']
+                        
+                    # AKs_clus, std_AKs = np.mean(AKs_clus_all),np.std(AKs_clus_all)
+                    # absolute_difference_function = lambda list_value : abs(list_value - AKs_clus)
+                    
+                    # AKs = min(AKs_list, key=absolute_difference_function)
+                    # frase = 'Diff in extintion bigger than 0.2!'
+                    # # print('\n'.join((10*'§','%s %s'%(AKs_clus,AKs),10*'§')))
+                    # if abs(AKs - AKs_clus)>0.2:
+                    #     print(''*len(frase)+'\n'+frase+'\n'+''*len(frase))
+                    # ax[2].scatter(data[:,3][colores_index[i]]-data[:,4][colores_index[i]],data[:,4][colores_index[i]], color='blueviolet',s=50,zorder=3, alpha=1)
+                    # ax[2].invert_yaxis()    
+                    # Thi subtract the extiontion to Ks and H and plots the isochrone withput extinction
+# =============================================================================
+#                     H_Ks_yes = []
+#                     Ks_yes = []
+#                     for m in range(len(colores_index[i][0])):
+#                         clus_coord =  SkyCoord(ra=data[:,5][colores_index[i][0][m]]*u.degree, dec=data[:,6][colores_index[i][0][m]]*u.degree)
+#                         idx = clus_coord.match_to_catalog_sky(gns_coord)
+#                         gns_match = AKs_center[idx[0]]
+#                         # print(type(gns_match[16])) 
+#                         if gns_match[16] != '-' and gns_match[18] != '-':
+#                             H_Ks_yes.append((data[:,3][colores_index[i][0][m]]-float(gns_match[16]))-((data[:,4][colores_index[i][0][m]]-float(gns_match[18]))))
+#                             Ks_yes.append(data[:,4][colores_index[i][0][m]]-float(gns_match[18]))
+#                         
+#                     ax[2].scatter(H_Ks_yes,Ks_yes, color='blueviolet',s=50,zorder=3, alpha=1)
+#                     ax[2].invert_yaxis()  
+#                     
+#                     AKs_clus = np.mean(H_Ks_yes)
+#                     std_AKs = np.std(H_Ks_yes)
+#                     absolute_difference_function = lambda list_value : abs(list_value - AKs_clus)
+#                     AKs = min(AKs_list, key=absolute_difference_function)
+# =============================================================================
+                    
                     iso_dir = '/Users/amartinez/Desktop/PhD/Libralato_data/nsd_isochrones/'
                     
                     dist = 8000 # distance in parsec
@@ -413,20 +433,20 @@ while save_clus != 'stop':                    # What I mean is that with a small
                                                     red_law=red_law, filters=filt_list,
                                                         iso_dir=iso_dir)
                     
-                    iso_30 = synthetic.IsochronePhot(logAge_30, AKs, dist, metallicity=metallicity,
-                                                    evo_model=evo_model, atm_func=atm_func,
-                                                    red_law=red_law, filters=filt_list,
-                                                        iso_dir=iso_dir)
-                    iso_60 = synthetic.IsochronePhot(logAge_60, AKs, dist, metallicity=metallicity,
-                                                    evo_model=evo_model, atm_func=atm_func,
-                                                    red_law=red_law, filters=filt_list,
-                                                        iso_dir=iso_dir)
+                    # iso_30 = synthetic.IsochronePhot(logAge_30, AKs, dist, metallicity=metallicity,
+                    #                                 evo_model=evo_model, atm_func=atm_func,
+                    #                                 red_law=red_law, filters=filt_list,
+                    #                                     iso_dir=iso_dir)
+                    # iso_60 = synthetic.IsochronePhot(logAge_60, AKs, dist, metallicity=metallicity,
+                    #                                 evo_model=evo_model, atm_func=atm_func,
+                    #                                 red_law=red_law, filters=filt_list,
+                    #                                     iso_dir=iso_dir)
                     
-                    iso_90 = synthetic.IsochronePhot(logAge_90, AKs, dist, metallicity=metallicity,
-                                                    evo_model=evo_model, atm_func=atm_func,
-                                                    red_law=red_law, filters=filt_list,
-                                                        iso_dir=iso_dir)
-                    #%
+                    # iso_90 = synthetic.IsochronePhot(logAge_90, AKs, dist, metallicity=metallicity,
+                    #                                 evo_model=evo_model, atm_func=atm_func,
+                    #                                 red_law=red_law, filters=filt_list,
+                    #                                     iso_dir=iso_dir)
+                    # #%
                     #%
                     
                     
@@ -470,12 +490,15 @@ while save_clus != 'stop':                    # What I mean is that with a small
                         verticalalignment='top', bbox=props)
                     ax[2].plot(iso.points['m_hawki_H'] - iso.points['m_hawki_Ks'], 
                                       iso.points['m_hawki_Ks'], 'b-',  label='10 Myr')
-                    ax[2].plot(iso_30.points['m_hawki_H'] - iso_30.points['m_hawki_Ks'], 
-                                      iso_30.points['m_hawki_Ks'], 'orange',  label='30 Myr')
-                    ax[2].plot(iso_60.points['m_hawki_H'] - iso_60.points['m_hawki_Ks'], 
-                                      iso_60.points['m_hawki_Ks'],  label='60 Myr')
-                    ax[2].plot(iso_90.points['m_hawki_H'] - iso_90.points['m_hawki_Ks'], 
-                                      iso_90.points['m_hawki_Ks'],  label='90 Myr')
+                    
+# =============================================================================
+#                     ax[2].plot(iso_30.points['m_hawki_H'] - iso_30.points['m_hawki_Ks'], 
+#                                       iso_30.points['m_hawki_Ks'], 'orange',  label='30 Myr')
+#                     ax[2].plot(iso_60.points['m_hawki_H'] - iso_60.points['m_hawki_Ks'], 
+#                                       iso_60.points['m_hawki_Ks'],  label='60 Myr')
+#                     ax[2].plot(iso_90.points['m_hawki_H'] - iso_90.points['m_hawki_Ks'], 
+#                                       iso_90.points['m_hawki_Ks'],  label='90 Myr')
+# =============================================================================
                     ax[2].set_xlabel('H$-$Ks')
                     ax[2].set_ylabel('Ks')
                     ax[2].legend(loc =3, fontsize = 12)
