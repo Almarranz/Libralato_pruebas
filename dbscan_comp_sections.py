@@ -76,14 +76,14 @@ else:
     sys.exit("Have to set trimmed_data to either 'yes' or 'no'")
     
 # %%
-# section = 'A'#sections from A to D. Maybe make a script for each section...
-section = 'A_1_0'#selecting the whole thing
+section = 'A'#sections from A to D. Maybe make a script for each section...
+# section = 'A_1_0'#selecting the whole thing
 # "'RA_gns','DE_gns','Jmag','Hmag','Ksmag','ra','dec','x_c','y_c','mua','dmua','mud','dmud','time','n1','n2','ID','mul','mub','dmul','dmub','m139','Separation'",
 if section == 'All':
     catal=np.loadtxt(results + '%smatch_GNS_and_%s_refined_galactic.txt'%(pre,name))
 else:
-    # catal=np.loadtxt(results + 'sec_%s_%smatch_GNS_and_%s_refined_galactic.txt'%(section,pre,name))
-    catal=np.genfromtxt(pruebas +'subsec_%s/subsec_%s.txt'%('A',section))
+    catal=np.loadtxt(results + 'sec_%s_%smatch_GNS_and_%s_refined_galactic.txt'%(section,pre,name))
+    # catal=np.genfromtxt(pruebas +'subsec_%s/subsec_%s.txt'%('A',section))
 
 # Definition of center can: m139 - Ks(libralato and GNS) or H - Ks(GNS and GNS)
 center_definition='G_G'#this variable can be L_G or G_G
@@ -141,8 +141,8 @@ for file_to_erase in glob.glob(pruebas + 'Sec_%s_%s_%scluster*_eps*.txt'%(sectio
 # %
 
 pixel = 'yes'
-cluster_by = 'all'
-
+# cluster_by = 'all'
+cluster_by = 'all_and_color'
 # pms =[0,0,-5.72,-0.17]# galactic pm obtained from the dynesty adjustement 
 pms =[0,0,0,0]
 data = catal
@@ -165,6 +165,10 @@ elif cluster_by == 'pm':
     X_stad = StandardScaler().fit_transform(X[:,[0,1]])
 elif cluster_by == 'all':
     X_stad = StandardScaler().fit_transform(X)
+elif cluster_by == 'all_and_color':
+    X=np.array([data[:,-6]-pms[2],data[:,-5]-pms[3],data[:,7],data[:,8],data[:,3]-data[:,4]]).T
+    X_stad = StandardScaler().fit_transform(X)
+    
 
 #this aproach below isn´t working...
 # =============================================================================
@@ -433,19 +437,19 @@ while save_clus != 'stop':                    # What I mean is that with a small
                                                     red_law=red_law, filters=filt_list,
                                                         iso_dir=iso_dir)
                     
-                    # iso_30 = synthetic.IsochronePhot(logAge_30, AKs, dist, metallicity=metallicity,
-                    #                                 evo_model=evo_model, atm_func=atm_func,
-                    #                                 red_law=red_law, filters=filt_list,
-                    #                                     iso_dir=iso_dir)
-                    # iso_60 = synthetic.IsochronePhot(logAge_60, AKs, dist, metallicity=metallicity,
-                    #                                 evo_model=evo_model, atm_func=atm_func,
-                    #                                 red_law=red_law, filters=filt_list,
-                    #                                     iso_dir=iso_dir)
+                    iso_30 = synthetic.IsochronePhot(logAge_30, AKs, dist, metallicity=metallicity,
+                                                    evo_model=evo_model, atm_func=atm_func,
+                                                    red_law=red_law, filters=filt_list,
+                                                        iso_dir=iso_dir)
+                    iso_60 = synthetic.IsochronePhot(logAge_60, AKs, dist, metallicity=metallicity,
+                                                    evo_model=evo_model, atm_func=atm_func,
+                                                    red_law=red_law, filters=filt_list,
+                                                        iso_dir=iso_dir)
                     
-                    # iso_90 = synthetic.IsochronePhot(logAge_90, AKs, dist, metallicity=metallicity,
-                    #                                 evo_model=evo_model, atm_func=atm_func,
-                    #                                 red_law=red_law, filters=filt_list,
-                    #                                     iso_dir=iso_dir)
+                    iso_90 = synthetic.IsochronePhot(logAge_90, AKs, dist, metallicity=metallicity,
+                                                    evo_model=evo_model, atm_func=atm_func,
+                                                    red_law=red_law, filters=filt_list,
+                                                        iso_dir=iso_dir)
                     # #%
                     #%
                     
@@ -475,8 +479,8 @@ while save_clus != 'stop':                    # What I mean is that with a small
                     clus = cluster.star_systems
                     clus_ndiff = cluster_ndiff.star_systems
                     ax[2].set_title('Cluster %s, eps = %s'%(i,round(epsilon,3)))
-                    ax[2].scatter(clus['m_hawki_H']-clus['m_hawki_Ks'],clus['m_hawki_Ks'],color = 'r',alpha=0.1)
-                    ax[2].scatter(clus_ndiff['m_hawki_H']-clus_ndiff['m_hawki_Ks'],clus_ndiff['m_hawki_Ks'],color = 'k',alpha=0.3)
+                    ax[2].scatter(clus['m_hawki_H']-clus['m_hawki_Ks'],clus['m_hawki_Ks'],color = 'lavender',alpha=0.1)
+                    ax[2].scatter(clus_ndiff['m_hawki_H']-clus_ndiff['m_hawki_Ks'],clus_ndiff['m_hawki_Ks'],color = 'k',alpha=0.1,s=1)
                     
         
                     txt_srn = '\n'.join(('metallicity = %s'%(metallicity),'dist = %.1f Kpc'%(dist/1000),'mass =%.0fx$10^{3}$ $M_{\odot}$'%(mass/1000),
@@ -491,14 +495,12 @@ while save_clus != 'stop':                    # What I mean is that with a small
                     ax[2].plot(iso.points['m_hawki_H'] - iso.points['m_hawki_Ks'], 
                                       iso.points['m_hawki_Ks'], 'b-',  label='10 Myr')
                     
-# =============================================================================
-#                     ax[2].plot(iso_30.points['m_hawki_H'] - iso_30.points['m_hawki_Ks'], 
-#                                       iso_30.points['m_hawki_Ks'], 'orange',  label='30 Myr')
-#                     ax[2].plot(iso_60.points['m_hawki_H'] - iso_60.points['m_hawki_Ks'], 
-#                                       iso_60.points['m_hawki_Ks'],  label='60 Myr')
-#                     ax[2].plot(iso_90.points['m_hawki_H'] - iso_90.points['m_hawki_Ks'], 
-#                                       iso_90.points['m_hawki_Ks'],  label='90 Myr')
-# =============================================================================
+                    ax[2].plot(iso_30.points['m_hawki_H'] - iso_30.points['m_hawki_Ks'], 
+                                      iso_30.points['m_hawki_Ks'], 'orange',  label='30 Myr')
+                    ax[2].plot(iso_60.points['m_hawki_H'] - iso_60.points['m_hawki_Ks'], 
+                                      iso_60.points['m_hawki_Ks'], 'green' ,label='60 Myr')
+                    ax[2].plot(iso_90.points['m_hawki_H'] - iso_90.points['m_hawki_Ks'], 
+                                      iso_90.points['m_hawki_Ks'], 'red' ,label='90 Myr')
                     ax[2].set_xlabel('H$-$Ks')
                     ax[2].set_ylabel('Ks')
                     ax[2].legend(loc =3, fontsize = 12)
@@ -531,7 +533,7 @@ while save_clus != 'stop':                    # What I mean is that with a small
                                         os.remove(check)
                                         # np.savetxt(pruebas + 'all_%s_%scluster%s_eps%s.txt'%(name,pre,i,round(epsilon,3)),clus_array1,fmt='%.7f '*8 + '%.0f ', header ='ra, dec, l, b, pml, pmb, H, Ks,cluster')
                         elif save_clus == 'stop':
-                            sys.exit('You stop it')
+                            sys.exit('You stoped it')
                         elif save_clus =='jump':
                             new_epsilon = input('Select the new epsilon:')
                             epsilon = float(new_epsilon) -0.01
