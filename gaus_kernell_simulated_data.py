@@ -72,44 +72,75 @@ elif trimmed_data=='no':
 else:
     sys.exit("Have to set trimmed_data to either 'yes' or 'no'")
     
-col =np.arange(0,8,1)
-row =np.arange(0,6,1)
-# col =[2]
-# row =[2]
-# "'RA_gns','DE_gns','Jmag','Hmag','Ksmag','ra','dec','x_c','y_c','mua','dmua','mud','dmud','time','n1','n2','ID','mul','mub','dmul','dmub','m139','Separation'",
-catal_all = np.loadtxt(results + '%smatch_GNS_and_%s_refined_galactic.txt'%(pre,name))
-catal=np.loadtxt(results + 'sec_%s_%smatch_GNS_and_%s_refined_galactic.txt'%(section,pre,name))
-# %%    
+col =np.arange(0,4,1)
+row =np.arange(0,4,1)
+
+# %    
 for c in range(len(col)):
     for r in range(len(row)):
         try:
-            sub_catal = np.loadtxt(subsec + 'subsec_A_%s_%s.txt'%(col[c],row[r]))    
+            catal = np.loadtxt(subsec + 'subsec_A_%s_%s.txt'%(col[c],row[r]))
             
-            datos = sub_catal
+            center_definition='G_G'#this variable can be L_G or G_G
+            if center_definition =='L_G':
+                valid=np.where(np.isnan(catal[:,4])==False)# This is for the valus than make Ks magnitude valid, but shouldn´t we do the same with the H magnitudes?
+                catal=catal[valid]
+                center=np.where(catal[:,-2]-catal[:,4]>2.5) # you can choose the way to make the color cut, as they did in libralato or as it is done in GNS
+            elif center_definition =='G_G':
+                valid=np.where((np.isnan(catal[:,3])==False) & (np.isnan(catal[:,4])==False ))
+                catal=catal[valid]
+                center=np.where(catal[:,3]-catal[:,4]>1.3)
+            catal=catal[center]
+            dmu_lim = 2
+            vel_lim = np.where((catal[:,19]<=dmu_lim) & (catal[:,20]<=dmu_lim))
+            catal=catal[vel_lim]
+            
+            datos = catal
             var = -6
             mul,mub = datos[:,-6],datos[:,-5]
-            mul_kernel = gaussian_kde(mul)
-            mub_kernel = gaussian_kde(mub)
-            mub_sim = mub_kernel.resample(len(datos))
-            mul_sim = mul_kernel.resample(len(datos))
+            x,y = datos[:,7], datos[:,8]
+            color = datos[:,3]-datos[:,4]
             
+            mul_kernel, mub_kernel = gaussian_kde(mul), gaussian_kde(mub)
+            x_kernel, y_kernel = gaussian_kde(x), gaussian_kde(y)
+            mub_sim,  mul_sim = mub_kernel.resample(len(datos)), mul_kernel.resample(len(datos))
+            x_sim, y_sim = x_kernel.resample(len(datos)), y_kernel.resample(len(datos))
+            color_kernel = gaussian_kde(color)
+            color_sim = color_kernel.resample(len(datos))
             
-            fig, ax = plt.subplots(1,2, figsize=(20,10))
+            fig, ax = plt.subplots(1,5, figsize=(40,10))
             ax[0].hist(mul, bins ='auto', histtype ='step',color = 'k',label ='real')
-            ax[0].hist(mul_sim[0], bins ='auto', histtype = 'step',label ='sim')
+            ax[0].hist(mul_sim[0], bins ='auto', histtype = 'step',label ='sim',color = 'r')
             ax[1].hist(mub, bins ='auto', histtype ='step',color = 'k',label ='real')
-            ax[1].hist(mub_sim[0], bins ='auto', histtype = 'step',label ='sim')
+            ax[1].hist(mub_sim[0], bins ='auto', histtype = 'step',label ='sim',color = 'r')
+            
+            ax[2].hist(x, bins ='auto', histtype ='step',color = 'k',label ='real')
+            ax[2].hist(x_sim[0], bins ='auto', histtype = 'step',label ='sim',color = 'r')
+            ax[3].hist(y, bins ='auto', histtype ='step',color = 'k',label ='real')
+            ax[3].hist(y_sim[0], bins ='auto', histtype = 'step',label ='sim',color = 'r')
+            
+            ax[4].hist(color, bins ='auto', histtype ='step',color = 'k',label ='real')
+            ax[4].hist(color_sim[0], bins ='auto', histtype = 'step',label ='sim',color = 'r')
+            
+            
             ax[0].set_xlabel('mul')
-            ax[1].set_xlabel('mub')
+            ax[1].set_ylabel('mub')
+            ax[2].set_xlabel('x')
+            ax[3].set_xlabel('y')
+            ax[4].set_xlabel('H$-$Ks')
             ax[0].legend(loc =2 )
             ax[1].legend(loc =2)
+            ax[2].legend(loc =2 )
+            ax[3].legend(loc =2)
+            ax[4].legend(loc =2)
+            
             
             # %
             
-            X_sim=np.array([mul_sim[0],mub_sim[0],datos[:,7],datos[:,8]]).T
+            X_sim=np.array([mul_sim[0],mub_sim[0],x_sim[0],y_sim[0],color_sim[0]]).T
             X_stad_sim = StandardScaler().fit_transform(X_sim)
             
-            X=np.array([mul,mub,datos[:,7],datos[:,8]]).T
+            X=np.array([mul,mub,datos[:,7],datos[:,8],color]).T
             X_stad = StandardScaler().fit_transform(X)
             
             tree = KDTree(X_stad, leaf_size=2) 
@@ -127,7 +158,7 @@ for c in range(len(col)):
             
             fig, ax = plt.subplots(1,2,figsize=(20,10))
             ax[0].set_title('Sub_sec_%s_%s'%(col[c],row[r]))
-            ax[0].plot(np.arange(0,len(datos),1),d_KNN,linewidth=1)
+            ax[0].plot(np.arange(0,len(datos),1),d_KNN,linewidth=1,color ='k')
             ax[0].plot(np.arange(0,len(datos),1),d_KNN_sim, color = 'r')
             
             # ax.legend(['knee=%s, min=%s, eps=%s, Dim.=%s'%(round(kneedle.elbow_y, 3),round(min(d_KNN),2),round(epsilon,2),len(X[0]))])
@@ -137,13 +168,21 @@ for c in range(len(col)):
             ax[1].hist(d_KNN,bins ='auto',histtype ='step',color = 'k')
             ax[1].hist(d_KNN_sim,bins ='auto',histtype ='step',color = 'r')
             ax[1].set_xlabel('%s-NN distance'%(samples)) 
+            
+            texto = '\n'.join(('min real d_KNN = %s'%(round(min(d_KNN),3)),'min sim d_KNN =%s'%(round(min(d_KNN_sim),3)),'average = %s'%((round(min(d_KNN),3)+round(min(d_KNN_sim),3))/2)))
+            props = dict(boxstyle='round', facecolor='w', alpha=0.5)
+            # place a text box in upper left in axes coords
+            ax[1].text(0.65, 0.95, texto, transform=ax[1].transAxes, fontsize=14,
+                verticalalignment='top', bbox=props)
+            
             ax[1].set_ylabel('N') 
             # ax.set_xlim(0,0.5)
         except:
             print('there is no sectioin %s_%s'%(col[c],row[r]))
 
 
-
+# %%
+print(min(d_KNN))
 
 
 
