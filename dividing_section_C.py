@@ -141,7 +141,7 @@ for i in range(x_box):
 
     # ax.plot(catal[:,7],yg_1, color ='g')
     # ax.plot(catal[:,7],yg_2, color ='g')
-    for j in range(x_box):
+    for j in range(y_box):
         yr_1 = (lim_neg_up - (j)*step_neg/np.cos(ang*u.deg)) +  m1*catal[:,7]
         yr_2 = (lim_neg_up - (j+1)*step_neg/np.cos(ang*u.deg)) +  m1*catal[:,7]
         good = np.where((catal[:,8]<yg_1)&(catal[:,8]>yg_2)

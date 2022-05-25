@@ -70,7 +70,7 @@ elif trimmed_data=='no':
 else:
     sys.exit("Have to set trimmed_data to either 'yes' or 'no'")
 
-section = 'B'#selecting the whole thing
+section = 'D'#selecting the whole thing
 subsec = '/Users/amartinez/Desktop/PhD/Libralato_data/pruebas/subsec_%s/'%(section)
 
 # "'RA_gns','DE_gns','Jmag','Hmag','Ksmag','ra','dec','x_c','y_c','mua','dmua','mud','dmud','time','n1','n2','ID','mul','mub','dmul','dmub','m139','Separation'",
@@ -98,7 +98,7 @@ catal=catal[vel_lim]
 # catal_all = np.loadtxt(cata + '%s_pm_galactic.txt'%(name))
 # %%
 # clus_test = np.loadtxt(pruebas + 'dbs_cluster1_of_group89.txt')
-m1 = -0.80
+m1 = -0.86
 m = 1
 step = 3300
 
@@ -113,14 +113,14 @@ missing =0
 fig, ax = plt.subplots(1,1, figsize=(10,10))
 ax.scatter(catal[:,7],catal[:,8])
 fila =-1
-lim_pos_up, lim_pos_down = 22000, -1000 #intersection of the positives slopes lines with y axis,
-lim_neg_up, lim_neg_down =39000,31500 #intersection of the negayives slopes lines with y axis,
+lim_pos_up, lim_pos_down = 1000, -18300 #intersection of the positives slopes lines with y axis,
+lim_neg_up, lim_neg_down =24000,17300 #intersection of the negayives slopes lines with y axis,
 
 yg_up =  lim_pos_up + m*catal[:,7]
 yg_down =  lim_pos_down + m*catal[:,7]
 
 # distancia entre yg_up e yg_down
-dist_pos = abs((-1*catal[0,7]+ (lim_pos_down + m*catal[0,7])-lim_pos_up)/np.sqrt((-1)**2+(1)**2))
+dist_pos = abs((-m*catal[0,7]+ (lim_pos_down + m*catal[0,7])-lim_pos_up)/np.sqrt((-1)**2+(1)**2))
 
 yr_up = lim_neg_up + m1*catal[:,7]
 yr_down = lim_neg_down + m1*catal[:,7]
@@ -129,7 +129,7 @@ dist_neg = abs((-m1*catal[0,7]+ (lim_neg_down + m1*catal[0,7])-lim_neg_up)/np.sq
 ang = math.degrees(np.arctan(m1))
 
 
-x_box = 10
+x_box = 8
 y_box = 3
 step = dist_pos /x_box
 step_neg =dist_neg/y_box
@@ -143,7 +143,6 @@ for i in range(x_box):
     # ax.plot(catal[:,7],yg_2, color ='g')
     for j in range(y_box):
         yr_1 = (lim_neg_up - (j)*step_neg/np.cos(ang*u.deg)) +  m1*catal[:,7]
-        # yg_2 = (lim_pos_up - (i+1)*step*np.cos(45*u.deg)) +  m*catal[:,7]
         yr_2 = (lim_neg_up - (j+1)*step_neg/np.cos(ang*u.deg)) +  m1*catal[:,7]
         good = np.where((catal[:,8]<yg_1)&(catal[:,8]>yg_2)
                                 & (catal[:,8]<yr_1)&(catal[:,8]>yr_2))

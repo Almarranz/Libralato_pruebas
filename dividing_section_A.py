@@ -133,7 +133,7 @@ dist_neg = abs((-m1*catal[0,7]+ (lim_neg_down + m1*catal[0,7])-lim_neg_up)/np.sq
 ang = math.degrees(np.arctan(m1))
 
 
-x_box = 5
+x_box = 3
 step = dist_pos /x_box
 step_neg =dist_neg/x_box
 
@@ -160,12 +160,17 @@ for i in range(x_box):
         ax.scatter(catal[:,7][good],catal[:,8][good],color =strin[np.random.choice(indices)])
         # ax.plot(catal[:,7],yr_1, color ='r')
         # ax.plot(catal[:,7],yr_2, color ='r')
+# Just fot plotting some cluster on top of the data
+clus = np.loadtxt(pruebas + 'Sec_A_WFC3IR_cluster0_eps0.245.txt')
+ax.scatter(clus[:,-3],clus[:,-2], s =50)
 
 ax.set_xlabel('x (130 mas/pix)')
 ax.set_ylabel('y (130 mas/pix)')
-plt.savefig('/Users/amartinez/Desktop/PhD/Charlas/Presentaciones/Brno/' + 'section_A_Libr.png', dpi=300,bbox_inches='tight')
+# plt.savefig('/Users/amartinez/Desktop/PhD/Charlas/Presentaciones/Brno/' + 'section_A_Libr.png', dpi=300,bbox_inches='tight')
+# %%
 
-      
+
+    
       
       
       
