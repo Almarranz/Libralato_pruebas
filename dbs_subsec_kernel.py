@@ -116,12 +116,15 @@ clustered_by = 'all_color'# you can choose whether clustering by position, veloc
 # clustered_by = 'all'
 col =np.arange(0,10,1)
 row =np.arange(0,4,1)
-areas = np.arange(1.3,24.0,0.1)
-samples=5# number of minimun objects that defined a cluster
-samples_dist = samples# t
+# areas = np.arange(1.3,24.0,0.1)
+areas = np.arange(4.8,19.2,0.1)
+samples_lst=[5,7,10]# number of minimun objects that defined a cluster
+
 # % 
 save_clus ='nada'
-for samples in samples_lst:   
+for samples in samples_lst:  
+    samples_dist = samples# t
+    print(samples)
     for area in areas:
         area = round(area,1)
         for colum in range(len(col)):
@@ -445,18 +448,19 @@ for samples in samples_lst:
                     clus_array1= np.c_[clus_array, np.full((len(X[:,0][colores_index[i]]),1),i),
                                        np.full((len(X[:,0][colores_index[i]]),1),area),
                                        np.full((len(X[:,0][colores_index[i]]),1),col[colum]),
-                                       np.full((len(X[:,0][colores_index[i]]),1),row[ro])]
+                                       np.full((len(X[:,0][colores_index[i]]),1),row[ro]),
+                                       np.full((len(X[:,0][colores_index[i]]),1),samples)]
                     frase = 'Do you want to save this cluster?'
-                    print('\n'.join((len(frase)*'π',frase+'\n("yes", "no" or "jump" to a new epsilon)',len(frase)*'π')))
+                    print('\n'.join((len(frase)*'π',frase+'\n("yes" or "no")',len(frase)*'π')))
                     save_clus = input('Awnser:')
                     print('You said: %s'%(save_clus))
                     if save_clus =='yes' or save_clus =='y':
-                        np.savetxt(carp_clus + 'Sec_%s_%s_cl%s_area%s_%s_%s.txt'%(section,pre,i,area,col[colum],row[ro]),clus_array1,fmt='%.7f '*10 + '%.0f %.1f'+2*' %.0f', header ='ra, dec, l, b, pml, pmb, H, Ks,x, y,cluster, area, col, row')
-                        with open(carp_clus+'clusters_common_with_cl%s_area%s_%s_%s.txt'%(i,area,col[colum],row[ro]),'w') as f:
-                            f.write(''.join(('# Name samples\n','Sec_%s_%s_cl%s_area%s_%s_%s.txt'%(section,pre,i,area,col[colum],row[ro]),' %s'%(samples))))
+                        np.savetxt(carp_clus + 'Sec_%s_%s_cl%s_area%s_%s_%s_samp%s.txt'%(section,pre,i,area,col[colum],row[ro],samples),clus_array1,fmt='%.7f '*10 + '%.0f %.1f'+3*' %.0f', header ='ra, dec, l, b, pml, pmb, H, Ks,x, y,cluster, area, col, row,samples')
+                        with open(carp_clus+'clusters_common_with_cl%s_area%s_%s_%s_samp%s.txt'%(i,area,col[colum],row[ro],samples),'w') as f:
+                            f.write(''.join(('# Section_cluster_area_col_row_min_samples\n','Sec_%s_%s_cl%s_area%s_%s_%s_samp%s.txt'%(section,pre,i,area,col[colum],row[ro],samples))))
                             f.close
                         for check in glob.glob(carp_clus + 'Sec_%s_%s_cl*.txt'%(section,pre)):
-                            if 'Sec_%s_%s_cl%s_area%s_%s_%s.txt'%(section,pre,i,area,col[colum],row[ro]) != os.path.basename(check):
+                            if 'Sec_%s_%s_cl%s_area%s_%s_%s_samp%s.txt'%(section,pre,i,area,col[colum],row[ro],samples) != os.path.basename(check):
                                 # This bit compares different saved cluster for checking if they are the same or have some common elements
                                 ra_dec_clus = clus_array[:,0:2]
                                 ra_dec = np.loadtxt(check,usecols=(0,1))
@@ -465,19 +469,40 @@ for samples in samples_lst:
                                 intersection = np.array([x for x in aset & bset])
                                 if len(intersection)> 0 and len(intersection) == len(ra_dec_clus):
                                     print('You have the exact same cluster in: %s'%(os.path.basename(check)))
-                                    os.remove(carp_clus + 'clusters_common_with_cl%s_area%s_%s_%s.txt'%(i,area,col[colum],row[ro]))
-                                    cl_chek, area_check, col_check, row_check = np.loadtxt(check,unpack = True, usecols=(-4,-3,-2,-1))
-                                    with open(carp_clus+'clusters_common_with_cl%s_area%s_%s_%s.txt'%(int(cl_chek[0]), area_check[0], int(col_check[0]), int(row_check[0])),'a') as f:
-                                        f.write(''.join(('\n','Sec_%s_%s_cl%s_area%s_%s_%s.txt'%(section,pre,i,area,col[colum],row[ro]),' %s'%(samples))))
+                                    try:
+                                        os.remove(carp_clus + 'clusters_common_with_cl%s_area%s_%s_%s_samp%s.txt'%(i,area,col[colum],row[ro],samples))
+                                    except:
+                                        print('Already removed clusters_common_with_cl%s_area%s_%s_%s_samp%s.txt'%(i,area,col[colum],row[ro],samples))
+                                        for search in glob.glob(carp_clus + 'clusters_common_with_cl*'):
+                                            cadena = open(search,'r')
+                                            if os.path.basename(check) in cadena.read():
+                                                with open(search,'a') as this:
+                                                    this.write(''.join(('\n','Sec_%s_%s_cl%s_area%s_%s_%s_samp%s.txt'%(section,pre,i,area,col[colum],row[ro],samples))))
+                                                    this.close
+                                        break            
+                                    cl_chek, area_check, col_check, row_check,samples_check = np.loadtxt(check,unpack = True, usecols=(-5,-4,-3,-2,-1))
+                                    with open(carp_clus+'clusters_common_with_cl%s_area%s_%s_%s_samp%s.txt'%(int(cl_chek[0]), area_check[0], int(col_check[0]), int(row_check[0]),int(samples_check[0])),'a') as f:
+                                        f.write(''.join(('\n','Sec_%s_%s_cl%s_area%s_%s_%s_samp%s.txt'%(section,pre,i,area,col[colum],row[ro],samples))))
                                         f.close
                                 elif len(intersection)> 0 and len(intersection) < len(ra_dec_clus):
-                                    os.remove(carp_clus + 'clusters_common_with_cl%s_area%s_%s_%s.txt'%(i,area,col[colum],row[ro]))
-                                    cl_chek, area_check, col_check, row_check = np.loadtxt(check,unpack = True, usecols=(-4,-3,-2,-1))
-                                    with open(carp_clus+'clusters_common_with_cl%s_area%s_%s_%s.txt'%(int(cl_chek[0]), area_check[0], int(col_check[0]), int(row_check[0])),'a') as f:
-                                        f.write(''.join(('\n','Sec_%s_%s_cl%s_area%s_%s_%s.txt'%(section,pre,i,area,col[colum],row[ro]),' %s'%(samples))))
+                                    print('Some more stars in this one...')
+                                    try:
+                                        os.remove(carp_clus + 'clusters_common_with_cl%s_area%s_%s_%s_samp%s.txt'%(i,area,col[colum],row[ro],samples))
+                                    except:
+                                        print('Already removed clusters_common_with_cl%s_area%s_%s_%s_samp%s.txt'%(i,area,col[colum],row[ro],samples))
+                                        for search in glob.glob(carp_clus + 'clusters_common_with_cl*'):
+                                            cadena = open(search,'r')
+                                            if os.path.basename(check) in cadena.read():
+                                                with open(search,'a') as this:
+                                                    this.write(''.join(('\n','Sec_%s_%s_cl%s_area%s_%s_%s_samp%s.txt'%(section,pre,i,area,col[colum],row[ro],samples))))
+                                                    this.close
+                                        break           
+                                    cl_chek, area_check, col_check, row_check,samples_check = np.loadtxt(check,unpack = True, usecols=(-5,-4,-3,-2,-1))
+                                    with open(carp_clus+'clusters_common_with_cl%s_area%s_%s_%s_samp%s.txt'%(int(cl_chek[0]), area_check[0], int(col_check[0]), int(row_check[0]),int(samples_check[0])),'a') as f:
+                                        f.write(''.join(('\n','Sec_%s_%s_cl%s_area%s_%s_%s_samp%s.txt'%(section,pre,i,area,col[colum],row[ro],samples))))
                                         f.close
                                     print('This cluster(%s) has %s more stars than %s'
-                                          %('Sec_%s_%s_cl%s_area%s_%s_%s.txt'%(section,pre,i,area,col[colum],row[ro]),len(ra_dec_clus) - len(intersection),os.path.basename(check)))
+                                          %('Sec_%s_%s_cl%s_area%s_%s_%s_samp%s.txt'%(section,pre,i,area,col[colum],row[ro],samples),len(ra_dec_clus) - len(intersection),os.path.basename(check)))
                                     # os.remove(check)
                                     # np.savetxt(pruebas + 'all_%s_%scluster%s_eps%s.txt'%(name,pre,i,round(epsilon,3)),clus_array1,fmt='%.7f '*8 + '%.0f ', header ='ra, dec, l, b, pml, pmb, H, Ks,cluster')
                     elif save_clus == 'stop':
@@ -491,13 +516,12 @@ for samples in samples_lst:
                             sys.exit('You stoped it')
                         else:
                             sys.exit('You stoped it')
-                    else:
-                        continue
+                  
                     
 frase = 'Do you want to move copy the folder with the cluster into download directory?'
 print('\n'.join((len(frase)*'',frase+'\n("yes" or "no")',len(frase)*'')))
 save_folder = input('Awnser:')                 
-if save_folder == 'yes':       
+if save_folder == 'yes' or save_folder == 'y':       
     source_dir = carp_clus
     destination_dir = '/Users/amartinez/Desktop/morralla/dire_%s'%(datetime.now())
     shutil.copytree(source_dir, destination_dir)
@@ -506,8 +530,6 @@ else:
     sys.exit('Bye sucker!')
 
  
-
-
 
 
 
