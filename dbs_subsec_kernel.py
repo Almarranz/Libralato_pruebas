@@ -117,7 +117,7 @@ clustered_by = 'all_color'# you can choose whether clustering by position, veloc
 col =np.arange(0,10,1)
 row =np.arange(0,4,1)
 # areas = np.arange(1.3,24.0,0.1)
-areas = np.arange(4.8,19.2,0.1)
+areas = np.arange(1,19.2,0.1)
 samples_lst=[5,7,10]# number of minimun objects that defined a cluster
 
 # % 
@@ -146,7 +146,7 @@ for samples in samples_lst:
                 catal=catal[valid]
                 center=np.where(catal[:,3]-catal[:,4]>1.3)
                 catal=catal[center]
-                dmu_lim = 2
+                dmu_lim = 5
                 vel_lim = np.where((catal[:,19]<=dmu_lim) & (catal[:,20]<=dmu_lim))
                 catal=catal[vel_lim]
                 
@@ -161,13 +161,13 @@ for samples in samples_lst:
                 datos = catal
                 mul,mub = datos[:,-6],datos[:,-5]
                 x,y = datos[:,7], datos[:,8]
-                color = datos[:,3]-datos[:,4]
+                colorines = datos[:,3]-datos[:,4]
                 
                 mul_kernel, mub_kernel = gaussian_kde(mul), gaussian_kde(mub)
                 x_kernel, y_kernel = gaussian_kde(x), gaussian_kde(y)
-                color_kernel = gaussian_kde(color)
+                color_kernel = gaussian_kde(colorines)
                 if clustered_by == 'all_color':
-                    X=np.array([mul,mub,datos[:,7],datos[:,8],color]).T
+                    X=np.array([mul,mub,datos[:,7],datos[:,8],colorines]).T
                     X_stad = StandardScaler().fit_transform(X)
                     tree = KDTree(X_stad, leaf_size=2) 
                     dist, ind = tree.query(X_stad, k=samples_dist) #DistNnce to the 1,2,3...k neighbour
@@ -187,18 +187,18 @@ for samples in samples_lst:
                     if clustered_by == 'all_color':
                         X_sim=np.array([mul_sim[0],mub_sim[0],x_sim[0],y_sim[0],color_sim[0]]).T
                         X_stad_sim = StandardScaler().fit_transform(X_sim)
-                        tree_sim =  KDTree(X_stad, leaf_size=2)
+                        tree_sim =  KDTree(X_stad_sim, leaf_size=2)
                         
-                        dist_sim, ind_sim = tree.query(X_stad_sim, k=samples_dist) #DistNnce to the 1,2,3...k neighbour
+                        dist_sim, ind_sim = tree_sim.query(X_stad_sim, k=samples_dist) #DistNnce to the 1,2,3...k neighbour
                         d_KNN_sim=sorted(dist_sim[:,-1])#distance to the Kth neighbour
                         
                         lst_d_KNN_sim.append(min(d_KNN_sim))
                     elif clustered_by =='all':
                         X_sim=np.array([mul_sim[0],mub_sim[0],x_sim[0],y_sim[0]]).T
                         X_stad_sim = StandardScaler().fit_transform(X_sim)
-                        tree_sim =  KDTree(X_stad, leaf_size=2)
+                        tree_sim =  KDTree(X_stad_sim, leaf_size=2)
                         
-                        dist_sim, ind_sim = tree.query(X_stad_sim, k=samples_dist) #DistNnce to the 1,2,3...k neighbour
+                        dist_sim, ind_sim = tree_sim.query(X_stad_sim, k=samples_dist) #DistNnce to the 1,2,3...k neighbour
                         d_KNN_sim=sorted(dist_sim[:,-1])#distance to the Kth neighbour
                         
                         lst_d_KNN_sim.append(min(d_KNN_sim))
@@ -206,7 +206,7 @@ for samples in samples_lst:
                 d_KNN_sim_av = np.mean(lst_d_KNN_sim)
                 
         
-                # fig, ax = plt.subplots(1,2,figsize=(20,10))
+                fig, ax = plt.subplots(1,1,figsize=(10,10))
                 # ax[0].set_title('Sub_sec_%s_%s'%(col[colum],row[ro]))
                 # ax[0].plot(np.arange(0,len(datos),1),d_KNN,linewidth=1,color ='k')
                 # ax[0].plot(np.arange(0,len(datos),1),d_KNN_sim, color = 'r')
@@ -215,22 +215,22 @@ for samples in samples_lst:
                 # ax[0].set_xlabel('Point') 
                 # ax[0].set_ylabel('%s-NN distance'%(samples)) 
                 
-                # ax[1].hist(d_KNN,bins ='auto',histtype ='step',color = 'k')
-                # ax[1].hist(d_KNN_sim,bins ='auto',histtype ='step',color = 'r')
-                # ax[1].set_xlabel('%s-NN distance'%(samples)) 
+                ax.hist(d_KNN,bins ='auto',histtype ='step',color = 'k')
+                ax.hist(d_KNN_sim,bins ='auto',histtype ='step',color = 'r')
+                ax.set_xlabel('%s-NN distance'%(samples)) 
                 
                 eps_av = round((min(d_KNN)+d_KNN_sim_av)/2,3)
                 texto = '\n'.join(('min real d_KNN = %s'%(round(min(d_KNN),3)),
                                     'min sim d_KNN =%s'%(round(d_KNN_sim_av,3)),'average = %s'%(eps_av)))
                 
         
-                # props = dict(boxstyle='round', facecolor='w', alpha=0.5)
-                # # place a text box in upper left in axes coords
-                # ax[1].text(0.65, 0.95, texto, transform=ax[1].transAxes, fontsize=14,
-                #     verticalalignment='top', bbox=props)
+                props = dict(boxstyle='round', facecolor='w', alpha=0.5)
+                # place a text box in upper left in axes coords
+                ax.text(0.65, 0.25, texto, transform=ax.transAxes, fontsize=20,
+                    verticalalignment='top', bbox=props)
                 
-                # ax[1].set_ylabel('N') 
-                # ax.set_xlim(0,0.5)
+                ax.set_ylabel('N') 
+                ax.set_xlim(0,1)
                
                
                 clus_method = 'dbs'
@@ -268,7 +268,7 @@ for samples in samples_lst:
                     ax[0].scatter(X[:,0],X[:,1], color=colors[-1],s=50,zorder=1)
                     # ax[1].quiver(t_gal['l'][colores_index[-1]].value,t_gal['b'][colores_index[-1]].value, X[:,0][colores_index[-1]]-pms[2], X[:,1][colores_index[-1]]-pms[3], alpha=0.5, color=colors[-1])
             
-                    ax[0].scatter(X[:,0][colores_index[i]],X[:,1][colores_index[i]], color='blueviolet',s=50,zorder=3)
+                    ax[0].scatter(X[:,0][colores_index[i]],X[:,1][colores_index[i]], color='fuchsia',s=50,zorder=3)
                     ax[0].set_xlim(-10,10)
                     ax[0].set_ylim(-10,10)
                     ax[0].set_xlabel(r'$\mathrm{\mu_{l} (mas\ yr^{-1})}$') 
@@ -471,6 +471,8 @@ for samples in samples_lst:
                                     print('You have the exact same cluster in: %s'%(os.path.basename(check)))
                                     try:
                                         os.remove(carp_clus + 'clusters_common_with_cl%s_area%s_%s_%s_samp%s.txt'%(i,area,col[colum],row[ro],samples))
+                                        #since a repeited cluster file is removed and the cluster name stored on other cluster....txt, it will look for it and wont find it. SO, for a 
+                                        # third and more common cluster, it look inside the files of cluster_common til find it.
                                     except:
                                         print('Already removed clusters_common_with_cl%s_area%s_%s_%s_samp%s.txt'%(i,area,col[colum],row[ro],samples))
                                         for search in glob.glob(carp_clus + 'clusters_common_with_cl*'):
@@ -506,7 +508,7 @@ for samples in samples_lst:
                                     # os.remove(check)
                                     # np.savetxt(pruebas + 'all_%s_%scluster%s_eps%s.txt'%(name,pre,i,round(epsilon,3)),clus_array1,fmt='%.7f '*8 + '%.0f ', header ='ra, dec, l, b, pml, pmb, H, Ks,cluster')
                     elif save_clus == 'stop':
-                        frase = 'Do you want to copy the folder with the clusters into the download directory?\n("yes" or "no")'
+                        frase = 'Do you want to copy the folder with the clusters into the morralla directory?\n("yes" or "no")'
                         print('\n'.join((len(frase)*'',frase,len(frase)*'')))
                         save_folder = input('Awnser:')   
                         if save_folder == 'yes' or save_folder == 'y':       
