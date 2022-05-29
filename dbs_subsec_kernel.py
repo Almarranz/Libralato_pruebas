@@ -98,7 +98,7 @@ gns_coord = SkyCoord(ra=AKs_center[:,0]*u.degree, dec=AKs_center[:,2]*u.degree)
 AKs_list1 =  np.arange(1.6,2.11,0.01)
 AKs_list = np.append(AKs_list1,0)#I added the 0 for the isochrones without extiction
 # %%
-section = 'A'#sections from A to D. Maybe make a script for each section...
+section = 'D'#sections from A to D. Maybe make a script for each section...
 subsec = '/Users/amartinez/Desktop/PhD/Libralato_data/pruebas/subsec_%s/'%(section)
 carp_clus = subsec +'/clusters_in_%s/'%(section)
 isE = os.path.exists(carp_clus)
@@ -117,7 +117,7 @@ clustered_by = 'all_color'# you can choose whether clustering by position, veloc
 col =np.arange(0,10,1)
 row =np.arange(0,4,1)
 # areas = np.arange(1.3,24.0,0.1)
-areas = np.arange(1,19.2,0.1)
+areas = np.arange(19,25.2,0.1)
 samples_lst=[5,7,10]# number of minimun objects that defined a cluster
 
 # % 
@@ -443,7 +443,7 @@ for samples in samples_lst:
                     clus_array = np.array([datos[:,5][colores_index[i]],datos[:,6][colores_index[i]],t_gal['l'][colores_index[i]].value,t_gal['b'][colores_index[i]].value,
                                                                                           X[:,0][colores_index[i]], 
                                                                                           X[:,1][colores_index[i]],
-                                                                                          datos[:,3][colores_index[i]],datos[:,4][colores_index[i]],
+                                                                                          datos[:,2][colores_index[i]],datos[:,3][colores_index[i]],datos[:,4][colores_index[i]],
                                                                                           datos[:,7][colores_index[i]],datos[:,8][colores_index[i]]]).T
                     clus_array1= np.c_[clus_array, np.full((len(X[:,0][colores_index[i]]),1),i),
                                        np.full((len(X[:,0][colores_index[i]]),1),area),
@@ -455,7 +455,7 @@ for samples in samples_lst:
                     save_clus = input('Awnser:')
                     print('You said: %s'%(save_clus))
                     if save_clus =='yes' or save_clus =='y':
-                        np.savetxt(carp_clus + 'Sec_%s_%s_cl%s_area%s_%s_%s_samp%s.txt'%(section,pre,i,area,col[colum],row[ro],samples),clus_array1,fmt='%.7f '*10 + '%.0f %.1f'+3*' %.0f', header ='ra, dec, l, b, pml, pmb, H, Ks,x, y,cluster, area, col, row,samples')
+                        np.savetxt(carp_clus + 'Sec_%s_%s_cl%s_area%s_%s_%s_samp%s.txt'%(section,pre,i,area,col[colum],row[ro],samples),clus_array1,fmt='%.7f '*11 + '%.0f %.1f'+3*' %.0f', header ='ra, dec, l, b, pml, pmb,J, H, Ks,x, y,cluster, area, col, row,samples')
                         with open(carp_clus+'clusters_common_with_cl%s_area%s_%s_%s_samp%s.txt'%(i,area,col[colum],row[ro],samples),'w') as f:
                             f.write(''.join(('# Section_cluster_area_col_row_min_samples\n','Sec_%s_%s_cl%s_area%s_%s_%s_samp%s.txt'%(section,pre,i,area,col[colum],row[ro],samples))))
                             f.close
