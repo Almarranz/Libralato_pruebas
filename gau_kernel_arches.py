@@ -180,7 +180,7 @@ def plotting(namex,namey,x,y,ind,**kwargs):
 # Here I going to asume that, the closer to the arches center, the more cluster member is a star
 # =============================================================================
 
-radio = 20*u.arcsec
+radio = 80*u.arcsec
 id_clus, id_arc, d2d,d3d = ap_coor.search_around_sky(SkyCoord(['17h45m50.4769267s'], ['-28d49m19.16770s'], frame='icrs'),arc_gal, radio) if choosen_cluster =='Arches' else ap_coor.search_around_sky(SkyCoord(['17h46m15.13s'], ['-28d49m34.7s'], frame='icrs'),arc_gal, radio)
 
 
@@ -226,40 +226,89 @@ X_stad_sim = StandardScaler().fit_transform(X_sim)
 tree_sim =  KDTree(X_stad_sim, leaf_size=2)
 
 dist_sim, ind_sim = tree_sim.query(X_stad_sim, k=samples) #DistNnce to the 1,2,3...k neighbour
-d_KNN_sim=sorted(dist_sim[:,-1])#distance to the Kth neighbour
-# %
+d_KNN_sim=sorted(dist_sim[:,-1])#distance to the Kth neighbou
+
+# %%Here we work with paramters than can not have any clustered data to prove that the simulated and the real distribtion will be the same
+# =============================================================================
+# mul, mub = pml[id_arc].value, pmb[id_arc].value
+# x,y = arc_gal.l[id_arc], arc_gal.b[id_arc]
+# color = m127[id_arc]-m153[id_arc]
+# 
+# mul_kernel, mub_kernel = gaussian_kde(mul), gaussian_kde(mub)
+# x_kernel, y_kernel = gaussian_kde(x), gaussian_kde(y)
+# color_kernel = gaussian_kde(color)
+# 
+# # %
+# mub_sim,  mul_sim = mub_kernel.resample(len(id_arc)), mul_kernel.resample(len(id_arc))
+# x_sim, y_sim = x_kernel.resample(len(id_arc)), y_kernel.resample(len(id_arc))
+# color_sim = color_kernel.resample(len(id_arc))
+# # %
+# samples = 7
+# 
+# # X=np.array([x,y]).T
+# # X=np.array([mul,mub]).T
+# X=np.array([mul,y]).T
+# 
+# X_stad = StandardScaler().fit_transform(X)
+# tree = KDTree(X_stad, leaf_size=2) 
+# dist, ind = tree.query(X_stad, k=samples) #DistNnce to the 1,2,3...k neighbour
+# d_KNN=sorted(dist[:,-1])#distance to the Kth neighbour
+# 
+# # X_sim=np.array([x_sim[0],y_sim[0]]).T
+# # X_sim=np.array([mul_sim[0],mub_sim[0]]).T
+# X_sim=np.array([mul_sim[0],y_sim[0]]).T
+# 
+# 
+# X_stad_sim = StandardScaler().fit_transform(X_sim)
+# tree_sim =  KDTree(X_stad_sim, leaf_size=2)
+# 
+# dist_sim, ind_sim = tree_sim.query(X_stad_sim, k=samples) #DistNnce to the 1,2,3...k neighbour
+# d_KNN_sim=sorted(dist_sim[:,-1])#distance to the Kth neighbour
+# =============================================================================
+
+# %%
 
 fig, ax = plt.subplots(1,1,figsize=(20,10))
 
-ax.hist(d_KNN,bins ='auto',histtype ='step',color = 'k',label = 'Arches',linewidth=5)
-ax.hist(d_KNN_sim,bins ='auto',histtype ='step',color = 'r', label = 'simulated',linewidth=5,alpha =0.5)
+ax.hist(d_KNN,bins ='auto',histtype ='step',color = 'k',label = 'real',linewidth=5)
+# ax.hist(d_KNN_sim,bins ='auto',histtype ='step',color = 'r', label = 'simulated',linewidth=5,alpha =0.5)
 ax.set_xlabel('%s-NN distance'%(samples))
 ax.set_ylabel('N')
 ax.set_xlim(0,2)
 ax.legend()
-plt.savefig('/Users/amartinez/Desktop/PhD/Charlas/Presentaciones/Brno/' + 'arches_kernel0.png', dpi=300,bbox_inches='tight')
-
+plt.savefig('/Users/amartinez/Desktop/PhD/Charlas/Presentaciones/Brno/' + 'arches_kernel0_arc.png', dpi=300,bbox_inches='tight')
 
 fig, ax = plt.subplots(1,1,figsize=(20,10))
 
-ax.hist(d_KNN,bins ='auto',histtype ='step',color = 'k',label = 'Arches',linewidth=5)
+ax.hist(d_KNN,bins ='auto',histtype ='step',color = 'k',label = 'real',linewidth=5)
+ax.hist(d_KNN_sim,bins ='auto',histtype ='step',color = 'r', label = 'simulated',linewidth=5,alpha =0.5)
+ax.set_xlabel('%s-NN distance'%(samples))
+ax.set_ylabel('N')
+ax.set_xlim(0,0.05)
+ax.legend()
+# plt.savefig('/Users/amartinez/Desktop/PhD/Charlas/Presentaciones/Brno/' + 'arches_kernel0.png', dpi=300,bbox_inches='tight')
+#%%
+
+fig, ax = plt.subplots(1,1,figsize=(20,10))
+
+ax.hist(d_KNN,bins ='auto',histtype ='step',color = 'k',label = 'real',linewidth=5)
 ax.hist(d_KNN_sim,bins ='auto',histtype ='step',color = 'r', label = 'simulated',linewidth=5,alpha =0.5)
 ax.set_xlabel('%s-NN distance'%(samples))
 props = dict(boxstyle='round', facecolor='k', alpha=0.3)
 # place a text box in upper left in axes coords
-ax.text(0.55, 0.58, 'The presence of clustered data \nreduces the KNN distance\nin the real sample', transform=ax.transAxes, fontsize=27,
-        verticalalignment='top', bbox=props)
+# ax.text(0.55, 0.58, 'The presence of $\it{clustered}$ data \nreduces the KNN distance\nin the real sample', transform=ax.transAxes, fontsize=27,
+#         verticalalignment='top', bbox=props)
 ax.axvline(min(d_KNN),ls = 'dashed', color ='k', linewidth = 5)
 ax.axvline(min(d_KNN_sim),ls = 'dashed', color ='r', linewidth = 5,alpha =0.5)
 ax.set_ylabel('N')
-ax.set_xlim(0,2)
+ax.set_xlim(0,0.05)
 ax.legend()
-plt.savefig('/Users/amartinez/Desktop/PhD/Charlas/Presentaciones/Brno/' + 'arches_kernel.png', dpi=300,bbox_inches='tight')
-
+# plt.savefig('/Users/amartinez/Desktop/PhD/Charlas/Presentaciones/Brno/' + 'arches_kernel.png', dpi=300,bbox_inches='tight')
+#%%
 fig, ax = plt.subplots(1,1,figsize=(20,10))
 
 eps = np.mean([min(d_KNN),min(d_KNN_sim)])
-ax.hist(d_KNN,bins ='auto',histtype ='step',color = 'k',label = 'Arches',linewidth=5)
+ax.hist(d_KNN,bins ='auto',histtype ='step',color = 'k',label = 'real',linewidth=5)
 ax.hist(d_KNN_sim,bins ='auto',histtype ='step',color = 'r', label = 'simulated',linewidth=5,alpha=0.5)
 ax.set_xlabel('%s-NN distance'%(samples)) 
 ax.arrow(1.25,125,eps-1.01,-95,head_width =0.2,head_length=25,shape ='full'
@@ -267,7 +316,7 @@ ax.arrow(1.25,125,eps-1.01,-95,head_width =0.2,head_length=25,shape ='full'
 # ax.axvline(eps,color='green')
 props = dict(boxstyle='round', facecolor='g', alpha=0.5)
 # place a text box in upper left in axes coords
-ax.text(0.51, 0.58, '$\epsilon = ( min7NN_{Arches} + min7NN_{simultaed})/2$', transform=ax.transAxes, fontsize=27,
+ax.text(0.51, 0.58, '$\epsilon = ( min7NN_{real} + min7NN_{simultaed})/2$', transform=ax.transAxes, fontsize=27,
         verticalalignment='top', bbox=props)
 ax.set_ylabel('N')
 ax.set_ylim(0,)
