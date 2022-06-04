@@ -31,7 +31,7 @@ from random import random
 import glob
 from sklearn.preprocessing import StandardScaler
 import os
-import spisea
+# import spisea
 from spisea import synthetic, evolution, atmospheres, reddening, ifmr
 from spisea.imf import imf, multiplicity
 import astropy.coordinates as ap_coor
@@ -98,7 +98,7 @@ gns_coord = SkyCoord(ra=AKs_center[:,0]*u.degree, dec=AKs_center[:,2]*u.degree)
 AKs_list1 =  np.arange(1.6,2.11,0.01)
 AKs_list = np.append(AKs_list1,0)#I added the 0 for the isochrones without extiction
 # %%
-section = 'D'#sections from A to D. Maybe make a script for each section...
+section = 'A'#sections from A to D. Maybe make a script for each section...
 subsec = '/Users/amartinez/Desktop/PhD/Libralato_data/pruebas/subsec_%s/'%(section)
 carp_clus = subsec +'/clusters_in_%s/'%(section)
 isE = os.path.exists(carp_clus)
@@ -116,8 +116,8 @@ clustered_by = 'all_color'# you can choose whether clustering by position, veloc
 # clustered_by = 'all'
 col =np.arange(0,10,1)
 row =np.arange(0,4,1)
-# areas = np.arange(1.3,24.0,0.1)
-areas = np.arange(19,25.2,0.1)
+areas = np.arange(1.0,19.5,0.1)
+areas = np.arange(2,20.2,0.1)
 samples_lst=[5,7,10]# number of minimun objects that defined a cluster
 
 # % 
@@ -230,7 +230,7 @@ for samples in samples_lst:
                     verticalalignment='top', bbox=props)
                 
                 ax.set_ylabel('N') 
-                ax.set_xlim(0,1)
+                # ax.set_xlim(0,1)
                
                
                 clus_method = 'dbs'
@@ -350,95 +350,96 @@ for samples in samples_lst:
                     ax[2].invert_yaxis()  
                     
                     AKs_clus, std_AKs = np.mean(AKs_clus_all),np.std(AKs_clus_all)
-                    absolute_difference_function = lambda list_value : abs(list_value - AKs_clus)
-                    AKs = min(AKs_list, key=absolute_difference_function)
+                    # absolute_difference_function = lambda list_value : abs(list_value - AKs_clus)
+                    # AKs = min(AKs_list, key=absolute_difference_function)
                     
-                    iso_dir = '/Users/amartinez/Desktop/PhD/Libralato_data/nsd_isochrones/'
+                    # iso_dir = '/Users/amartinez/Desktop/PhD/Libralato_data/nsd_isochrones/'
                     
-                    dist = 8000 # distance in parsec
-                    metallicity = 0.17 # Metallicity in [M/H]
-                    # logAge_600 = np.log10(0.61*10**9.)
-                    logAge = np.log10(0.010*10**9.)
-                    logAge_30 = np.log10(0.030*10**9.)
-                    logAge_60 = np.log10(0.060*10**9.)
-                    logAge_90 = np.log10(0.090*10**9.)
-                    evo_model = evolution.MISTv1() 
-                    atm_func = atmospheres.get_merged_atmosphere
-                    red_law = reddening.RedLawNoguerasLara18()
-                    filt_list = ['hawki,J', 'hawki,H', 'hawki,Ks']
+                    # dist = 8000 # distance in parsec
+                    # metallicity = 0.17 # Metallicity in [M/H]
+                    # # logAge_600 = np.log10(0.61*10**9.)
+                    # logAge = np.log10(0.010*10**9.)
+                    # logAge_30 = np.log10(0.030*10**9.)
+                    # logAge_60 = np.log10(0.060*10**9.)
+                    # logAge_90 = np.log10(0.090*10**9.)
+                    # evo_model = evolution.MISTv1() 
+                    # atm_func = atmospheres.get_merged_atmosphere
+                    # red_law = reddening.RedLawNoguerasLara18()
+                    # filt_list = ['hawki,J', 'hawki,H', 'hawki,Ks']
                     
-                    iso =  synthetic.IsochronePhot(logAge, AKs, dist, metallicity=metallicity,
-                                                    evo_model=evo_model, atm_func=atm_func,
-                                                    red_law=red_law, filters=filt_list,
-                                                        iso_dir=iso_dir)
+                    # iso =  synthetic.IsochronePhot(logAge, AKs, dist, metallicity=metallicity,
+                    #                                 evo_model=evo_model, atm_func=atm_func,
+                    #                                 red_law=red_law, filters=filt_list,
+                    #                                     iso_dir=iso_dir)
                     
-                    iso_30 = synthetic.IsochronePhot(logAge_30, AKs, dist, metallicity=metallicity,
-                                                    evo_model=evo_model, atm_func=atm_func,
-                                                    red_law=red_law, filters=filt_list,
-                                                        iso_dir=iso_dir)
-                    iso_60 = synthetic.IsochronePhot(logAge_60, AKs, dist, metallicity=metallicity,
-                                                    evo_model=evo_model, atm_func=atm_func,
-                                                    red_law=red_law, filters=filt_list,
-                                                        iso_dir=iso_dir)
+                    # iso_30 = synthetic.IsochronePhot(logAge_30, AKs, dist, metallicity=metallicity,
+                    #                                 evo_model=evo_model, atm_func=atm_func,
+                    #                                 red_law=red_law, filters=filt_list,
+                    #                                     iso_dir=iso_dir)
+                    # iso_60 = synthetic.IsochronePhot(logAge_60, AKs, dist, metallicity=metallicity,
+                    #                                 evo_model=evo_model, atm_func=atm_func,
+                    #                                 red_law=red_law, filters=filt_list,
+                    #                                     iso_dir=iso_dir)
                     
-                    iso_90 = synthetic.IsochronePhot(logAge_90, AKs, dist, metallicity=metallicity,
-                                                    evo_model=evo_model, atm_func=atm_func,
-                                                    red_law=red_law, filters=filt_list,
-                                                        iso_dir=iso_dir)
+                    # iso_90 = synthetic.IsochronePhot(logAge_90, AKs, dist, metallicity=metallicity,
+                    #                                 evo_model=evo_model, atm_func=atm_func,
+                    #                                 red_law=red_law, filters=filt_list,
+                    #                                     iso_dir=iso_dir)
+                    # # #%
                     # #%
-                    #%
                     
                     
-                    imf_multi = multiplicity.MultiplicityUnresolved()
+                    # imf_multi = multiplicity.MultiplicityUnresolved()
                     
-                    # Make IMF object; we'll use a broken power law with the parameters from Kroupa+01
+                    # # Make IMF object; we'll use a broken power law with the parameters from Kroupa+01
                     
-                    # NOTE: when defining the power law slope for each segment of the IMF, we define
-                    # the entire exponent, including the negative sign. For example, if dN/dm $\propto$ m^-alpha,
-                    # then you would use the value "-2.3" to specify an IMF with alpha = 2.3. 
+                    # # NOTE: when defining the power law slope for each segment of the IMF, we define
+                    # # the entire exponent, including the negative sign. For example, if dN/dm $\propto$ m^-alpha,
+                    # # then you would use the value "-2.3" to specify an IMF with alpha = 2.3. 
                     
-                    massLimits = np.array([0.2, 0.5, 1, 120]) # Define boundaries of each mass segement
-                    powers = np.array([-1.3, -2.3, -2.3]) # Power law slope associated with each mass segment
-                    # my_imf = imf.IMF_broken_powerlaw(massLimits, powers, imf_multi)
-                    my_imf = imf.IMF_broken_powerlaw(massLimits, powers,multiplicity = None)
-                    
-                    
-                    #%
+                    # massLimits = np.array([0.2, 0.5, 1, 120]) # Define boundaries of each mass segement
+                    # powers = np.array([-1.3, -2.3, -2.3]) # Power law slope associated with each mass segment
+                    # # my_imf = imf.IMF_broken_powerlaw(massLimits, powers, imf_multi)
+                    # my_imf = imf.IMF_broken_powerlaw(massLimits, powers,multiplicity = None)
                     
                     
-                    mass = 0.5*10**4.
-                    mass = 1 * mass
-                    dAks = round(std_AKs*1,3)
-                    cluster = synthetic.ResolvedClusterDiffRedden(iso, my_imf, mass,dAks)
-                    cluster_ndiff = synthetic.ResolvedCluster(iso, my_imf, mass)
-                    clus = cluster.star_systems
-                    clus_ndiff = cluster_ndiff.star_systems
+                    # #%
+                    
+                    
+                    # mass = 0.5*10**4.
+                    # mass = 1 * mass
+                    # dAks = round(std_AKs*1,3)
+                    # cluster = synthetic.ResolvedClusterDiffRedden(iso, my_imf, mass,dAks)
+                    # cluster_ndiff = synthetic.ResolvedCluster(iso, my_imf, mass)
+                    # clus = cluster.star_systems
+                    # clus_ndiff = cluster_ndiff.star_systems
                     ax[2].set_title('Cluster %s, eps = %s'%(i,round(eps_av,3)))
+                    ax[2].scatter(datos[:,3]-datos[:,4],datos[:,4],alpha=0.1)
                     # ax[2].scatter(clus['m_hawki_H']-clus['m_hawki_Ks'],clus['m_hawki_Ks'],color = 'lavender',alpha=0.1)
                     # ax[2].scatter(clus_ndiff['m_hawki_H']-clus_ndiff['m_hawki_Ks'],clus_ndiff['m_hawki_Ks'],color = 'k',alpha=0.1,s=1)
                     
         
-                    txt_srn = '\n'.join(('metallicity = %s'%(metallicity),'dist = %.1f Kpc'%(dist/1000),'mass =%.0fx$10^{3}$ $M_{\odot}$'%(mass/1000),
-                                         'age = %.0f Myr'%(10**logAge/10**6)))
-                    txt_AKs = '\n'.join(('AKs = %.2f'%(AKs_clus),'std_AKs = %.2f'%(std_AKs)))
+                    # txt_srn = '\n'.join(('metallicity = %s'%(metallicity),'dist = %.1f Kpc'%(dist/1000),'mass =%.0fx$10^{3}$ $M_{\odot}$'%(mass/1000),
+                    #                      'age = %.0f Myr'%(10**logAge/10**6)))
+                    txt_AKs = '\n'.join(('H-Ks =%s'%(datos[:,3][colores_index[i]]-datos[:,4][colores_index[i]]),'$\sigma_{H-Ks} = %s'%(np.std(datos[:,3][colores_index[i]]-datos[:,4][colores_index[i]])),'AKs = %.2f'%(AKs_clus),'std_AKs = %.2f'%(std_AKs)))
                     props = dict(boxstyle='round', facecolor='w', alpha=0.5)
-                    # place a text box in upper left in axes coords
+                    # # place a text box in upper left in axes coords
                     ax[2].text(0.65, 0.95, txt_AKs, transform=ax[2].transAxes, fontsize=14,
                         verticalalignment='top', bbox=props)
-                    ax[2].text(0.65, 0.85, txt_srn, transform=ax[2].transAxes, fontsize=14,
-                        verticalalignment='top', bbox=props)
-                    ax[2].plot(iso.points['m_hawki_H'] - iso.points['m_hawki_Ks'], 
-                                      iso.points['m_hawki_Ks'], 'b-',  label='10 Myr')
+                    # ax[2].text(0.65, 0.85, txt_srn, transform=ax[2].transAxes, fontsize=14,
+                    #     verticalalignment='top', bbox=props)
+                    # ax[2].plot(iso.points['m_hawki_H'] - iso.points['m_hawki_Ks'], 
+                    #                   iso.points['m_hawki_Ks'], 'b-',  label='10 Myr')
                     
-                    ax[2].plot(iso_30.points['m_hawki_H'] - iso_30.points['m_hawki_Ks'], 
-                                      iso_30.points['m_hawki_Ks'], 'orange',  label='30 Myr')
-                    ax[2].plot(iso_60.points['m_hawki_H'].value - iso_60.points['m_hawki_Ks'].value, 
-                                      iso_60.points['m_hawki_Ks'].value, color ='green' ,label='60 Myr')
-                    ax[2].plot(iso_90.points['m_hawki_H'] - iso_90.points['m_hawki_Ks'], 
-                                      iso_90.points['m_hawki_Ks'], 'red' ,label='90 Myr')
-                    ax[2].set_xlabel('H$-$Ks')
-                    ax[2].set_ylabel('Ks')
-                    ax[2].legend(loc =3, fontsize = 12)
+                    # ax[2].plot(iso_30.points['m_hawki_H'] - iso_30.points['m_hawki_Ks'], 
+                    #                   iso_30.points['m_hawki_Ks'], 'orange',  label='30 Myr')
+                    # ax[2].plot(iso_60.points['m_hawki_H'].value - iso_60.points['m_hawki_Ks'].value, 
+                    #                   iso_60.points['m_hawki_Ks'].value, color ='green' ,label='60 Myr')
+                    # ax[2].plot(iso_90.points['m_hawki_H'] - iso_90.points['m_hawki_Ks'], 
+                    #                   iso_90.points['m_hawki_Ks'], 'red' ,label='90 Myr')
+                    # ax[2].set_xlabel('H$-$Ks')
+                    # ax[2].set_ylabel('Ks')
+                    # ax[2].legend(loc =3, fontsize = 12)
                     plt.show()
                     clus_array = np.array([datos[:,5][colores_index[i]],datos[:,6][colores_index[i]],t_gal['l'][colores_index[i]].value,t_gal['b'][colores_index[i]].value,
                                                                                           X[:,0][colores_index[i]], 
