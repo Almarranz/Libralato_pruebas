@@ -78,9 +78,7 @@ elif trimmed_data=='no':
 else:
     sys.exit("Have to set trimmed_data to either 'yes' or 'no'")
 
-section = 'A'#selecting the whole thing
-subsec = '/Users/amartinez/Desktop/PhD/Libralato_data/pruebas/subsec_%s/'%(section)
-
+# %%
 # "'RA_gns','DE_gns','Jmag','Hmag','Ksmag','ra','dec','x_c','y_c','mua','dmua','mud','dmud','time','n1','n2','ID','mul','mub','dmul','dmub','m139','Separation'",
 if section == 'All':
     catal=np.loadtxt(results + '%smatch_GNS_and_%s_refined_galactic.txt'%(pre,name))
@@ -126,8 +124,22 @@ gns_coord = SkyCoord(ra=AKs_center[:,0]*u.degree, dec=AKs_center[:,2]*u.degree)
 # %
 AKs_list1 =  np.arange(1.6,2.11,0.01)
 AKs_list = np.append(AKs_list1,0)#I added the 0 for the isochrones without extiction
-
 # %%
+section = 'A'#selecting the whole thing
+sec_clus = pruebas +'Sec_A_clus/'
+ifE_sec = os.path.exists(sec_clus)
+if not ifE_sec:
+    os.makedirs(pruebas + 'Sec_%s_clus/'%(section))
+
+carp_clus = sec_clus +'/cluster_num*'
+
+
+clus_to_erase = glob.glob(pruebas + 'Sec_%s_clus/'%(section)+'cluster_num*')
+for f_e in range(len(clus_to_erase)):
+    print(clus_to_erase)
+    shutil.rmtree(clus_to_erase[f_e], ignore_errors=True)
+
+# %
 # clus_test = np.loadtxt(pruebas + 'dbs_cluster1_of_group89.txt')
 m1 = -0.80
 m = 1
@@ -164,7 +176,7 @@ dist_pos = abs((-1*catal[0,7]+ (lim_pos_down + m*catal[0,7])-lim_pos_up)/np.sqrt
 dist_neg = abs((-m1*catal[0,7]+ (lim_neg_down + m1*catal[0,7])-lim_neg_up)/np.sqrt((-1)**2+(1)**2))
 ang = math.degrees(np.arctan(m1))
 
-
+clus_num = 0
 x_box = 3
 step = dist_pos /x_box
 step_neg =dist_neg/x_box
@@ -353,7 +365,7 @@ for ic in range(x_box*2-1):
             
             
             #This calcualte the maximun distance between cluster members to have a stimation of the cluster radio
-            c2 = SkyCoord(ra = catal[:,0][colores_index[i]]*u.deg,dec = catal[:,1][colores_index[i]]*u.deg)
+            c2 = SkyCoord(ra = datos[:,0][colores_index[i]]*u.deg,dec = datos[:,1][colores_index[i]]*u.deg)
             sep = [max(c2[c_mem].separation(c2)) for c_mem in range(len(c2))]
             rad = max(sep)/2
             
@@ -389,8 +401,8 @@ for ic in range(x_box*2-1):
                     H_Ks_yes.append(datos[:,3][colores_index[i][0][member]]-datos[:,4][colores_index[i][0][member]])
                     Ks_yes.append(datos[:,4][colores_index[i][0][member]])
             print(ic, jr, len(mul),n_clusters)   
-            # ax[2].scatter(H_Ks_yes,Ks_yes, color='blueviolet',s=50,zorder=3, alpha=1)
-            # ax[2].invert_yaxis()  
+            ax[2].scatter(H_Ks_yes,Ks_yes, color='blueviolet',s=50,zorder=3, alpha=1)
+            ax[2].invert_yaxis()  
             
             AKs_clus, std_AKs = np.mean(AKs_clus_all),np.std(AKs_clus_all)
             # absolute_difference_function = lambda list_value : abs(list_value - AKs_clus)
@@ -489,13 +501,69 @@ for ic in range(x_box*2-1):
                                                                                   X[:,0][colores_index[i]], 
                                                                                   X[:,1][colores_index[i]],
                                                                                   datos[:,2][colores_index[i]],datos[:,3][colores_index[i]],datos[:,4][colores_index[i]],
-                                                                                  datos[:,7][colores_index[i]],datos[:,8][colores_index[i]]]).T
-      
+                                                                                 datos[:,7][colores_index[i]],datos[:,8][colores_index[i]]]).T
+            
+# =============================================================================
+#             Here it compare the cluster you want to save wiith the rest of the 
+#             saved cluster if repited, it saves in the same cluster
+#             
+# =============================================================================
+            
             frase = 'Do you want to save this cluster?'
-        
+            print('\n'.join((len(frase)*'π',frase+'\n("yes" or "no")',len(frase)*'π')))
+            save_clus = input('Awnser:')
+            print('You said: %s'%(save_clus))
+            if save_clus =='yes' or save_clus =='y':
+                intersection_lst =[]
+                clus_num +=1
+                check_folder = glob.glob(pruebas + 'Sec_%s_clus/'%(section)+'cluster_num*')
+                if len(check_folder) == 0:
+                    os.makedirs(pruebas + 'Sec_%s_clus/'%(section) +'cluster_num%s_%s/'%(clus_num,i))
+                    np.savetxt(pruebas + 'Sec_%s_clus/'%(section) +'cluster_num%s_%s/'%(clus_num,i)+
+                               'cluster_%s_knn_%s_area_%.2f.txt'%(clus_num,samples_dist,area),clus_array,
+                               fmt='%.7f '*6 + ' %.4f'*3 +' %.5f'*2,
+                               header ='ra, dec, l, b, pml, pmb,J, H, Ks,x, y')
+                else:
+                    for f_check in check_folder:
+                        
+                        clus_lst = os.listdir(f_check)
+                        for n_txt in clus_lst:
+                            ra_dec = np.loadtxt(f_check+'/'+n_txt,usecols=(0,1))
+                            ra_dec_clus = clus_array[:,0:2]
+                            aset = set([tuple(x) for x in ra_dec_clus])
+                            bset = set([tuple(x) for x in ra_dec])
+                            intersection = np.array([x for x in aset & bset])
+                            intersection_lst.append(intersection)
+                            if len(intersection)> 0 :
+                                print('Same (or similar) cluster  is in %s'%(f_check))
+                                np.savetxt(f_check+'/'+
+                                           'cluster_%s_knn_%s_area_%.2f.txt'%(clus_num,samples_dist,area),clus_array,
+                                           fmt='%.7f '*6 + ' %.4f'*3 +' %.5f'*2,
+                                           header ='ra, dec, l, b, pml, pmb,J, H, Ks,x, y')
+                    if np.all(np.array(intersection_lst)==0):
+                        # clus_num +=1
+                        print('NEW CLUSTER')
+                        os.makedirs(pruebas + 'Sec_%s_clus/'%(section) +'cluster_num%s_%s/'%(clus_num,i))
+                        np.savetxt(pruebas + 'Sec_%s_clus/'%(section) +'cluster_num%s_%s/'%(clus_num,i)+
+                                   'cluster_%s_knn_%s_area_%.2f.txt'%(clus_num,samples_dist,area),clus_array,
+                                   fmt='%.7f '*6 + ' %.4f'*3 +' %.5f'*2,
+                                   header ='ra, dec, l, b, pml, pmb,J, H, Ks,x, y')
+                        
+                            
+                        # read_txt = glob.glob(check_folder[f_check]+'/cluster_*')
+                        # for clust_text in range(len(read_txt)):
+                        #     print(read_txt[clust_text])
+            elif save_clus =='stop':
+                sys.exit('Chao')
+            
+            else:
+                print('No saved')
         
 # %%
-
+lista = [0,0,0,1]
+if np.all(np.array(lista)==0):
+    print('si')
+print(np.all(np.array(lista)==0))
 
     
       
