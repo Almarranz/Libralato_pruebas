@@ -170,25 +170,25 @@ step = dist_pos /x_box
 step_neg =dist_neg/x_box
 
 clustered_by = 'all_color'
-samples_dist = 10
+samples_dist = 5
 
-for i in range(x_box*2-1):
+for ic in range(x_box*2-1):
     
     
-    i *= 0.5
-    yg_1 = (lim_pos_up - (i)*step/np.cos(45*u.deg)) +  m*catal[:,7]
-    # yg_2 = (lim_pos_up - (i+1)*step*np.cos(45*u.deg)) +  m*catal[:,7]
-    yg_2 = (lim_pos_up - (i+1)*step/np.cos(45*u.deg)) +  m*catal[:,7]
+    ic *= 0.5
+    yg_1 = (lim_pos_up - (ic)*step/np.cos(45*u.deg)) +  m*catal[:,7]
+    # yg_2 = (lim_pos_up - (ic+1)*step*np.cos(45*u.deg)) +  m*catal[:,7]
+    yg_2 = (lim_pos_up - (ic+1)*step/np.cos(45*u.deg)) +  m*catal[:,7]
 
     # ax.plot(catal[:,7],yg_1, color ='g')
     # ax.plot(catal[:,7],yg_2, color ='g')
-    for j in range(x_box*2-1):
+    for jr in range(x_box*2-1):
         fig, ax = plt.subplots(1,1, figsize=(10,10))
         ax.scatter(catal[:,7],catal[:,8],alpha =0.01)
-        j *=0.5
-        yr_1 = (lim_neg_up - (j)*step_neg/np.cos(ang*u.deg)) +  m1*catal[:,7]
+        jr *=0.5
+        yr_1 = (lim_neg_up - (jr)*step_neg/np.cos(ang*u.deg)) +  m1*catal[:,7]
         # yg_2 = (lim_pos_up - (i+1)*step*np.cos(45*u.deg)) +  m*catal[:,7]
-        yr_2 = (lim_neg_up - (j+1)*step_neg/np.cos(ang*u.deg)) +  m1*catal[:,7]
+        yr_2 = (lim_neg_up - (jr+1)*step_neg/np.cos(ang*u.deg)) +  m1*catal[:,7]
         good = np.where((catal[:,8]<yg_1)&(catal[:,8]>yg_2)
                                 & (catal[:,8]<yr_1)&(catal[:,8]>yr_2))
         area = step*step_neg*0.05**2/3600
@@ -213,6 +213,7 @@ for i in range(x_box*2-1):
         mul,mub = datos[:,-6],datos[:,-5]
         x,y = datos[:,7], datos[:,8]
         colorines = datos[:,3]-datos[:,4]
+        
         
         mul_kernel, mub_kernel = gaussian_kde(mul), gaussian_kde(mub)
         x_kernel, y_kernel = gaussian_kde(x), gaussian_kde(y)
@@ -307,6 +308,8 @@ for i in range(x_box*2-1):
         for c in u_labels:
             cl_color=np.where(l==c)
             colores_index.append(cl_color)
+        
+        
         # %
         for i in range(len(set(l))-1):
             fig, ax = plt.subplots(1,3,figsize=(30,10))
@@ -326,6 +329,7 @@ for i in range(x_box*2-1):
             ax[0].set_ylabel(r'$\mathrm{\mu_{b} (mas\ yr^{-1})}$') 
             ax[0].invert_xaxis()
             ax[0].hlines(0,-10,10,linestyle = 'dashed', color ='red')
+            
             mul_sig, mub_sig = np.std(X[:,0][colores_index[i]]), np.std(X[:,1][colores_index[i]])
             mul_mean, mub_mean = np.mean(X[:,0][colores_index[i]]), np.mean(X[:,1][colores_index[i]])
             
@@ -359,12 +363,6 @@ for i in range(x_box*2-1):
             ax[1].text(0.65, 0.95, 'aprox cluster radio = %s"\n cluster stars = %s '%(round(rad.to(u.arcsec).value,2),len(colores_index[i][0])), transform=ax[1].transAxes, fontsize=14,
                                     verticalalignment='top', bbox=prop)
             
-           # This plots only the LxL box
-# =============================================================================
-#             ax[1].scatter(X[:,2], X[:,3], color=colors[-1],s=50,zorder=1,alpha=0.01)#plots in galactic
-#             ax[1].quiver(X[:,2], X[:,3], X[:,0]*-1, X[:,1], alpha=0.5, color=colors[-1],zorder=1)
-#             
-# =============================================================================
             ax[1].scatter(catal[:,7], catal[:,8], color='k',s=50,zorder=1,alpha=0.01)#plots in galactic
             ax[1].scatter(X[:,2], X[:,3], color=colors[-1],s=50,zorder=1,alpha=0.02)#plots in galactic
             
@@ -381,18 +379,18 @@ for i in range(x_box*2-1):
             H_Ks_yes = []
             Ks_yes = []
             AKs_clus_all =[]
-            for m in range(len(colores_index[i][0])):
-                clus_coord =  SkyCoord(ra=datos[:,5][colores_index[i][0][m]]*u.degree, dec=datos[:,6][colores_index[i][0][m]]*u.degree)
-                idx = clus_coord.match_to_catalog_sky(gns_coord)
-                gns_match = AKs_center[idx[0]]
-                # print(type(gns_match[16])) 
-                if gns_match[16] != '-' and gns_match[18] != '-':
-                    AKs_clus_all.append(float(gns_match[18]))
-                    H_Ks_yes.append(datos[:,3][colores_index[i][0][m]]-datos[:,4][colores_index[i][0][m]])
-                    Ks_yes.append(datos[:,4][colores_index[i][0][m]])
-                
-            ax[2].scatter(H_Ks_yes,Ks_yes, color='blueviolet',s=50,zorder=3, alpha=1)
-            ax[2].invert_yaxis()  
+            
+            clus_coord =  SkyCoord(ra=datos[:,5][colores_index[i][0]]*u.degree, dec=datos[:,6][colores_index[i][0]]*u.degree)
+            idx = clus_coord.match_to_catalog_sky(gns_coord)
+            gns_match = AKs_center[idx[0]]
+            for member in range(len(gns_match)):
+                if gns_match[member,16] != '-' and gns_match[member,18] != '-':
+                    AKs_clus_all.append(float(gns_match[member,18]))
+                    H_Ks_yes.append(datos[:,3][colores_index[i][0][member]]-datos[:,4][colores_index[i][0][member]])
+                    Ks_yes.append(datos[:,4][colores_index[i][0][member]])
+            print(ic, jr, len(mul),n_clusters)   
+            # ax[2].scatter(H_Ks_yes,Ks_yes, color='blueviolet',s=50,zorder=3, alpha=1)
+            # ax[2].invert_yaxis()  
             
             AKs_clus, std_AKs = np.mean(AKs_clus_all),np.std(AKs_clus_all)
             # absolute_difference_function = lambda list_value : abs(list_value - AKs_clus)
@@ -492,11 +490,7 @@ for i in range(x_box*2-1):
                                                                                   X[:,1][colores_index[i]],
                                                                                   datos[:,2][colores_index[i]],datos[:,3][colores_index[i]],datos[:,4][colores_index[i]],
                                                                                   datos[:,7][colores_index[i]],datos[:,8][colores_index[i]]]).T
-            # clus_array1= np.c_[clus_array, np.full((len(X[:,0][colores_index[i]]),1),i),
-            #                    np.full((len(X[:,0][colores_index[i]]),1),area),
-            #                    np.full((len(X[:,0][colores_index[i]]),1),col[colum]),
-            #                    np.full((len(X[:,0][colores_index[i]]),1),row[ro]),
-            #                    np.full((len(X[:,0][colores_index[i]]),1),samples)]
+      
             frase = 'Do you want to save this cluster?'
         
         
@@ -508,6 +502,8 @@ for i in range(x_box*2-1):
       
       
       
+      # %%
+
       
       
       
@@ -515,7 +511,4 @@ for i in range(x_box*2-1):
       
       
       
-      
-      
-      
-      
+
