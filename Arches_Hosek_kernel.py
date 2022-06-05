@@ -153,7 +153,7 @@ clustered_by = 'all_color'
 
 # X_stad=X
 
-samples_dist=500
+samples_dist=10
 
 
 #here we generate the kernel simulated data 
@@ -343,22 +343,30 @@ m127_clus = m127[colores_index[0]]
 
 
 rand = np.random.choice(np.arange(0,len(clus_gal)),1)
+rand_all = np.random.choice(np.arange(0,len(pml)),1)
 
 rand_clus = clus_gal[rand]
 rand_pm = pm_clus[rand]
-radio=10.*u.arcsec
+radio=50.*u.arcsec
 
 #Here we can decide if selected the reduced data set around a random value of the cluster.
 
 # =============================================================================
 # id_clus, id_arc, d2d,d3d = ap_coor.search_around_sky(rand_clus,arc_gal, radio)
 # dbs_clus, id_arc_dbs, d2d_db, d3d_db = ap_coor.search_around_sky(rand_clus,clus_gal, radio)
+# =============================================================================
+
+# or around just a random point in the data set, that can be part of the found cluster or not
+id_clus, id_arc, d2d,d3d = ap_coor.search_around_sky(rand_clus,arc_gal, radio)
+dbs_clus, id_arc_dbs, d2d_db, d3d_db = ap_coor.search_around_sky(rand_clus,clus_gal, radio)
+
+
+# or around the pre-dertermined coordenates for center of the cluster
+# =============================================================================
+# id_clus, id_arc, d2d,d3d = ap_coor.search_around_sky(SkyCoord(['17h45m50.4769267s'], ['-28d49m19.16770s'], frame='icrs'),arc_gal, radio) if choosen_cluster =='Arches' else ap_coor.search_around_sky(SkyCoord(['17h46m15.13s'], ['-28d49m34.7s'], frame='icrs'),arc_gal, radio)
+# dbs_clus, id_arc_dbs, d2d_db, d3d_db = ap_coor.search_around_sky(SkyCoord(['17h45m50.4769267s'], ['-28d49m19.16770s'], frame='icrs'),clus_gal, radio) if choosen_cluster =='Arches' else ap_coor.search_around_sky(SkyCoord(['17h46m15.13s'], ['-28d49m34.7s'], frame='icrs'),clus_gal, radio)
 # 
 # =============================================================================
-# or around the pre-dertermined coordenates for center of the cluster
-id_clus, id_arc, d2d,d3d = ap_coor.search_around_sky(SkyCoord(['17h45m50.4769267s'], ['-28d49m19.16770s'], frame='icrs'),arc_gal, radio) if choosen_cluster =='Arches' else ap_coor.search_around_sky(SkyCoord(['17h46m15.13s'], ['-28d49m34.7s'], frame='icrs'),arc_gal, radio)
-dbs_clus, id_arc_dbs, d2d_db, d3d_db = ap_coor.search_around_sky(SkyCoord(['17h45m50.4769267s'], ['-28d49m19.16770s'], frame='icrs'),clus_gal, radio) if choosen_cluster =='Arches' else ap_coor.search_around_sky(SkyCoord(['17h46m15.13s'], ['-28d49m34.7s'], frame='icrs'),clus_gal, radio)
-
 #search_around_sky complains when one of the variable is just a singe coordinates (and not an array of coordinates)
 #so in order to go around this put the coordinares in brackets and it woint complain any more
 
@@ -429,7 +437,7 @@ area_l,area_b = arc_gal.l[id_arc],arc_gal.b[id_arc]
 area_pml,area_pmb = pml[id_arc], pmb[id_arc]
 area_m153,area_m127 = m153[id_arc],m127[id_arc]
 area_colorines = colorines[id_arc]
-samples_dist_area = 200
+samples_dist_area = 10
 if clustered_by =='all_color':
     X_area=np.array([area_pml,area_pmb,area_l,area_b,area_colorines]).T 
     X_stad_area =  StandardScaler().fit_transform(X_area)
