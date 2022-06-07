@@ -39,28 +39,17 @@ rc('font',**{'family':'serif','serif':['Palatino']})
 plt.rcParams.update({'figure.max_open_warning': 0})# a warniing for matplot lib pop up because so many plots, this turining it of
 
 # %% 
-# =============================================================================
-# Method one: trying to stablish is the star group is bound using
-# the eqution age/crossin_time>1 (from  Angela Adamo et.al 2020)
-# =============================================================================
-# Lets forget about the crossing time for now
-# age = 10*u.Myr
+# ra, dec, l, b, pml, pmb,J, H, Ks,x, y, Aks, dAks
+path_clus ='/Users/amartinez/Desktop/PhD/Libralato_data/pruebas/Sec_A_clus/cluster_num1_2_knn10_area19.08/cluster1_0_0_knn_10_area_19.08.txt'
+mul,mub, J,H,K,AKs_clus, std_AKs, radio_clus =np.loadtxt(path_clus, usecols=(4,5,6,7,8,11,12,13),unpack=True)
 
-# theta = 15*u.arcsec.to(u.rad)
-# dist = 8000*u.parsec
-# r_eff = theta*dist
+sig_mul, sig_mub = np.std(mul), np.std(mub)
 
-# vel_dis = 0.255
-# sig_mas = ((0.255)*40)*(u.km/u.second)
-# sig = sig_mas.to(u.pc/u.Myr)
-# print(r_eff)
+# sig_mu = np.mean([sig_mul, sig_mub])
+sig_mu = sig_mub
 
+AKs_list =  np.arange(1.6,2.11,0.01)
 
-# t_cr = 100*r_eff/sig
-
-# PI = age/t_cr
-# print(PI)  
-# # The value of PI >>1. (they talk about this in A. Adamo et. al 2020)
 # %%
 # <v2> = 0.4*GM/rh. 
 # Where <v2> is the mean square velocity of the star system
@@ -68,20 +57,17 @@ plt.rcParams.update({'figure.max_open_warning': 0})# a warniing for matplot lib 
 # G ~ 0.0045 pc**3 M_sol**-1 Myr**-2
 age2 = 10*u.Myr
 
-theta = 15.17*u.arcsec.to(u.rad)
+theta = radio_clus[0]*u.arcsec.to(u.rad)
 dist = 8000*u.parsec
 r_eff = theta*dist
 rh = r_eff
-
-
-
 
 # Here Im using the velocities dispersion instear of the velocities
 # follow the aproach in http://spiff.rit.edu/classes/phys440/lectures/glob_clus/glob_clus.html
 # But I´m far for be sure about it. The reallity is than if I use the real velocities the
 # cluster mas is tooooooo high
 
-sig_mu2 = (3*((0.258))**2*40)*(u.km/u.second)#0.0625 is std**2 (0.25**2)
+sig_mu2 = (3*((sig_mu))**2*40)*(u.km/u.second)#0.0625 is std**2 (0.25**2)
 
 mu_pc_myr = sig_mu2.to(u.pc/u.Myr)
 G = 0.0045*(u.pc**3)*(u.Myr**-2)*(u.M_sun**-1)
@@ -101,13 +87,13 @@ print(M_clus)
 # Try using spisea to calculate the min mass of the cluster 
 # containing those stars
 fig, ax = plt.subplots(1,3,figsize=(30,10))
-AKs_clus, std_AKs = 1.73, 0.06
+ 
 
-AKs = AKs_clus
+
 iso_dir = '/Users/amartinez/Desktop/PhD/Libralato_data/nsd_isochrones/'
 
 dist = 8000 # distance in parsec
-metallicity = 0.17 # Metallicity in [M/H]
+metallicity = 0.30 # Metallicity in [M/H]
 # logAge_600 = np.log10(0.61*10**9.)
 logAge = np.log10(0.010*10**9.)
 # logAge_30 = np.log10(0.030*10**9.)
@@ -117,6 +103,10 @@ evo_model = evolution.MISTv1()
 atm_func = atmospheres.get_merged_atmosphere
 red_law = reddening.RedLawNoguerasLara18()
 filt_list = ['hawki,J', 'hawki,H', 'hawki,Ks']
+
+absolute_difference_function = lambda list_value : abs(list_value - AKs_clus[0])
+
+AKs = min(AKs_list, key=absolute_difference_function)
 
 iso =  synthetic.IsochronePhot(logAge, AKs, dist, metallicity=metallicity,
                                 evo_model=evo_model, atm_func=atm_func,
@@ -155,15 +145,15 @@ my_imf = imf.IMF_broken_powerlaw(massLimits, powers,multiplicity = None)
 
 
 # #%
-# ra, dec, l, b, pml, pmb,J, H, Ks,x, y
-cluster_test =np.loadtxt('/Users/amartinez/Desktop/PhD/Libralato_data/pruebas/Cluster_virial_test1/cluster_num3_2_knn10_area19.08/cluster3_0_0_knn_10_area_19.08.txt')
+
+
 
 
 
 # mass = 0.8*10**4.
 mass = M_clus.value
 mass = 1 * mass
-dAks = round(std_AKs*1,3)
+dAks = std_AKs[0]
 cluster = synthetic.ResolvedClusterDiffRedden(iso, my_imf, mass,dAks)
 cluster_ndiff = synthetic.ResolvedCluster(iso, my_imf, mass)
 clus = cluster.star_systems
@@ -173,8 +163,10 @@ clus_ndiff = cluster_ndiff.star_systems
 ax[2].scatter(clus['m_hawki_H']-clus['m_hawki_Ks'],clus['m_hawki_Ks'],color = 'lavender',alpha=0.5)
 ax[2].scatter(clus_ndiff['m_hawki_H']-clus_ndiff['m_hawki_Ks'],clus_ndiff['m_hawki_Ks'],color = 'k',alpha=0.6,s=50)
 ax[2].invert_yaxis()
-ax[2].scatter(cluster_test[:,7]- cluster_test[:,8],cluster_test[:,8],color ='r',s=50)
-
+ax[2].scatter(H-K,K,color ='r',s=50)
+ax[2].set_xlabel('H-Ks')
+ax[2].set_ylabel('Ks')
+ax[2].set_title('Cluster Radio = %.2f"'%(radio_clus[0]))
 # txt_srn = '\n'.join(('metallicity = %s'%(metallicity),'dist = %.1f Kpc'%(dist/1000),'mass =%.0fx$10^{3}$ $M_{\odot}$'%(mass/1000),
 #                      'age = %.0f Myr'%(10**logAge/10**6)))
 # txt_AKs = '\n'.join(('H-Ks =%.3f'%(np.mean(datos[:,3][colores_index[i]]-datos[:,4][colores_index[i]])),
@@ -195,19 +187,20 @@ ax[0].set_xlabel('$(M_{\odot})$')
 ax[0].set_ylabel('$N$')
 ax[0].legend()
 ax[0].set_xlim(0,2.5)
-
+ax[0].set_title('$\sigma_{mul}$= %.3f, $\sigma_{mub}$= %.3f'%(sig_mul,sig_mub))
 # fig, ax = plt.subplots(1,1,figsize=(10,10))
 ax[1].scatter(clus_ndiff['mass'],clus_ndiff['m_hawki_Ks'],color ='k')
 ax[1].set_xlabel('$(M_{\odot})$')
 ax[1].set_ylabel('$Ks$')
-ax[1].scatter(np.full(len(cluster_test[:,8]),max(clus_ndiff['mass'])),cluster_test[:,8],color ='red')
+ax[1].scatter(np.full(len(K),max(clus_ndiff['mass'])),K,color ='red')
 ax[1].invert_yaxis()
+
 # ax.set_xlim(0,2.5)
 
 
 
 # %%
-print(np.full(len(cluster_test[:,8]),max(clus['mass'])))
+
 
 
 
