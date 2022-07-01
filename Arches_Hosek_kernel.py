@@ -56,6 +56,7 @@ pruebas='/Users/amartinez/Desktop/PhD/Arches_and_Quintuplet_Hosek/pruebas/'
 # #Choose Arches or Quintuplet
 # =============================================================================
 choosen_cluster = 'Arches'
+# choosen_cluster = 'Quintuplet'
 
 center_arc = SkyCoord('17h45m50.4769267s', '-28d49m19.16770s', frame='icrs') if choosen_cluster =='Arches' else SkyCoord('17h46m15.13s', '-28d49m34.7s', frame='icrs')#Quintuplet
 arches=Table.read(catal + 'Arches_cat_H22_Pclust.fits') if choosen_cluster =='Arches' else Table.read(catal + 'Quintuplet_cat_H22_Pclust.fits')
@@ -146,14 +147,16 @@ plotting_h('m127-m153','m153',m127-m153,m153,2,norm=matplotlib.colors.LogNorm())
 # =============================================================================
 # Generated part
 # =============================================================================
-clustered_by = 'all_color'
+# clustered_by = 'all_color'
+clustered_by = 'all'
+
     
 
 # %
 
 # X_stad=X
 
-samples_dist=10
+samples_dist=7
 
 
 #here we generate the kernel simulated data 
@@ -347,33 +350,37 @@ rand_all = np.random.choice(np.arange(0,len(pml)),1)
 
 rand_clus = clus_gal[rand]
 rand_pm = pm_clus[rand]
-radio=50.*u.arcsec
+radio=2*u.arcsec
 
 #Here we can decide if selected the reduced data set around a random value of the cluster.
 
 # =============================================================================
 # id_clus, id_arc, d2d,d3d = ap_coor.search_around_sky(rand_clus,arc_gal, radio)
 # dbs_clus, id_arc_dbs, d2d_db, d3d_db = ap_coor.search_around_sky(rand_clus,clus_gal, radio)
+# 
 # =============================================================================
-
 # or around just a random point in the data set, that can be part of the found cluster or not
-id_clus, id_arc, d2d,d3d = ap_coor.search_around_sky(rand_clus,arc_gal, radio)
-dbs_clus, id_arc_dbs, d2d_db, d3d_db = ap_coor.search_around_sky(rand_clus,clus_gal, radio)
+# This one is not ready jet
+# =============================================================================
+# id_clus, id_arc, d2d,d3d = ap_coor.search_around_sky(rand_all,arc_gal, radio)
+# dbs_clus, id_arc_dbs, d2d_db, d3d_db = ap_coor.search_around_sky(rand_clus,clus_gal, radio)
+# =============================================================================
 
 
 # or around the pre-dertermined coordenates for center of the cluster
-# =============================================================================
-# id_clus, id_arc, d2d,d3d = ap_coor.search_around_sky(SkyCoord(['17h45m50.4769267s'], ['-28d49m19.16770s'], frame='icrs'),arc_gal, radio) if choosen_cluster =='Arches' else ap_coor.search_around_sky(SkyCoord(['17h46m15.13s'], ['-28d49m34.7s'], frame='icrs'),arc_gal, radio)
-# dbs_clus, id_arc_dbs, d2d_db, d3d_db = ap_coor.search_around_sky(SkyCoord(['17h45m50.4769267s'], ['-28d49m19.16770s'], frame='icrs'),clus_gal, radio) if choosen_cluster =='Arches' else ap_coor.search_around_sky(SkyCoord(['17h46m15.13s'], ['-28d49m34.7s'], frame='icrs'),clus_gal, radio)
-# 
-# =============================================================================
+# frist one selects stars whithin a distance 'radio' around the centere of the cluster
+# secondo one selects stara whithin a distance 'radio' arpind the center of the cluster, but only for the star labeled as cluster stars
+# Notice that for small radios around the center both values are very similar.
+id_clus, id_arc, d2d,d3d = ap_coor.search_around_sky(SkyCoord(['17h45m50.4769267s'], ['-28d49m19.16770s'], frame='icrs'),arc_gal, radio) if choosen_cluster =='Arches' else ap_coor.search_around_sky(SkyCoord(['17h46m15.13s'], ['-28d49m34.7s'], frame='icrs'),arc_gal, radio)
+dbs_clus, id_arc_dbs, d2d_db, d3d_db = ap_coor.search_around_sky(SkyCoord(['17h45m50.4769267s'], ['-28d49m19.16770s'], frame='icrs'),clus_gal, radio) if choosen_cluster =='Arches' else ap_coor.search_around_sky(SkyCoord(['17h46m15.13s'], ['-28d49m34.7s'], frame='icrs'),clus_gal, radio)
+
 #search_around_sky complains when one of the variable is just a singe coordinates (and not an array of coordinates)
 #so in order to go around this put the coordinares in brackets and it woint complain any more
 
 # %
 fig, ax = plt.subplots(1,3,figsize=(30,10))
-ax[1].set_title('Radio = %s, Green = %s'%(radio,len(id_clus)))
-ax[0].set_title('%s'%(choosen_cluster))
+ax[1].set_title('THAT ONE, Radio = %s, Green = %s'%(radio,len(id_clus)))
+ax[0].set_title('%s,std(mu_l,mu_b): %.3f, %.3f'%(choosen_cluster,np.std(pml[id_arc].value),np.std(pmb[id_arc].value)))
 plotting('l','b',arc_gal.l, arc_gal.b,1)
 plotting('l','b',clus_gal.l, clus_gal.b,1,color='orange')
 plotting('l','b',arc_gal.l[id_arc], arc_gal.b[id_arc],1,alpha=0.9,color='g')
@@ -383,6 +390,7 @@ plotting('mul','mub',pm_clus.pm_l_cosb, pm_clus.pm_b,0)
 plotting('mul','mub',pml[id_arc], pmb[id_arc],0,alpha=0.1)
 ax[0].invert_xaxis()
 
+
 plotting('m127-m153','m153',m127-m153, m153,2,zorder=1,alpha=0.01)
 plotting('m127-m153','m153',m127_clus-m153_clus, m153_clus,2,alpha=0.3,color='orange')
 plotting('m127-m153','m153',m127[id_arc]-m153[id_arc],m153[id_arc],2,alpha=0.8,color='g')
@@ -391,9 +399,9 @@ plotting('m127-m153','m153',m127[id_arc]-m153[id_arc],m153[id_arc],2,alpha=0.8,c
 
 
 fig, ax = plt.subplots(1,3,figsize=(30,10))
-ax[1].set_title('Radio = %s, Orange = %s'%(radio,len(dbs_clus)))
+ax[1].set_title('THIS ONE,Radio = %s, Orange = %s'%(radio,len(dbs_clus)))
 # ax[0].set_title('%s, method: %s'%(choosen_cluster,method))
-ax[0].set_title('%s, std(pml,pmb): %.3f, %.3f'%(choosen_cluster,
+ax[0].set_title('%s, std(mu_l,mu_b): %.3f, %.3f'%(choosen_cluster,
                                            np.std(pm_clus.pm_l_cosb[id_arc_dbs].value),
                                            np.std(pm_clus.pm_b[id_arc_dbs].value)))
 plotting('l','b',arc_gal.l, arc_gal.b,1,alpha=0.01,color='k')
@@ -413,7 +421,7 @@ ax[2].invert_yaxis()
 
 ax[0].invert_xaxis()
 
-
+sys.exit('line 417')
 
 # %%
 # =============================================================================
