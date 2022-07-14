@@ -32,6 +32,8 @@ from spisea.imf import imf, multiplicity
 import pandas as pd
 from astropy.table import Column
 from astropy.coordinates import FK5
+from astropy.stats import sigma_clip
+
 # %%
 
 rcParams.update({'xtick.major.pad': '7.0'})
@@ -267,7 +269,7 @@ print(hos_cluster['ra_abs'])
 # quintuplet cluster
 # =============================================================================
 
-radio=1*u.arcsec#TODO
+radio=3*u.arcsec#TODO
 hos_coor_clus = SkyCoord(ra = hos_cluster['ra_abs'], dec = hos_cluster['dec_abs'],frame = 'icrs')
 id1, id2, d2d,d3d = ap_coor.search_around_sky(SkyCoord(['17h45m50.4769267s'], ['-28d49m19.16770s'], frame='icrs'),hos_coor_clus, radio) if choosen_cluster =='Arches' else ap_coor.search_around_sky(SkyCoord(['17h46m15.13s'], ['-28d49m34.7s'], frame='icrs'),hos_coor_clus, radio)
 # dbs_clus, id_arc_dbs, d2d_db, d3d_db = ap_coor.search_around_sky(SkyCoord(['17h45m50.4769267s'], ['-28d49m19.16770s'], frame='icrs'),clus_gal, radio) if choosen_cluster =='Arches' else ap_coor.search_around_sky(SkyCoord(['17h46m15.13s'], ['-28d49m34.7s'], frame='icrs'),clus_gal, radio)
@@ -284,6 +286,23 @@ is_match = np.where(d2d<1*u.arcsec)
 
 hos_core_match=hos_core[is_match]
 gns_core_match = AKs_center[idi[is_match]]
+
+#%%
+# =============================================================================
+# Here you can trim the core cluster by color
+# =============================================================================
+colores_trim = []
+sig = 2
+for tr in range(len(gns_core_match)):
+    colores_trim.append(float(gns_core_match[tr,6]-gns_core_match[tr,8]))
+print(np.mean(colores_trim))
+fil_color = sigma_clip(colores_trim, sigma=sig, maxiters=10)
+good_filt = np.where(np.isnan(fil_color)==False)
+
+gns_core_match_trim = gns_core_match[good_filt]
+
+# %
+
 
 #Checking the matching, you can delete these tree lines
 fig, ax = plt.subplots(1,3, figsize = (30,10))
@@ -302,19 +321,29 @@ ax[0].text(0.05, 0.15, vel_txt_all, transform=ax[0].transAxes, fontsize=20,
     verticalalignment='top', bbox=propiedades_all)
 
 
+ax[1].set_title('%s'%(choosen_cluster))
 ax[1].scatter(hos_core_match['ra_abs'], hos_core_match['dec_abs'])
-ax[1].scatter(gns_core_match[:,0],gns_core_match[:,2],color = 'r',s=1)
+ax[1].scatter(gns_core_match_trim[:,0],gns_core_match_trim[:,2],color = 'r',s=1)
 ax[1].scatter(arches['ra_abs'],arches['dec_abs'],color ='k',alpha = 0.03)
+
+prop_1 = dict(boxstyle='round', facecolor='lime' , alpha=0.2)
+ax[1].text(0.15, 0.95, 'aprox cluster radio = %s"\n cluster stars = %s '%(round(radio.to(u.arcsec).value,2),len(gns_core_match_trim)), transform=ax[1].transAxes, fontsize=30,
+                                            verticalalignment='top', bbox=prop_1)
+                    
+
 # ax[2].scatter(hos_core_match['F127M']-hos_core_match['F153M'], hos_core_match['F153M'],zorder =3)
 # ax[2].scatter(arches['F127M']-arches['F153M'], arches['F153M'],zorder=1)
+ax[2].set_title('Stars trimmied by color at %s$\sigma$'%(sig))
 ax[2].scatter(AKs_center[:,6]-AKs_center[:,8],AKs_center[:,8],zorder =1, color = 'k',s=0.1,alpha = 0.01)
-ax[2].scatter(gns_core_match[:,6]-gns_core_match[:,8],gns_core_match[:,6],zorder =3, color = 'lime')
+ax[2].scatter(gns_core_match_trim[:,6]-gns_core_match_trim[:,8],gns_core_match_trim[:,6],zorder =3, color = 'lime')
 ax[2].set_xlim(1.2,4)
 ax[2].invert_yaxis()
 # %
+
+
 ext_cluster = []
-for ext in range(len(gns_core_match[:,18])):
-    ext_cluster.append(float(gns_core_match[ext,18]))
+for ext in range(len(gns_core_match_trim[:,18])):
+    ext_cluster.append(float(gns_core_match_trim[ext,18]))
 
 
 AKs_core, dAKs_core = np.median(ext_cluster), np.std(ext_cluster)
@@ -374,6 +403,21 @@ ax[2].text(0.65, 0.50, txt_AKs, transform=ax[2].transAxes, fontsize=20,
 
 ax[2].scatter(clus['m_hawki_H']-clus['m_hawki_Ks'],clus['m_hawki_Ks'],color = 'r',alpha=0.1)
 ax[2].scatter(clus_ndiff['m_hawki_H']-clus_ndiff['m_hawki_Ks'],clus_ndiff['m_hawki_Ks'],color = 'k',alpha=0.1,s=1)
+
+
+# %%
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
