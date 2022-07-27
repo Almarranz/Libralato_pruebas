@@ -115,29 +115,63 @@ indices = np.arange(0,len(strin),1)
 
 fig, ax = plt.subplots(1,1, figsize= (10,10))
 ax.scatter(catal[:,0],catal[:,2])
-# ax.set_ylim(-28.94)
-# ax.set_xlim(266.50      )
-
-m=-1
-
+# ax.set_ylim(-28.94,-28.88)
+# ax.set_xlim(266.51,266.53)   
+# %
+m =-1
+m1 = 60/73
 yg_1 = 237.578 -  catal[:,0]# yg_1 = (lim_pos_up - (ic)*step/np.cos(45*u.deg)) +  m*catal[:,7]
 yg_2 = 237.700- catal[:,0]
+
+yr_1 = - 247.923 + m1*catal[:,0]# yg_1 = (lim_pos_up - (ic)*step/np.cos(45*u.deg)) +  m*catal[:,7]
+yr_2 = - 248.017 + m1*catal[:,0]
+                      
+# y = 0.45x - 148.813
 ax.scatter(catal[:,0],yg_1)
 ax.scatter(catal[:,0],yg_2)
+ax.scatter(catal[:,0],yr_1)
+ax.scatter(catal[:,0],yr_2)
 
-lim_pos_up, lim_pos_down = 237.700, 237.578 #intersection of the positives slopes lines with y axis,
-lim_neg_up, lim_neg_down =32700,26000
-
-# distancia entre yg_up e yg_down
-dist_neg = abs((-m*catal[0,0]+ (lim_neg_down + m*catal[0,0])-lim_neg_up)/np.sqrt((-1)**2+(1)**2))
-
-
-
-
-
-
-
-
-
-
-
+# =============================================================================
+# lim_neg_up, lim_neg_down =237.700, 237.578  #intersection of the neg slopes lines with y axis,
+# lim_pos_up, lim_pos_down = - 247.923, - 248.017
+# # distancia entre yg_up e yg_down
+# dist_neg = abs((-m*catal[0,0]+ (lim_neg_down + m*catal[0,0])-lim_neg_up)/np.sqrt((-1)**2+(1)**2))
+# ang = math.degrees(np.arctan(m))
+# 
+# 
+# 
+# clus_num = 0
+# # x_box = 3
+# 
+# 
+# clustered_by_list =['all_color','all']
+# x_box_lst = [1,2]
+# samples_lst =[10]
+# for clus_lista in clustered_by_list:
+#     clustered_by = clus_lista
+#     for x_box in x_box_lst:
+#         step = dist_neg /x_box
+#         # step_neg =dist_neg/x_box
+#         
+#         for samples_dist in samples_lst:
+#            
+#             for ic in range(x_box*2-1):
+#                 
+#                 ic *= 0.5
+#                 yg_1 = (lim_neg_d02 - (ic)*step/np.cos(ang*u.deg)) +  m*catal[:,0]
+#                 # yg_2 = (lim_pos_up - (ic+1)*step*np.cos(45*u.deg)) +  m*catal[:,7]
+#                 yg_2 = (lim_pos_up - (ic+1)*step/np.cos(ang*u.deg)) +  m*catal[:,0]
+#             
+#                 ax.plot(catal[:,0],yg_1, color ='g')
+#                 ax.plot(catal[:,0],yg_2, color ='g')
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# =============================================================================
