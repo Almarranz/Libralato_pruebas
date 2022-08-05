@@ -7,8 +7,9 @@ Created on Thu Aug  4 12:22:09 2022
 """
 
 # =============================================================================
-# Here we are going to throw a random clusyter into some simulated data a see 
-# how the dectection of the cluster works
+# We are a throw a core cluster obtained on Arches_Hosel_kernel_H_Ks.py in a set 
+# of simulated random data and then run dbscan on it. The goal is build and statistic 
+# about the finding and the fake positives and so on.
 # =============================================================================
 
 # %%
@@ -66,12 +67,12 @@ pruebas='/Users/amartinez/Desktop/PhD/Arches_and_Quintuplet_Hosek/pruebas/'
 gns_ext = '/Users/amartinez/Desktop/PhD/Libralato_data/extinction_maps/'
 
 # =============================================================================
-# #Choose Arches or Quintuplet
+# #Choose Arches or Quintuplet. We neeed the real data in order to build the simulated one
 # =============================================================================
 choosen_cluster = 'Arches'#TODO
 # choosen_cluster = 'Quintuplet'#TODO
 
-center_arc = SkyCoord('17h45m50.4769267s', '-28d49m19.16770s', frame='icrs') if choosen_cluster =='Arches' else SkyCoord('17h46m15.13s', '-28d49m34.7s', frame='icrs')#Quintuplet
+center_arc = SkyCoord('17h45m50.4769267s', '-28d49m19.16770s', frame='icrs',obstime ='J2016.0') if choosen_cluster =='Arches' else SkyCoord('17h46m15.13s', '-28d49m34.7s', frame='icrs')#Quintuplet
 # names=('Name','F127M','e_F127M','F153M','e_F153M','ra*','e_ra*','dec','e_dec','pm_ra*','e_pm_ra*','pm_dec','e_pm_dec','t0','n_epochs','dof','chi2_ra*','chi2_dec','Orig_name','Pclust')>
 arches=Table.read(catal + 'Arches_cat_H22_Pclust.fits') if choosen_cluster =='Arches' else Table.read(catal + 'Quintuplet_cat_H22_Pclust.fits')
 
@@ -91,8 +92,8 @@ valid_epm = np.where((epm_gal.pm_l_cosb.value < pme_lim)&(epm_gal.pm_b.value < p
 arches=arches[valid_epm]
 
 # %%
-hos_coord = SkyCoord(ra  = arches['ra*']*u.arcsec+center_arc.ra,dec = arches['dec']*u.arcsec+ center_arc.dec)
-hos_gal = SkyCoord(ra = hos_coord.ra, dec = hos_coord.dec, frame = 'icrs').galactic
+hos_coord = SkyCoord(ra  = arches['ra*']*u.arcsec+center_arc.ra,dec = arches['dec']*u.arcsec+ center_arc.dec,frame ='icrs',obstime ='J2016.0')
+hos_gal = SkyCoord(ra = hos_coord.ra, dec = hos_coord.dec, frame = 'icrs',obstime ='J2016.0').galactic
 pmra, pmdec = arches['pm_ra*']*u.mas/u.yr, arches['pm_dec']*u.mas/u.yr
 
 columnas = len(arches.columns)
@@ -113,8 +114,8 @@ print(arches.columns)
 
 
 #%%
-clustered_by = 'all_color'#TODO
-# clustered_by = 'all'#TODO
+# clustered_by = 'all_color'#TODO
+clustered_by = 'all'#TODO
 samples_dist=7
 # %%
 #here we generate the kernel simulated data 
@@ -169,7 +170,8 @@ for d in range(1):#here we are the calculate the mean of the smaller value for t
         lst_d_KNN_sim.append(min(d_KNN_sim))
 
 d_KNN_sim_av = np.mean(lst_d_KNN_sim)
-
+d_KNN_sim_max = np.max(lst_d_KNN_sim)
+d_KNN_sim_min = np.min(lst_d_KNN_sim)
 
 fig, ax = plt.subplots(1,1,figsize=(10,10))
 ax.set_title('Number of points = %s '%(len(pml)))
@@ -201,13 +203,86 @@ ax.set_ylabel('N')
 # =============================================================================
 # Simulated data part
 # =============================================================================
-fig, ax = plt.subplots(1,3,figsize = (30,10))
-ax[0].scatter(X_sim[:,0],X_sim[:,1])
-ax[1].scatter(X_sim[:,2],X_sim[:,3])
-ax[2].scatter(f127_sim -f153_sim, f153_sim)
-ax[2].scatter(arches['F127M'] - arches['F153M'], arches['F153M'])
-ax[2].invert_yaxis()
+#Load the core cluster generated in Arches
+from_clus = 'Arches'
+# header = 'mul, mub, l, b, f127 - f153'
+radio = 1
+core_cluster = np.loadtxt(pruebas + 'core_cluster_rad%.0f_%s.txt'%(radio, from_clus))
 
+X_sim_with = np.r_[X_sim, core_cluster[:,0:-2]]
+
+nr_plot = 2
+fig, ax = plt.subplots(1,nr_plot,figsize = (nr_plot*10,10))
+ax[0].scatter(X_sim[:,0],X_sim[:,1],alpha = 0.01)
+ax[1].scatter(X_sim[:,2],X_sim[:,3],alpha = 0.1)
+
+fig, ax = plt.subplots(1,nr_plot,figsize = (nr_plot*10,10))
+ax[0].scatter(X_sim_with[:,0],X_sim_with[:,1], alpha = 0.01)
+ax[1].scatter(X_sim_with[:,2],X_sim_with[:,3], alpha = 0.1)
+# ax[2].scatter(f127_sim -f153_sim, f153_sim)
+# ax[2].scatter(arches['F127M'] - arches['F153M'], arches['F153M'])
+# ax[2].invert_yaxis()
+# %%
+# =============================================================================
+# DBSCAN part
+# =============================================================================
+#Here to decide to use the data with the core cluster in it or just the pure 
+# random data
+
+
+
+# dbs_data = X_sim_with
+dbs_data = X_sim_with
+dbs_data_stand = StandardScaler().fit_transform(dbs_data)
+tree_sim_with =  KDTree(dbs_data_stand, leaf_size=2)
+
+dist_sim_with, ind_sim_with = tree_sim.query(X_stad_sim, k=samples_dist) #DistNnce to the 1,2,3...k neighbour
+d_KNN_sim_with=sorted(dist_sim[:,-1])#distance to the Kth neighbour
+ 
+
+clustering = DBSCAN(eps = min(d_KNN_sim_with)+0.022, min_samples=samples_dist).fit(dbs_data_stand)
+
+l_c=clustering.labels_
+
+n_clusters = len(set(l_c)) - (1 if -1 in l_c else 0)
+n_noise=list(l_c).count(-1)
+
+u_labels = set(l_c)
+colors=[plt.cm.rainbow(i) for i in np.linspace(0,1,len(set(l_c)))]# Returns a color for each cluster. Each color consists in four number, RGBA, red, green, blue and alpha. Full opacity black would be then 0,0,0,1
+
+
+for k in range(len(colors)): #give noise color black with opacity 0.1
+    if list(u_labels)[k] == -1:
+        colors[k]=[0,0,0,0.1]
+        
+colores_index=[]      
+for c in u_labels:
+    cl_color=np.where(l_c==c)
+    colores_index.append(cl_color)
+    
+fig, ax = plt.subplots(1,nr_plot,figsize=(nr_plot*10,10))
+
+ax[0].invert_xaxis()
+# ax[2].invert_yaxis()
+elements_in_cluster=[]
+for i in range(len(set(l_c))-1):
+    ax[0].scatter(dbs_data[:,0][colores_index[i]], dbs_data[:,1][colores_index[i]],color=colors[i],zorder=3)
+    # ax[1].scatter(l[colores_index[i]], b[colores_index[i]],color=colors[i],zorder=3)
+    ax[1].scatter(dbs_data[:,2][colores_index[i]],dbs_data[:,3][colores_index[i]],color=colors[i],zorder=3,s=100)
+    # ax[1].scatter(gns_match[colores_index[i]][:,0],gns_match[colores_index[i]][:,2],color=colors[i],zorder=3,s=100)
+    # ax[2].scatter(arches['F127M'][colores_index[i]]-arches['F153M'][colores_index[i]],arches['F153M'][colores_index[i]],color=colors[i],zorder=13)
+    
+ax[0].scatter(dbs_data[:,0][colores_index[-1]], dbs_data[:,1][colores_index[-1]],color=colors[-1],zorder=1)
+ax[0].set_xlabel(r'$\mathrm{\mu_{l} (mas\ yr^{-1})}$',fontsize =30) 
+ax[0].set_ylabel(r'$\mathrm{\mu_{b} (mas\ yr^{-1})}$',fontsize =30) 
+ax[1].scatter(dbs_data[:,2][colores_index[-1]],dbs_data[:,3][colores_index[-1]],color=colors[-1],zorder=1)
+# ax[1].scatter(arches[colores_index[-1]]['l_abs'],arches[colores_index[-1]]['b_abs'],color=colors[-1],zorder=3,s=100,alpha = 0.01)
+ax[1].set_xlabel('ra(deg)',fontsize =30) 
+ax[1].set_ylabel('dec(deg)',fontsize =30)
+
+# ax[2].scatter(arches['F127M'][colores_index[-1]]-arches['F153M'][colores_index[-1]],arches['F153M'][colores_index[-1]],color=colors[-1],zorder=1)
+# ax[2].set_xlabel('f127m-f153m',fontsize =30) 
+# ax[2].set_ylabel('f153m',fontsize =30)  
 
 
 
