@@ -128,20 +128,6 @@ f127_kernel = gaussian_kde( arches['F127M'])
 f153_kernel = gaussian_kde( arches['F153M'])
 
 # %%
-pml, pmb = arches['pm_l'],arches['pm_b']
-l,b = arches['l_abs'].value,  arches['b_abs'].value
-if clustered_by == 'all_color':
-    X = np.array([pml,pmb,l,b,colorines]).T
-    X_stad = StandardScaler().fit_transform(X)
-    tree = KDTree(X_stad, leaf_size=2) 
-    dist, ind = tree.query(X_stad, k=samples_dist) #DistNnce to the 1,2,3...k neighbour
-    d_KNN=sorted(dist[:,-1])#distance to the Kth neighbour
-elif clustered_by == 'all':
-    X = np.array([pml,pmb,l,b]).T
-    X_stad = StandardScaler().fit_transform(X)
-    tree = KDTree(X_stad, leaf_size=2) 
-    dist, ind = tree.query(X_stad, k=samples_dist) #DistNnce to the 1,2,3...k neighbour
-    d_KNN=sorted(dist[:,-1])#distance to the Kth neighbour
 
 
 lst_d_KNN_sim = []
@@ -176,29 +162,6 @@ d_KNN_sim_min = np.min(lst_d_KNN_sim)
 fig, ax = plt.subplots(1,1,figsize=(10,10))
 ax.set_title('Number of points = %s '%(len(pml)))
 
-# ax[0].set_title('Sub_sec_%s_%s'%(col[colum],row[ro]))
-# ax[0].plot(np.arange(0,len(datos),1),d_KNN,linewidth=1,color ='k')
-# ax[0].plot(np.arange(0,len(datos),1),d_KNN_sim, color = 'r')
-
-# # ax.legend(['knee=%s, min=%s, eps=%s, Dim.=%s'%(round(kneedle.elbow_y, 3),round(min(d_KNN),2),round(epsilon,2),len(X[0]))])
-# ax[0].set_xlabel('Point') 
-# ax[0].set_ylabel('%s-NN distance'%(samples)) 
-
-ax.hist(d_KNN,bins ='auto',histtype ='step',color = 'k')
-ax.hist(d_KNN_sim,bins ='auto',histtype ='step',color = 'r')
-ax.set_xlabel('%s-NN distance'%(samples_dist)) 
-
-eps_av = round((min(d_KNN)+d_KNN_sim_av)/2,3)
-texto = '\n'.join(('min real d_KNN = %s'%(round(min(d_KNN),3)),
-                    'min sim d_KNN =%s'%(round(d_KNN_sim_av,3)),'average = %s'%(eps_av)))
-
-
-props = dict(boxstyle='round', facecolor='w', alpha=0.5)
-# place a text box in upper left in axes coords
-ax.text(0.55, 0.25, texto, transform=ax.transAxes, fontsize=20,
-    verticalalignment='top', bbox=props)
-
-ax.set_ylabel('N') 
 # %%
 # =============================================================================
 # Simulated data part
@@ -209,38 +172,61 @@ from_clus = 'Arches'
 radio = 1
 core_cluster = np.loadtxt(pruebas + 'core_cluster_rad%.0f_%s.txt'%(radio, from_clus))
 
-X_sim_with = np.r_[X_sim, core_cluster[:,0:-2]]
+#Data with cluster
+data_with = np.r_[X_sim, core_cluster[:,0:-2]]
+dbs_data = data_with
+dbs_data_stand = StandardScaler().fit_transform(dbs_data)
+tree_with =  KDTree(dbs_data_stand, leaf_size=2)
+dist_with, ind_with = tree_with.query(dbs_data_stand, k=samples_dist) #DistNnce to the 1,2,3...k neighbour
+d_KNN_with=sorted(dist_with[:,-1])#distance to the Kth neighbour
 
-nr_plot = 2
-fig, ax = plt.subplots(1,nr_plot,figsize = (nr_plot*10,10))
-ax[0].scatter(X_sim[:,0],X_sim[:,1],alpha = 0.01)
-ax[1].scatter(X_sim[:,2],X_sim[:,3],alpha = 0.1)
 
-fig, ax = plt.subplots(1,nr_plot,figsize = (nr_plot*10,10))
-ax[0].scatter(X_sim_with[:,0],X_sim_with[:,1], alpha = 0.01)
-ax[1].scatter(X_sim_with[:,2],X_sim_with[:,3], alpha = 0.1)
-# ax[2].scatter(f127_sim -f153_sim, f153_sim)
-# ax[2].scatter(arches['F127M'] - arches['F153M'], arches['F153M'])
-# ax[2].invert_yaxis()
+# Simulated from data with cluster
+lst_d_KNN_sim_with = []
+for d in range(20):
+    pml_kernel_with, pmb_kernel_with = gaussian_kde(data_with[:,0]), gaussian_kde(data_with[:,1])
+    l_kernel_with, b_kernel_with =  gaussian_kde(data_with[:,2]), gaussian_kde(data_with[:,3])
+    mub_sim_with,  mul_sim_with = pmb_kernel.resample(len(data_with)), pml_kernel.resample(len(data_with))
+    l_sim_with, b_sim_with = l_kernel.resample(len(data_with)), b_kernel.resample(len(data_with))
+    X_sim_with = np.array([mul_sim_with[0],mub_sim_with[0],l_sim_with[0],b_sim_with[0]]).T
+    X_sim_with_stand = StandardScaler().fit_transform(X_sim_with)
+    tree_sim_with =  KDTree(X_sim_with_stand , leaf_size=2)
+    dist_sim_with, ind_sim_with = tree_sim_with.query(X_sim_with_stand, k=samples_dist) #DistNnce to the 1,2,3...k neighbour
+    d_KNN_sim_with=sorted(dist_sim_with[:,-1])#distance to the Kth neighbour
+    lst_d_KNN_sim_with.append(min(d_KNN_sim_with))
+
+d_KNN_sim_with_av = np.mean(lst_d_KNN_sim_with)
+
+fig, ax = plt.subplots(1,1,figsize=(10,10))
+ax.set_title('Number of points = %s '%(len(pml)))
+
+# ax[0].set_title('Sub_sec_%s_%s'%(col[colum],row[ro]))
+# ax[0].plot(np.arange(0,len(datos),1),d_KNN,linewidth=1,color ='k')
+# ax[0].plot(np.arange(0,len(datos),1),d_KNN_sim, color = 'r')
+
+# # ax.legend(['knee=%s, min=%s, eps=%s, Dim.=%s'%(round(kneedle.elbow_y, 3),round(min(d_KNN),2),round(epsilon,2),len(X[0]))])
+# ax[0].set_xlabel('Point') 
+# ax[0].set_ylabel('%s-NN distance'%(samples)) 
+
+ax.hist(d_KNN_with,bins ='auto',histtype ='step',color = 'k')
+ax.hist(d_KNN_sim_with,bins ='auto',histtype ='step',color = 'r')
+ax.set_xlabel('%s-NN distance'%(samples_dist)) 
+
+eps_av_with = round((min(d_KNN_with)+d_KNN_sim_with_av)/2,3)
+texto = '\n'.join(('min real d_KNN = %s'%(round(min(d_KNN_with),3)),
+                    'min sim d_KNN =%s'%(round(d_KNN_sim_with_av,3)),'average = %s'%(eps_av_with)))
+props = dict(boxstyle='round', facecolor='w', alpha=0.5)
+# place a text box in upper left in axes coords
+ax.text(0.55, 0.25, texto, transform=ax.transAxes, fontsize=20,
+    verticalalignment='top', bbox=props)
+
 # %%
 # =============================================================================
 # DBSCAN part
 # =============================================================================
 #Here to decide to use the data with the core cluster in it or just the pure 
 # random data
-
-
-
-# dbs_data = X_sim_with
-dbs_data = X_sim_with
-dbs_data_stand = StandardScaler().fit_transform(dbs_data)
-tree_sim_with =  KDTree(dbs_data_stand, leaf_size=2)
-
-dist_sim_with, ind_sim_with = tree_sim.query(X_stad_sim, k=samples_dist) #DistNnce to the 1,2,3...k neighbour
-d_KNN_sim_with=sorted(dist_sim[:,-1])#distance to the Kth neighbour
- 
-
-clustering = DBSCAN(eps = min(d_KNN_sim_with)+0.022, min_samples=samples_dist).fit(dbs_data_stand)
+clustering = DBSCAN(eps = eps_av_with, min_samples=samples_dist).fit(dbs_data_stand)
 
 l_c=clustering.labels_
 
@@ -259,7 +245,8 @@ colores_index=[]
 for c in u_labels:
     cl_color=np.where(l_c==c)
     colores_index.append(cl_color)
-    
+
+nr_plot = 2
 fig, ax = plt.subplots(1,nr_plot,figsize=(nr_plot*10,10))
 
 ax[0].invert_xaxis()
@@ -288,7 +275,7 @@ ax[1].set_ylabel('dec(deg)',fontsize =30)
 
 
 
-
+# %%
 
 
 
