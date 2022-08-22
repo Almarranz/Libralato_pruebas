@@ -159,8 +159,7 @@ d_KNN_sim_av = np.mean(lst_d_KNN_sim)
 d_KNN_sim_max = np.max(lst_d_KNN_sim)
 d_KNN_sim_min = np.min(lst_d_KNN_sim)
 
-fig, ax = plt.subplots(1,1,figsize=(10,10))
-ax.set_title('Number of points = %s '%(len(pml)))
+
 
 # %%
 # =============================================================================
@@ -169,7 +168,7 @@ ax.set_title('Number of points = %s '%(len(pml)))
 #Load the core cluster generated in Arches
 from_clus = 'Arches'
 # header = 'mul, mub, l, b, f127 - f153'
-radio = 1
+radio = 2
 core_cluster = np.loadtxt(pruebas + 'core_cluster_rad%.0f_%s.txt'%(radio, from_clus))
 
 #Data with cluster
@@ -212,7 +211,12 @@ ax.hist(d_KNN_with,bins ='auto',histtype ='step',color = 'k')
 ax.hist(d_KNN_sim_with,bins ='auto',histtype ='step',color = 'r')
 ax.set_xlabel('%s-NN distance'%(samples_dist)) 
 
-eps_av_with = round((min(d_KNN_with)+d_KNN_sim_with_av)/2,3)
+eps_av_with = round((min(d_KNN_with)+d_KNN_sim_with_av)/2,3)#TODO
+# =============================================================================
+# # Here we can select a epsilon bigger than the minimun distance in the simlated data
+# # to find fake clusters
+# eps_av_with = round(d_KNN_sim_with_av + 0.10*d_KNN_sim_with_av,3) #TODO
+# =============================================================================
 texto = '\n'.join(('min real d_KNN = %s'%(round(min(d_KNN_with),3)),
                     'min sim d_KNN =%s'%(round(d_KNN_sim_with_av,3)),'average = %s'%(eps_av_with)))
 props = dict(boxstyle='round', facecolor='w', alpha=0.5)
