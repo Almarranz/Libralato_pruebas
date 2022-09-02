@@ -5,12 +5,9 @@ Created on Thu Sep  1 17:45:22 2022
 
 @author: amartinez
 """
-#======================================================
-# Here we are going to divide section A in smalles LxL areas, thar overlap. Then
-# we´ll run dbs with the kernel method over the first of thes boxes, store the cluster 
-# if we like in a particular folder called 'cluster1' and continue with the nex box.
-# If we found the same (or partially the same) cluster in an overlapping box, we will store it
-# in the same folder 'cluster 1', an so on
+# =============================================================================
+# This script save the data for each subsection in txt files in order to be later
+# used by simulated_cluster.pro
 # =============================================================================
 # %%imports
 import numpy as np
@@ -67,7 +64,7 @@ else:
 
 # %%
 # "'RA_gns','DE_gns','Jmag','Hmag','Ksmag','ra','dec','x_c','y_c','mua','dmua','mud','dmud','time','n1','n2','ID','mul','mub','dmul','dmub','m139','Separation'",
-section = 'C'#selecting the whole thing
+section = 'D'#selecting the whole thing
 
 MS_ra,MS_dec = np.loadtxt(cata + 'MS_section%s.txt'%(section),unpack=True, usecols=(0,1),skiprows=0)
 MS_coord = SkyCoord(ra = MS_ra*u.deg, dec = MS_dec*u.deg, frame = 'icrs',equinox ='J2000',obstime = 'J2014.2')
@@ -157,16 +154,10 @@ if section == 'A':
                     txt ='central box ~ %.1f arcmin$^{2}$'%(area)
                     ax.text(0.65, 0.95, txt, transform=ax.transAxes, fontsize=14,
                         verticalalignment='top', bbox=props)
-                    ax.set_xlabel('x (50 mas/pix)')
-                    ax.set_ylabel('y (50 mas/pix)')
+                    ax.set_xlabel('Ra')
+                    ax.set_ylabel('Dec')
                     ax.set_title('%.0f %.0f'%(ic*2,jr*2))
                     plt.show()
-            # =============================================================================
-            #         Here is where the party begins
-            # =============================================================================
-                    # Here we are going to save some data apart
-                    # select which chunck you want to save
-                    
                     np.savetxt(carpeta + 'secA_area%.1f_%.0f_%.0f_dmu%s.txt'%(area,ic*2,jr*2,dmu_lim),catal[good], fmt = '%.6f',
                                     header = "'RA_gns','DE_gns','Jmag','Hmag','Ksmag','ra','dec','x_c','y_c','mua','dmua','mud','dmud','time','n1','n2','ID','mul','mub','dmul','dmub','m139','Separation'")
      
@@ -203,11 +194,7 @@ if section == 'B':
                         yg_1 = (lim_pos_up - (ic)*step/np.cos(np.pi/4)) +  m*catal[:,7]
                         yg_2 = (lim_pos_up - (ic+1)*step/np.cos(np.pi/4)) +  m*catal[:,7]
                         
-                        # ax.scatter(catal[:,7][good],catal[:,8][good],color =strin[np.random.choice(indices)],alpha = 0.1)
-            
-             # %       
-                        # ax.plot(catal[:,7],yg_1, color ='g')
-                        # ax.plot(catal[:,7],yg_2, color ='g')
+                        
                         for jr in range(y_box*2-1):
                             fig, ax = plt.subplots(1,1, figsize=(10,10))
                             step_neg =dist_neg/y_box
@@ -230,13 +217,10 @@ if section == 'B':
                             txt ='central box ~ %.1f arcmin$^{2}$'%(area)
                             ax.text(0.65, 0.95, txt, transform=ax.transAxes, fontsize=14,
                                 verticalalignment='top', bbox=props)
-                            ax.set_xlabel('x (50 mas/pix)')
-                            ax.set_ylabel('y (50 mas/pix)')
+                            ax.set_xlabel('Ra')
+                            ax.set_ylabel('Dec')
                             ax.set_title('%.0f %.0f'%(ic*2,jr*2))
                             plt.show()
-                    # =============================================================================
-                    #         Here is where the party begins
-                    # =============================================================================
                             np.savetxt(carpeta + 'secB_area%.1f_%.0f_%.0f_dmu%s.txt'%(area,ic*2,jr*2,dmu_lim),catal[good], fmt = '%.6f',
                                            header = "'RA_gns','DE_gns','Jmag','Hmag','Ksmag','ra','dec','x_c','y_c','mua','dmua','mud','dmud','time','n1','n2','ID','mul','mub','dmul','dmub','m139','Separation'")
 if section == 'C':
@@ -256,19 +240,9 @@ if section == 'C':
     lim_pos_up, lim_pos_down = 1000, -18000 #intersection of the positives slopes lines with y axis,
     lim_neg_up, lim_neg_down =30500,22500 #intersection of the negayives slopes lines with y axis,
 
-    # =============================================================================
-    # yg_up =  lim_pos_up + m*catal[:,7]
-    # yg_down =  lim_pos_down + m*catal[:,7]
-    # 
-    # =============================================================================
-    # distancia entre yg_up e yg_down
+    
     dist_pos = abs((-1*catal[0,7]+ (lim_pos_down + m*catal[0,7])-lim_pos_up)/np.sqrt((-1)**2+(1)**2))
 
-    # =============================================================================
-    # yr_up = lim_neg_up + m1*catal[:,7]
-    # yr_down = lim_neg_down + m1*catal[:,7]
-    # =============================================================================
-    # distancia entre yg_up e yg_down
     dist_neg = abs((-m1*catal[0,7]+ (lim_neg_down + m1*catal[0,7])-lim_neg_up)/np.sqrt((-1)**2+(1)**2))
     ang = math.degrees(np.arctan(m1))
 
@@ -332,16 +306,88 @@ if section == 'C':
                                 plt.show()
                                 np.savetxt(carpeta + 'secC_area%.1f_%.0f_%.0f_dmu%s.txt'%(area,ic*2,jr*2,dmu_lim),catal[good], fmt = '%.6f',
                                                header = "'RA_gns','DE_gns','Jmag','Hmag','Ksmag','ra','dec','x_c','y_c','mua','dmua','mud','dmud','time','n1','n2','ID','mul','mub','dmul','dmub','m139','Separation'")
+if section == 'D':
+    m1 = -0.80
+    m = 1
+    step = 3300
+    
 
-                                
+    lim_pos_up, lim_pos_down = 500, -18000 #intersection of the positives slopes lines with y axis,
+    lim_neg_up, lim_neg_down =23000,16500 #intersection of the negayives slopes lines with y axis,
+    
+   
+    dist_pos = abs((-1*catal[0,7]+ (lim_pos_down + m*catal[0,7])-lim_pos_up)/np.sqrt((-1)**2+(1)**2))
+    
+    
+    dist_neg = abs((-m1*catal[0,7]+ (lim_neg_down + m1*catal[0,7])-lim_neg_up)/np.sqrt((-1)**2+(1)**2))
+    ang = math.degrees(np.arctan(m1))
+    
+    
+    
+    
+    
+    xy_box_lst = [[3,1],[4,2],[6,2]]
+    # xy_box_lst = [[4,2]]
+    
+    samples_lst =[10]
+    # samples_lst =[7]
+    
+    
+    for elegant_loop in range(len(xy_box_lst)):
+        x_box_lst = [xy_box_lst[elegant_loop][0]]
+        y_box_lst = [xy_box_lst[elegant_loop][1]]
+        for x_box in x_box_lst:
+            step = dist_pos /x_box
+            for y_box in y_box_lst:
+                for samples_dist in samples_lst:
+                    for ic in range(x_box*2-1):
+                        
+                        # fig, ax = plt.subplots(1,1,figsize=(10,10))
+                        # ax.scatter(catal[:,7],catal[:,8],alpha =0.01)
+                        ic *= 0.5
+                        yg_1 = (lim_pos_up - (ic)*step/np.cos(45*u.deg)) +  m*catal[:,7]
+                        # yg_2 = (lim_pos_up - (ic+1)*step*np.cos(45*u.deg)) +  m*catal[:,7]
+                        yg_2 = (lim_pos_up - (ic+1)*step/np.cos(45*u.deg)) +  m*catal[:,7]
+                        
+                        # ax.scatter(catal[:,7][good],catal[:,8][good],color =strin[np.random.choice(indices)],alpha = 0.1)
+            
+             # %       
+                        
+                        for jr in range(y_box*2-1):
+                            fig, ax = plt.subplots(1,1, figsize=(10,10))
+                            step_neg =dist_neg/y_box
+                            ax.scatter(catal[:,0],catal[:,1],alpha =0.01)
+                            jr *=0.5
+                            yr_1 = (lim_neg_up - (jr)*step_neg/np.cos(ang*u.deg)) +  m1*catal[:,7]
+                            # yg_2 = (lim_pos_up - (i+1)*step*np.cos(45*u.deg)) +  m*catal[:,7]
+                            yr_2 = (lim_neg_up - (jr+1)*step_neg/np.cos(ang*u.deg)) +  m1*catal[:,7]
+                            good = np.where((catal[:,8]<yg_1)&(catal[:,8]>yg_2)
+                                                    & (catal[:,8]<yr_1)&(catal[:,8]>yr_2))
+                            area = step*step_neg*0.05**2/3600
+                            
+                            
+                            ax.scatter(catal[:,0][good],catal[:,1][good],color =strin[np.random.choice(indices)],alpha = 0.1)
+                            
+                           
+                            props = dict(boxstyle='round', facecolor='w', alpha=0.5)
+                            # place a text box in upper left in axes coords
+                            txt ='central box ~ %.1f arcmin$^{2}$'%(area)
+                            ax.text(0.65, 0.95, txt, transform=ax.transAxes, fontsize=14,
+                                verticalalignment='top', bbox=props)
+                            ax.set_xlabel('Ra')
+                            ax.set_ylabel('Dec')
+                            plt.show()
+                            np.savetxt(carpeta + 'secD_area%.1f_%.0f_%.0f_dmu%s.txt'%(area,ic*2,jr*2,dmu_lim),catal[good], fmt = '%.6f',
+                                           header = "'RA_gns','DE_gns','Jmag','Hmag','Ksmag','ra','dec','x_c','y_c','mua','dmua','mud','dmud','time','n1','n2','ID','mul','mub','dmul','dmub','m139','Separation'")
 
 
 
 
 
-
-
-
+    
+    
+    
+    
 
 
 
