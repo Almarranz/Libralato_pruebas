@@ -10,7 +10,7 @@ Created on Wed Sep  7 12:18:11 2022
 # This will plot indiviual clusters (or cluster with common(s) stars in the same 
 # folder) to be used in documents and such. Basically is a copy of candidates_plotting.py
 # =============================================================================
-
+import math
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import rcParams
@@ -26,6 +26,7 @@ import spisea
 from spisea import synthetic, evolution, atmospheres, reddening, ifmr
 from spisea.imf import imf, multiplicity
 from astropy.stats import sigma_clip
+from matplotlib.ticker import FormatStrFormatter
 # %%plotting parametres
 rcParams.update({'xtick.major.pad': '7.0'})
 rcParams.update({'xtick.major.size': '7.5'})
@@ -147,7 +148,8 @@ for f_e in range(len(clus_to_erase)):
     os.remove((clus_to_erase[f_e]))
     
 # %%
-choosen_folder = input('Copy paste the folder with the clusters:')
+# choosen_folder = input('Copy paste the folder with the clusters:')
+choosen_folder = 'Sec_B_dmu1_at_minimun_2022-08-30'
 # section_folder = '/Users/amartinez/Desktop/morralla/Sec_%s_dmu2_at_minimun_2022-08-30/'%(section)#TODO
 section_folder = '/Users/amartinez/Desktop/morralla/%s/'%(choosen_folder)#TODO
 
@@ -234,8 +236,25 @@ for folder in sorted(glob.glob(section_folder + 'cluster_num32_2_knn10_area7.49'
                              np.isnan(clus_trim_x)==False 
                              & (np.isnan(clus_trim_y)==False))
         cluster_unique = cluster_unique0[good_filt]
-
-    
+    # ra, dec, l, b, pml, pmb,J, H, Ks,x, y, Aks_mean, dAks_mean, radio("),cluster_ID
+    cluster_candidate = cluster_unique[:,[0,1,7,8]]
+    eso_coor = SkyCoord(ra = cluster_candidate[:,0], dec = cluster_candidate[:,1], unit ='deg')
+    with open(pruebas +'cluster_candidate.txt','w') as file:
+        file.write('name,ra,dec\n')
+        # file.write('name,ra,dec, mag \n')
+        file.close()
+        eso_coor.dec.to(u.hourangle).value
+    for star_n in range(len(cluster_candidate)):
+        ra_h, dec_g = math.floor(cluster_candidate[star_n][0]/15), math.ceil(cluster_candidate[star_n][1])
+        ra_min, dec_min = 60 * (cluster_candidate[star_n][0]/15 % 1), 60 * (cluster_candidate[star_n][1]*-1 % 1)
+        ra_sec, dec_sec = 60 * (ra_min % 1), 60 * (dec_min % 1)
+        mag = cluster_candidate[star_n][2]
+        with open(pruebas +'cluster_candidate.txt','a') as file:
+            # file.write('%d:%02d:%06.3f \n' % (ra_h,ra_min,ra_sec))
+            file.write('Star_%s,%d:%02d:%06.3f,%d:%02d:%06.3f,\n' %(star_n+1,ra_h, ra_min, ra_sec,dec_g, dec_min, dec_sec))
+            # file.write('Star_%s,%d:%02d:%06.3f,%d:%02d:%06.3f,,,,,,,,,"H=%s", \n' % (star_n+1,ra_h, ra_min, ra_sec,dec_g, dec_min, dec_sec,mag))
+    # np.savetxt(pruebas + 'cluster_candidate.txt',cluster_candidate,fmt = 2*'%.8f '+ 2*'%.4f ', header = 'ra, dec, l, b, pml, pmb,J, H, Ks,x, y, Aks_mean, dAks_mean, radio("),cluster_ID')
+    sys.exit('242')
     # colores_trim = []
     # sig = 2
     # for tr in range(len(gns_core_match)):
@@ -252,7 +271,7 @@ for folder in sorted(glob.glob(section_folder + 'cluster_num32_2_knn10_area7.49'
     else:
         print('all cluster are the same')
     plots += 1
-    if plots == 2:
+    if plots == 1:
         coord_to_save = SkyCoord(ra = cluster_unique[:,0], dec = cluster_unique[:,1],unit = 'deg', frame = 'icrs', equinox = 'J2000', obstime = 'J2014.2')
         np.savetxt(pruebas + 'fine_coord_combined_clus%s_sect%s.txt'%(plots, section),np.array([coord_to_save.ra.value,coord_to_save.dec.value]).T)
         np.savetxt(pruebas + 'combined_clus%s_sect%s.txt'%(plots, section),cluster_unique)
@@ -299,6 +318,8 @@ for folder in sorted(glob.glob(section_folder + 'cluster_num32_2_knn10_area7.49'
     
     idxc, group_md, d2d,d3d =  ap_coor.search_around_sky(m_point,coordenadas, rad*1.5)
     
+    big_idxc, big_group_md, big_d2d,big_d3d =  ap_coor.search_around_sky(m_point,coordenadas, rad*5.5)
+    
     ax[0].scatter(catal[:,-6][group_md],catal[:,-5][group_md], color='red',s=50,zorder=1,marker='x',alpha = 0.7)
     
     prop_02 = dict(boxstyle='round', facecolor='red', alpha=0.1)
@@ -324,18 +345,24 @@ for folder in sorted(glob.glob(section_folder + 'cluster_num32_2_knn10_area7.49'
     
 
     ax[1].scatter(catal[:,5][group_md],catal[:,6][group_md], color='red',s=50,zorder=1,marker='x',alpha = 0.3)
+    ax[1].scatter(catal[:,5][big_group_md],catal[:,6][big_group_md], color ='k',alpha = 0.1)
 
-    ax[1].scatter(ra_,dec_,color ='k',alpha = 0.01)
+    # ax[1].scatter(ra_,dec_,color ='k',alpha = 0.01)
     ax[1].scatter(cluster_unique[:,0], cluster_unique[:,1], color = color_de_cluster,s=100)
-    if section == 'B':
-        ax[1].scatter(ban_coord.ra, ban_coord.dec,color ='b',s =80,marker ='x')
-        for ban_star in range(len(ban_coord)):
-            sep_ban = c2.separation(ban_coord[ban_star])
-            if min(sep_ban.value) <1/3600:
-                ax[1].set_facecolor('lavender')
+    ax[1].quiver(cluster_unique[:,0], cluster_unique[:,1], cluster_unique[:,4], cluster_unique[:,5], alpha=1, color='k')
+    # if section == 'B':
+    #     ax[1].scatter(ban_coord.ra, ban_coord.dec,color ='b',s =80,marker ='x')
+    #     for ban_star in range(len(ban_coord)):
+    #         sep_ban = c2.separation(ban_coord[ban_star])
+    #         if min(sep_ban.value) <1/3600:
+    #             ax[1].set_facecolor('lavender')
+    ax[1].xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+    ax[1].yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
     ax[1].yaxis.set_major_locator(plt.MaxNLocator(4))
-    ax[1].set_xlabel('Ra',fontsize =30) 
-    ax[1].set_ylabel('Dec',fontsize =30,labelpad = -50) 
+    ax[1].xaxis.set_major_locator(plt.MaxNLocator(4))
+
+    ax[1].set_xlabel('Ra(°)',fontsize =30) 
+    ax[1].set_ylabel('Dec(°)',fontsize =30,labelpad = -50) 
 
     
     # Here we are going to match the cluster with gns extion for get the average extiontion and plot an isochrone
@@ -358,7 +385,7 @@ for folder in sorted(glob.glob(section_folder + 'cluster_num32_2_knn10_area7.49'
     dist = 8200 # distance in parsec
     metallicity = 0.30 # Metallicity in [M/H]
     # # logAge_600 = np.log10(0.61*10**9.)
-    logAge = np.log10(0.003*10**9.)
+    logAge = np.log10(0.0025*10**9.)
     logAge1 = np.log10(0.055*10**9.)
     # logAge_30 = np.log10(0.030*10**9.)
     # logAge_60 = np.log10(0.060*10**9.)
@@ -391,7 +418,7 @@ for folder in sorted(glob.glob(section_folder + 'cluster_num32_2_knn10_area7.49'
     
     ####################################################
     ax[2].plot(iso.points['m_hawki_H'] - iso.points['m_hawki_Ks'], 
-                      iso.points['m_hawki_Ks'], 'b-',  label='%.0f Myr'%(10**logAge/10**6))
+                      iso.points['m_hawki_Ks'], 'b-',  label='%.1f Myr'%(10**logAge/10**6))
     # ax[2].plot(iso1.points['m_hawki_H'] - iso1.points['m_hawki_Ks'], 
     #                   iso1.points['m_hawki_Ks'], 'royalblue',  label='25 Myr')
     ax[2].legend()
@@ -428,20 +455,20 @@ for folder in sorted(glob.glob(section_folder + 'cluster_num32_2_knn10_area7.49'
 
 # %%
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+with open(pruebas +'cluster_candidate.csv','w') as file:
+    file.write('name,ra,dec,mag'+'\n')
+    # file.write('name,ra,dec, mag \n')
+    file.close()
+    eso_coor.dec.to(u.hourangle).value
+# for star_n in range(len(cluster_candidate)):
+for star_n in range(1):
+    ra_h, dec_g = math.floor(cluster_candidate[star_n][0]/15), math.ceil(cluster_candidate[star_n][1])
+    ra_min, dec_min = 60 * (cluster_candidate[star_n][0]/15 % 1), 60 * (cluster_candidate[star_n][1]*-1 % 1)
+    ra_sec, dec_sec = 60 * (ra_min % 1), 60 * (dec_min % 1)
+    mag = cluster_candidate[star_n][2]
+    with open(pruebas +'cluster_candidate.csv','a') as file:
+        # file.write('%d:%02d:%06.3f \n' % (ra_h,ra_min,ra_sec))
+        file.write('Star_%s,%d:%02d:%06.3f, %d:%02d:%06.3f,%s' %(star_n+1,ra_h, ra_min, ra_sec,dec_g, dec_min, dec_sec,12))
+        # file.write('Star_%s,%d:%02d:%06.3f,%d:%02d:%06.3f,,,,,,,,,"H=%s", \n' % (star_n+1,ra_h, ra_min, ra_sec,dec_g, dec_min, dec_sec,mag))
 
 
