@@ -238,9 +238,19 @@ for folder in sorted(glob.glob(section_folder + 'cluster_num32_2_knn10_area7.49'
         cluster_unique = cluster_unique0[good_filt]
     # ra, dec, l, b, pml, pmb,J, H, Ks,x, y, Aks_mean, dAks_mean, radio("),cluster_ID
     cluster_candidate = cluster_unique[:,[0,1,7,8]]
-    eso_coor = SkyCoord(ra = cluster_candidate[:,0], dec = cluster_candidate[:,1], unit ='deg')
-    with open(pruebas +'cluster_candidate.txt','w') as file:
-        file.write('name,ra,dec\n')
+    eso_coor = SkyCoord(ra = [np.mean(cluster_candidate[:,0]/15)], dec = [np.mean(cluster_candidate[:,1])], unit ='deg')
+    ra_cen, dec_cen = eso_coor.ra.value, eso_coor.dec.value
+    with open(pruebas +'cluster_centroit.csv','w') as file:
+           ra_h, dec_g = math.floor(ra_cen), math.ceil(dec_cen)
+           ra_min, dec_min = 60 * (ra_cen % 1), 60 * (dec_cen*-1 % 1)
+           ra_sec, dec_sec = 60 * (ra_min % 1), 60 * (dec_min % 1)
+           file.write('\n'.join(('name,ra,dec,mag',
+                                 'Star_%s,%d:%02d:%06.3f,%d:%02d:%06.3f,%s \n' %('Centro',ra_h, ra_min, ra_sec,dec_g, dec_min, dec_sec,17))))
+           # file.write('name,ra,dec, mag \n')
+           file.close()
+    
+    with open(pruebas +'cluster_candidate.csv','w') as file:
+        file.write('name,ra,dec,mag'+'\n')
         # file.write('name,ra,dec, mag \n')
         file.close()
         eso_coor.dec.to(u.hourangle).value
@@ -248,13 +258,13 @@ for folder in sorted(glob.glob(section_folder + 'cluster_num32_2_knn10_area7.49'
         ra_h, dec_g = math.floor(cluster_candidate[star_n][0]/15), math.ceil(cluster_candidate[star_n][1])
         ra_min, dec_min = 60 * (cluster_candidate[star_n][0]/15 % 1), 60 * (cluster_candidate[star_n][1]*-1 % 1)
         ra_sec, dec_sec = 60 * (ra_min % 1), 60 * (dec_min % 1)
-        mag = cluster_candidate[star_n][2]
-        with open(pruebas +'cluster_candidate.txt','a') as file:
+        mag = cluster_candidate[star_n][3]
+        with open(pruebas +'cluster_candidate.csv','a') as file:
             # file.write('%d:%02d:%06.3f \n' % (ra_h,ra_min,ra_sec))
-            file.write('Star_%s,%d:%02d:%06.3f,%d:%02d:%06.3f,\n' %(star_n+1,ra_h, ra_min, ra_sec,dec_g, dec_min, dec_sec))
+            file.write('Star_%s,%d:%02d:%06.3f,%d:%02d:%06.3f,%s \n' %(star_n+1,ra_h, ra_min, ra_sec,dec_g, dec_min, dec_sec,mag))
             # file.write('Star_%s,%d:%02d:%06.3f,%d:%02d:%06.3f,,,,,,,,,"H=%s", \n' % (star_n+1,ra_h, ra_min, ra_sec,dec_g, dec_min, dec_sec,mag))
     # np.savetxt(pruebas + 'cluster_candidate.txt',cluster_candidate,fmt = 2*'%.8f '+ 2*'%.4f ', header = 'ra, dec, l, b, pml, pmb,J, H, Ks,x, y, Aks_mean, dAks_mean, radio("),cluster_ID')
-    sys.exit('242')
+    
     # colores_trim = []
     # sig = 2
     # for tr in range(len(gns_core_match)):
@@ -282,7 +292,7 @@ for folder in sorted(glob.glob(section_folder + 'cluster_num32_2_knn10_area7.49'
     # ax[0].set_title('Plot #%s. Found %s times. Combiend cluster: %s'%(plots,clus_per_folder,new_stars))
     ax[0].scatter(catal[:,-6],catal[:,-5],color = 'k', alpha = 0.1, zorder=1)
     ax[0].scatter(cluster_unique[:,4],cluster_unique[:,5], color = color_de_cluster, zorder=3,s=100) 
-    ax[0].set_xlim(-10,10)
+    ax[0].set_xlim(-15,5)
     ax[0].set_ylim(-10,10)
     ax[0].invert_xaxis()
     
@@ -300,13 +310,13 @@ for folder in sorted(glob.glob(section_folder + 'cluster_num32_2_knn10_area7.49'
     
     
     
-    prop_0 = dict(boxstyle='round', facecolor=color_de_cluster , alpha=0.2)
-    prop_01 = dict(boxstyle='round', facecolor='k', alpha=0.1)
+    prop_0 = dict(boxstyle='round', facecolor=color_de_cluster , alpha=0.3)
+    prop_01 = dict(boxstyle='round', facecolor='k', alpha=0.5)
     
     ax[0].text(0.05, 0.95, vel_txt, transform=ax[0].transAxes, fontsize=30,
         verticalalignment='top', bbox=prop_0)
-    ax[0].text(0.05, 0.45, vel_txt_all, transform=ax[0].transAxes, fontsize=20,
-        verticalalignment='top', bbox=prop_01)
+    # ax[0].text(0.05, 0.27, vel_txt_all, transform=ax[0].transAxes, fontsize=20,
+    #     verticalalignment='top', bbox=prop_01)
     ax[0].set_xlabel(r'$\mathrm{\mu_{l} (mas\ yr^{-1})}$',fontsize =30) 
     ax[0].set_ylabel(r'$\mathrm{\mu_{b} (mas\ yr^{-1})}$',fontsize =30) 
     
@@ -322,7 +332,7 @@ for folder in sorted(glob.glob(section_folder + 'cluster_num32_2_knn10_area7.49'
     
     ax[0].scatter(catal[:,-6][group_md],catal[:,-5][group_md], color='red',s=50,zorder=1,marker='x',alpha = 0.7)
     
-    prop_02 = dict(boxstyle='round', facecolor='red', alpha=0.1)
+    prop_02 = dict(boxstyle='round', facecolor='red', alpha=0.3)
     vel_txt_around = '\n'.join(('mul = %s, mub = %s'%(round(np.mean(catal[:,-6][group_md]),3), round(np.mean(catal[:,-5][group_md]),3)),
                          '$\sigma_{mul}$ = %s, $\sigma_{mub}$ = %s'%(round(np.std(catal[:,-6][group_md]),3), round(np.std(catal[:,-5][group_md]),3))))
     ax[0].text(0.05, 0.15, vel_txt_around, transform=ax[0].transAxes, fontsize=30,
@@ -332,7 +342,7 @@ for folder in sorted(glob.glob(section_folder + 'cluster_num32_2_knn10_area7.49'
 
     # ax[1].set_title('max dmu = %s. %s'%(lim, same_method)) 
     prop_1 = dict(boxstyle='round', facecolor=color_de_cluster , alpha=0.2)
-    ax[1].text(0.15, 0.95, 'aprox cluster radio = %s"\n cluster stars = %s '%(round(rad.to(u.arcsec).value,2),len(cluster_unique)), transform=ax[1].transAxes, fontsize=30,
+    ax[1].text(0.15, 0.95, 'aprox. group radio = %s"\nco-moving stars = %s '%(round(rad.to(u.arcsec).value,2),len(cluster_unique)), transform=ax[1].transAxes, fontsize=30,
                             verticalalignment='top', bbox=prop_1)
     
     # ax[1].scatter(catal[:,7][group_md],catal[:,8][group_md], color='red',s=50,zorder=1,marker='x',alpha = 0.3)
@@ -385,7 +395,7 @@ for folder in sorted(glob.glob(section_folder + 'cluster_num32_2_knn10_area7.49'
     dist = 8200 # distance in parsec
     metallicity = 0.30 # Metallicity in [M/H]
     # # logAge_600 = np.log10(0.61*10**9.)
-    logAge = np.log10(0.0025*10**9.)
+    logAge = np.log10(0.0030*10**9.)
     logAge1 = np.log10(0.055*10**9.)
     # logAge_30 = np.log10(0.030*10**9.)
     # logAge_60 = np.log10(0.060*10**9.)
@@ -395,6 +405,7 @@ for folder in sorted(glob.glob(section_folder + 'cluster_num32_2_knn10_area7.49'
     red_law = reddening.RedLawNoguerasLara18()
     filt_list = ['hawki,J', 'hawki,H', 'hawki,Ks']
     
+    AKs = 2.0
     iso =  synthetic.IsochronePhot(logAge, AKs, dist, metallicity=metallicity,
                                     evo_model=evo_model, atm_func=atm_func,
                                     red_law=red_law, filters=filt_list,
@@ -421,11 +432,11 @@ for folder in sorted(glob.glob(section_folder + 'cluster_num32_2_knn10_area7.49'
                       iso.points['m_hawki_Ks'], 'b-',  label='%.1f Myr'%(10**logAge/10**6))
     # ax[2].plot(iso1.points['m_hawki_H'] - iso1.points['m_hawki_Ks'], 
     #                   iso1.points['m_hawki_Ks'], 'royalblue',  label='25 Myr')
-    ax[2].legend()
+    ax[2].legend(loc =2)
     
     txt_AKs = '\n'.join(('AKs = %.2f'%(AKs_clus),'std_AKs = %.2f'%(std_AKs)))
-    ax[2].text(0.65, 0.50, txt_AKs, transform=ax[2].transAxes, fontsize=20,
-        verticalalignment='top', bbox=prop_01)
+    # ax[2].text(0.65, 0.50, txt_AKs, transform=ax[2].transAxes, fontsize=20,
+    #     verticalalignment='top', bbox=prop_01)
     # ax[2].set_title('Trimmed by: %s. %s$\sigma$ (%s stars trimmied)'%(trimmed_by,sigma, len(cluster_unique0)-len(cluster_unique)))
     ax[2].scatter(catal[:,3]-catal[:,4],catal[:,4], color='k' ,s=50,zorder=1, alpha=0.03)
     ax[2].scatter(catal[:,3][group_md]-catal[:,4][group_md],catal[:,4][group_md], color='r' ,s=50,zorder=1, alpha=0.5,marker='x')
@@ -440,35 +451,24 @@ for folder in sorted(glob.glob(section_folder + 'cluster_num32_2_knn10_area7.49'
     # ax[2].set_title('Cluster %s, eps = %s'%(clus_num,round(eps_av,3)))
     txt_clus = '\n'.join(('H-Ks =%.3f'%(np.mean(cluster_unique[:,7]-cluster_unique[:,8])),
                          '$\sigma_{H-Ks}$ = %.3f'%(np.std(cluster_unique[:,7]-cluster_unique[:,8])),
-                         'diff_color = %.3f'%(max(cluster_unique[:,7]-cluster_unique[:,8])-min(cluster_unique[:,7]-cluster_unique[:,8]))))
+                         ))
     props_arou = dict(boxstyle='round', facecolor=color_de_cluster, alpha=0.3)
-    ax[2].text(0.45, 0.90,txt_clus, transform=ax[2].transAxes, fontsize=30,
+    ax[2].text(0.55, 0.95,txt_clus, transform=ax[2].transAxes, fontsize=30,
         verticalalignment='top', bbox=prop_0)
     
     txt_around= '\n'.join(('H-Ks =%.3f'%(np.mean(catal[:,3][group_md]-catal[:,4][group_md])),
                          '$\sigma_{H-Ks}$ = %.3f'%(np.std(catal[:,3][group_md]-catal[:,4][group_md])),
-                         'diff_color = %.3f'%(max(catal[:,3][group_md]-catal[:,4][group_md])-min(catal[:,3][group_md]-catal[:,4][group_md]))))
+                         ))
     props_arou = dict(boxstyle='round', facecolor='r', alpha=0.3)
-    ax[2].text(0.45, 0.30,txt_around, transform=ax[2].transAxes, fontsize=30,
+    ax[2].text(0.55, 0.15,txt_around, transform=ax[2].transAxes, fontsize=30,
         verticalalignment='top', bbox=props_arou)
     # sys.exit('line 337')
+# %%
+gns= pd.read_csv(cata + 'GNS_central.csv')# tCentral region of GNS
+#%%
+e_mag = np.where((gns['Jmag'] == 20.56989))# & (gns['_DEJ2000'] == cluster_unique[0][1]) )
+print(e_mag)
 
 # %%
-
-with open(pruebas +'cluster_candidate.csv','w') as file:
-    file.write('name,ra,dec,mag'+'\n')
-    # file.write('name,ra,dec, mag \n')
-    file.close()
-    eso_coor.dec.to(u.hourangle).value
-# for star_n in range(len(cluster_candidate)):
-for star_n in range(1):
-    ra_h, dec_g = math.floor(cluster_candidate[star_n][0]/15), math.ceil(cluster_candidate[star_n][1])
-    ra_min, dec_min = 60 * (cluster_candidate[star_n][0]/15 % 1), 60 * (cluster_candidate[star_n][1]*-1 % 1)
-    ra_sec, dec_sec = 60 * (ra_min % 1), 60 * (dec_min % 1)
-    mag = cluster_candidate[star_n][2]
-    with open(pruebas +'cluster_candidate.csv','a') as file:
-        # file.write('%d:%02d:%06.3f \n' % (ra_h,ra_min,ra_sec))
-        file.write('Star_%s,%d:%02d:%06.3f, %d:%02d:%06.3f,%s' %(star_n+1,ra_h, ra_min, ra_sec,dec_g, dec_min, dec_sec,12))
-        # file.write('Star_%s,%d:%02d:%06.3f,%d:%02d:%06.3f,,,,,,,,,"H=%s", \n' % (star_n+1,ra_h, ra_min, ra_sec,dec_g, dec_min, dec_sec,mag))
-
+print(gns['e_Ksmag'][e_mag[0]])
 
